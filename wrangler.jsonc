@@ -16,7 +16,7 @@
 	"vars": {
 		"APP_URL": "https://tinygig.mohithkumar808.workers.dev",
 		"APP_NAME": "TinyGig",
-		"EMAIL_FROM": "TinyGig <hello@tinygig.in>",
+		"EMAIL_FROM": "TinyGig <mail@monway.ai>",
 		"ADMIN_EMAILS": "mohith@tokgency.com"
 	},
 	"d1_databases": [
