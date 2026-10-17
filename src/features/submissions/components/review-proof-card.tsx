@@ -13,9 +13,7 @@ function host(url: string) {
 
 export function ReviewProofCard({ url, targetUrl }: { url: string | null; targetUrl?: string | null }) {
   if (!url) {
-    return (
-      <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No proof link submitted yet.</div>
-    )
+    return <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No proof link submitted yet.</div>
   }
   const h = host(url)
   return (
@@ -35,7 +33,7 @@ export function ReviewProofCard({ url, targetUrl }: { url: string | null; target
             <span className="block truncate font-mono text-xs text-muted-foreground">{h.path}</span>
           </span>
           <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-            <Kbd>O</Kbd>
+            <Kbd className="hidden lg:inline-flex">O</Kbd>
             <ExternalLink className="size-4 group-hover:text-foreground" />
           </span>
         </a>

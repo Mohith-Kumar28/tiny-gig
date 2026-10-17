@@ -79,7 +79,12 @@ export function ProofForm({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Screenshots (optional)</FormLabel>
-              <ScreenshotUploader value={field.value} onChange={field.onChange} onUploadingChange={setUploading} disabled={disabled} />
+              <ScreenshotUploader
+                value={field.value}
+                onChange={field.onChange}
+                onUploadingChange={setUploading}
+                disabled={disabled}
+              />
               <FormMessage />
             </FormItem>
           )}
@@ -91,7 +96,13 @@ export function ProofForm({
             <FormItem>
               <FormLabel>{resubmit ? 'What did you change? (optional)' : 'Note for the reviewer (optional)'}</FormLabel>
               <FormControl>
-                <Textarea rows={3} maxLength={1000} disabled={disabled} placeholder={resubmit ? 'e.g. I edited the title as asked.' : ''} {...field} />
+                <Textarea
+                  rows={3}
+                  maxLength={1000}
+                  disabled={disabled}
+                  placeholder={resubmit ? 'e.g. I edited the title as asked.' : ''}
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

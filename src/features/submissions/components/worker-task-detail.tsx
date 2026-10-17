@@ -7,7 +7,7 @@ import {
   Clock,
   ExternalLink,
   Hourglass,
-  Info,
+  type Info,
   ShieldCheck,
   Undo2,
   XCircle,
@@ -44,7 +44,17 @@ import { SubmissionTimeline } from './submission-timeline'
 
 type TaskData = Awaited<ReturnType<typeof getMySubmission>>
 
-function Card({ title, children, className, action }: { title?: ReactNode; children: ReactNode; className?: string; action?: ReactNode }) {
+function Card({
+  title,
+  children,
+  className,
+  action,
+}: {
+  title?: ReactNode
+  children: ReactNode
+  className?: string
+  action?: ReactNode
+}) {
   return (
     <section className={cn('rounded-xl border bg-card p-4 sm:p-5', className)}>
       {title ? (
@@ -106,7 +116,9 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
   const needsProof = status === 'claimed' || status === 'changes_requested'
   const overdue = new Date(sub.dueAt).getTime() < Date.now()
   const hasSubmitted = events.some((e) => e.action === 'submitted' || e.action === 'resubmitted')
-  const lastAdmin = [...events].reverse().find((e) => e.actorRole === 'admin' && (e.action === 'changes_requested' || e.action === 'rejected'))
+  const lastAdmin = [...events]
+    .reverse()
+    .find((e) => e.actorRole === 'admin' && (e.action === 'changes_requested' || e.action === 'rejected'))
 
   const withdraw = useAction(() => withdrawClaim({ data: { id: sub.id } }), {
     success: 'You withdrew from this gig. The slot is free for others.',
@@ -131,7 +143,10 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
         </div>
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <h1 className="font-display text-2xl font-semibold tracking-tight text-balance sm:text-[1.65rem]">{gig.title}</h1>
-          <Money paise={sub.payoutAmount} className={cn('font-display text-2xl font-semibold', status === 'approved' ? 'text-success' : 'text-primary')} />
+          <Money
+            paise={sub.payoutAmount}
+            className={cn('font-display text-2xl font-semibold', status === 'approved' ? 'text-success' : 'text-primary')}
+          />
         </div>
       </header>
 
@@ -199,9 +214,19 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
           ) : null}
 
           {status === 'approved' ? (
-            <Callout tone="success" icon={CheckCircle2} title={<>Approved! <Money paise={sub.payoutAmount} /> earned</>}>
+            <Callout
+              tone="success"
+              icon={CheckCircle2}
+              title={
+                <>
+                  Approved! <Money paise={sub.payoutAmount} /> earned
+                </>
+              }
+            >
               <p className="text-sm text-muted-foreground">
-                {sub.payoutId ? 'This was included in a payout.' : 'It has been added to your balance and will be paid in the next UPI payout.'}{' '}
+                {sub.payoutId
+                  ? 'This was included in a payout.'
+                  : 'It has been added to your balance and will be paid in the next UPI payout.'}{' '}
                 <Link to="/w/payments" className="font-medium text-foreground underline underline-offset-2">
                   See payments
                 </Link>
@@ -221,12 +246,14 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
               action={!overdue ? <Countdown to={sub.dueAt} prefix="Due" /> : null}
             >
               {overdue ? (
-                <p className="rounded-lg bg-destructive/8 p-3 text-sm text-destructive">The deadline for this task has passed, so it can't be submitted anymore.</p>
+                <p className="rounded-lg bg-destructive/8 p-3 text-sm text-destructive">
+                  The deadline for this task has passed, so it can't be submitted anymore.
+                </p>
               ) : (
                 <>
                   <p className="mb-4 text-sm text-muted-foreground">
-                    Finish by <strong className="text-foreground">{formatDateTime(sub.dueAt)}</strong>. Do the task first, then paste the
-                    link here.
+                    Finish by <strong className="text-foreground">{formatDateTime(sub.dueAt)}</strong>. Do the task first, then
+                    paste the link here.
                   </p>
                   <ProofForm
                     key={`${sub.id}-${sub.revision}`}
@@ -242,7 +269,12 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
             <Card title="Your submission">
               <div className="space-y-3">
                 <div className="flex items-center gap-2 rounded-lg bg-muted/60 p-2.5 pl-3">
-                  <a href={sub.proofUrl} target="_blank" rel="noreferrer noopener" className="min-w-0 flex-1 truncate text-sm font-medium underline-offset-2 hover:underline">
+                  <a
+                    href={sub.proofUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="min-w-0 flex-1 truncate text-sm font-medium underline-offset-2 hover:underline"
+                  >
                     {sub.proofUrl}
                   </a>
                   <CopyButton value={sub.proofUrl} />
@@ -255,8 +287,19 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                 {sub.screenshotKeys.length ? (
                   <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
                     {sub.screenshotKeys.map((k, i) => (
-                      <a key={k} href={`/api/uploads/${k}`} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border bg-muted">
-                        <img src={`/api/uploads/${k}`} alt={`Screenshot ${i + 1}`} className="size-full object-cover" loading="lazy" />
+                      <a
+                        key={k}
+                        href={`/api/uploads/${k}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="aspect-square overflow-hidden rounded-lg border bg-muted"
+                      >
+                        <img
+                          src={`/api/uploads/${k}`}
+                          alt={`Screenshot ${i + 1}`}
+                          className="size-full object-cover"
+                          loading="lazy"
+                        />
                       </a>
                     ))}
                   </div>
@@ -308,7 +351,11 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                   </ul>
                 </div>
               ) : null}
-              <Link to="/w/gigs/$gigId" params={{ gigId: gig.id }} className="inline-block text-sm font-medium text-primary underline-offset-2 hover:underline">
+              <Link
+                to="/w/gigs/$gigId"
+                params={{ gigId: gig.id }}
+                className="inline-block text-sm font-medium text-primary underline-offset-2 hover:underline"
+              >
                 View full gig page
               </Link>
             </CollapsibleContent>

@@ -12,9 +12,9 @@ import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
+import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { PLATFORMS } from '@/db/schema/enums'
 import { gigOptionsQuery } from '@/features/gigs/queries'
 import { reviewCountsQuery, reviewQueueQuery } from '@/features/submissions/queries'
@@ -112,10 +112,12 @@ function ReviewInbox() {
     select(next?.id)
   }
 
-  const bulk = useReviewDecision({ onDone: (v) => {
-    setBulkDialog(null)
-    afterDecision(v.ids)
-  } })
+  const bulk = useReviewDecision({
+    onDone: (v) => {
+      setBulkDialog(null)
+      afterDecision(v.ids)
+    },
+  })
   const checkedIds = [...checked]
 
   useHotkeys({
@@ -141,57 +143,60 @@ function ReviewInbox() {
   const filtersActive = Boolean(search.q || search.gigId || search.platform?.length)
 
   return (
-    <div className="-mx-4 -my-6 flex h-[calc(100dvh-3.25rem)] min-w-0 flex-col sm:-mx-6 lg:-mx-8">
-      <div className="min-w-0 space-y-3 border-b px-4 pt-4 pb-3 sm:px-6 lg:px-8">
-        <div className="flex flex-wrap items-center gap-3">
-          <h1 className="font-display text-2xl font-semibold tracking-tight">Review inbox</h1>
-          <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" onClick={() => setHelp(true)}>
-            <Keyboard /> Shortcuts
-          </Button>
-        </div>
-        <Tabs className="min-w-0" value={tab} onValueChange={(v) => onSearchChange({ tab: v === 'needs_review' ? undefined : v, selected: undefined })}>
-          <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
-          <TabsList className="h-auto w-max justify-start bg-transparent p-0">
+    <div className="-mx-4 -my-6 flex h-[calc(100dvh-3.25rem)] min-w-0 flex-col overflow-hidden sm:-mx-6 lg:-mx-8">
+      <h1 className="sr-only">Review inbox</h1>
+      <div className="flex min-w-0 shrink-0 flex-wrap items-center gap-2 border-b px-3 py-2 sm:px-4">
+        <Select
+          value={tab}
+          onValueChange={(v) => onSearchChange({ tab: v === 'needs_review' ? undefined : v, selected: undefined })}
+        >
+          <SelectTrigger size="sm" className="w-auto min-w-36 font-medium sm:min-w-44" aria-label="View">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent align="start">
             {REVIEW_TABS.map((t) => (
-              <TabsTrigger
-                key={t}
-                value={t}
-                className="h-8 flex-none rounded-md px-2.5 data-[state=active]:bg-muted data-[state=active]:shadow-none"
-              >
+              <SelectItem key={t} value={t}>
                 {TAB_LABELS[t]}
-                {counts?.[t] ? (
-                  <span
-                    className={cn(
-                      'ml-1 rounded-full px-1.5 text-[11px] tabular',
-                      (t === 'needs_review' || t === 'live_check_due') && counts[t] ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/15',
-                    )}
-                  >
-                    {counts[t]}
-                  </span>
-                ) : null}
-              </TabsTrigger>
+                <TabCount tab={t} count={counts?.[t]} />
+              </SelectItem>
             ))}
-          </TabsList>
-          </div>
-        </Tabs>
-        <div className="flex flex-wrap items-center gap-2">
-          <DataTableSearch value={search.q} onChange={(q) => onSearchChange({ q, selected: undefined })} placeholder="Search worker, gig, link…" />
-          <GigFilter value={search.gigId} onChange={(gigId) => onSearchChange({ gigId, selected: undefined })} />
-          <DataTableFacetedFilter
-            title="Platform"
-            options={PLATFORMS.map((p) => ({ label: PLATFORM_LABELS[p], value: p, icon: ({ className }) => <PlatformIcon platform={p} className={className} /> }))}
-            value={search.platform}
-            onChange={(platform) => onSearchChange({ platform, selected: undefined })}
-          />
-          {filtersActive ? (
-            <Button variant="ghost" size="sm" className="h-8" onClick={() => navigate({ search: { tab: search.tab } })}>
-              Reset <X />
-            </Button>
-          ) : null}
-        </div>
+          </SelectContent>
+        </Select>
+        <DataTableSearch
+          value={search.q}
+          onChange={(q) => onSearchChange({ q, selected: undefined })}
+          placeholder="Search worker, gig, link…"
+          className="order-last w-full sm:order-none sm:w-56 xl:w-64"
+        />
+        <GigFilter value={search.gigId} onChange={(gigId) => onSearchChange({ gigId, selected: undefined })} />
+        <DataTableFacetedFilter
+          title="Platform"
+          options={PLATFORMS.map((p) => ({
+            label: PLATFORM_LABELS[p],
+            value: p,
+            icon: ({ className }) => <PlatformIcon platform={p} className={className} />,
+          }))}
+          value={search.platform}
+          onChange={(platform) => onSearchChange({ platform, selected: undefined })}
+        />
+        {filtersActive ? (
+          <Button variant="ghost" size="sm" className="h-8" onClick={() => navigate({ search: { tab: search.tab } })}>
+            Reset <X />
+          </Button>
+        ) : null}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="ml-auto hidden size-8 text-muted-foreground lg:inline-flex"
+          onClick={() => setHelp(true)}
+          aria-label="Keyboard shortcuts"
+          title="Keyboard shortcuts (?)"
+        >
+          <Keyboard />
+        </Button>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
         <div className="flex min-h-0 min-w-0 flex-col lg:border-r">
           <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
             <Checkbox
@@ -202,7 +207,12 @@ function ReviewInbox() {
             {checked.size ? (
               <div className="flex flex-1 items-center gap-1.5">
                 <span className="text-sm font-medium tabular">{checked.size} selected</span>
-                <Button size="sm" className="ml-auto h-7" disabled={bulk.isPending} onClick={() => bulk.mutate({ ids: checkedIds, decision: 'approve' })}>
+                <Button
+                  size="sm"
+                  className="ml-auto h-7"
+                  disabled={bulk.isPending}
+                  onClick={() => bulk.mutate({ ids: checkedIds, decision: 'approve' })}
+                >
                   <CheckCheck /> Approve
                 </Button>
                 {tab !== 'live_check' && tab !== 'live_check_due' ? (
@@ -252,7 +262,11 @@ function ReviewInbox() {
               <EmptyState
                 icon={Check}
                 title={tab === 'needs_review' ? 'Inbox zero 🎉' : 'Nothing here'}
-                description={tab === 'needs_review' ? 'Every submission has been reviewed. New ones will appear here.' : 'No submissions match this view.'}
+                description={
+                  tab === 'needs_review'
+                    ? 'Every submission has been reviewed. New ones will appear here.'
+                    : 'No submissions match this view.'
+                }
                 className="m-3 border-0"
               />
             )}
@@ -271,21 +285,37 @@ function ReviewInbox() {
         </div>
 
         {isDesktop ? (
-          <div className="hidden min-h-0 lg:block">
+          <div className="hidden h-full min-h-0 min-w-0 lg:block">
             {activeId ? (
               <SubmissionReviewPanel key={activeId} id={activeId} hotkeys onDecided={(v) => afterDecision(v.ids)} />
             ) : (
               <div className="flex h-full items-center justify-center p-6">
-                <EmptyState icon={Inbox} title="Select a submission" description="Use J / K to move through the queue." className="border-0" />
+                <EmptyState
+                  icon={Inbox}
+                  title="Select a submission"
+                  description="Use J / K to move through the queue."
+                  className="border-0"
+                />
               </div>
             )}
           </div>
         ) : (
           <Sheet open={!!selectedId} onOpenChange={(o) => !o && select(undefined)}>
-            <SheetContent className="w-full gap-0 p-0 sm:max-w-xl">
-              <SheetTitle className="sr-only">Review submission</SheetTitle>
-              <SheetDescription className="sr-only">Proof, worker and decision</SheetDescription>
-              {selectedId ? <SubmissionReviewPanel key={selectedId} id={selectedId} onDecided={(v) => afterDecision(v.ids)} /> : null}
+            <SheetContent className="w-full gap-0 p-0 sm:max-w-xl" showCloseButton={false}>
+              <div className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
+                <SheetTitle className="text-sm">Review submission</SheetTitle>
+                <SheetDescription className="sr-only">Proof, worker and decision</SheetDescription>
+                <SheetClose asChild>
+                  <Button variant="ghost" size="icon" className="ml-auto size-9" aria-label="Close">
+                    <X />
+                  </Button>
+                </SheetClose>
+              </div>
+              <div className="min-h-0 flex-1">
+                {selectedId ? (
+                  <SubmissionReviewPanel key={selectedId} id={selectedId} onDecided={(v) => afterDecision(v.ids)} />
+                ) : null}
+              </div>
             </SheetContent>
           </Sheet>
         )}
@@ -314,6 +344,21 @@ function ReviewInbox() {
       />
       <ReviewShortcutsDialog open={help} onOpenChange={setHelp} />
     </div>
+  )
+}
+
+function TabCount({ tab, count }: { tab: ReviewTab; count?: number }) {
+  if (!count) return null
+  const urgent = tab === 'needs_review' || tab === 'live_check_due'
+  return (
+    <span
+      className={cn(
+        'rounded-full px-1.5 text-[11px] leading-4 tabular',
+        urgent ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/15 text-muted-foreground',
+      )}
+    >
+      {count}
+    </span>
   )
 }
 

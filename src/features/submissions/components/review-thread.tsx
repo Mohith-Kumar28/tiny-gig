@@ -34,7 +34,12 @@ export function ReviewThread({ events }: { events: Event[] }) {
         const who = e.actorRole === 'system' ? 'System' : (e.actorName ?? (e.actorRole === 'admin' ? 'Reviewer' : 'Worker'))
         return (
           <li key={e.id} className="relative flex gap-3">
-            <span className={cn('relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border bg-background', m.tone)}>
+            <span
+              className={cn(
+                'relative z-10 flex size-6 shrink-0 items-center justify-center rounded-full border bg-background',
+                m.tone,
+              )}
+            >
               <m.icon className="size-3.5" />
             </span>
             <div className="min-w-0 flex-1 pt-0.5">

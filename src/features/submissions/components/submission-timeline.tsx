@@ -17,7 +17,11 @@ const ACTIONS: Record<string, { verb: string; icon: LucideIcon; tone: string }> 
   claimed: { verb: 'claimed the gig', icon: Hand, tone: 'bg-info/12 text-info' },
   submitted: { verb: 'submitted proof', icon: Send, tone: 'bg-primary/12 text-primary' },
   resubmitted: { verb: 'resubmitted proof', icon: RotateCcw, tone: 'bg-primary/12 text-primary' },
-  changes_requested: { verb: 'requested changes', icon: MessageSquare, tone: 'bg-warning/20 text-warning-foreground dark:text-warning' },
+  changes_requested: {
+    verb: 'requested changes',
+    icon: MessageSquare,
+    tone: 'bg-warning/20 text-warning-foreground dark:text-warning',
+  },
   moved_to_live_check: { verb: 'passed review, live check started', icon: ShieldCheck, tone: 'bg-info/12 text-info' },
   approved: { verb: 'approved the work', icon: CheckCircle2, tone: 'bg-success/12 text-success' },
   rejected: { verb: 'did not approve the work', icon: XCircle, tone: 'bg-destructive/10 text-destructive' },
@@ -50,13 +54,25 @@ export function SubmissionTimeline({
     <ol className={cn('relative space-y-5', className)}>
       <span aria-hidden className="absolute top-2 bottom-2 left-3.5 w-px bg-border" />
       {list.map((e) => {
-        const meta = ACTIONS[e.action] ?? { verb: e.action.replace(/_/g, ' '), icon: CircleSlash, tone: 'bg-muted text-muted-foreground' }
+        const meta = ACTIONS[e.action] ?? {
+          verb: e.action.replace(/_/g, ' '),
+          icon: CircleSlash,
+          tone: 'bg-muted text-muted-foreground',
+        }
         const Icon = meta.icon
         const actor = actorLabel(e, viewerRole)
-        const verb = e.actorRole === 'system' && e.action === 'expired' ? 'The deadline passed and the claim expired' : `${actor} ${meta.verb}`
+        const verb =
+          e.actorRole === 'system' && e.action === 'expired'
+            ? 'The deadline passed and the claim expired'
+            : `${actor} ${meta.verb}`
         return (
           <li key={e.id} className="relative flex gap-3">
-            <span className={cn('relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full ring-4 ring-card', meta.tone)}>
+            <span
+              className={cn(
+                'relative z-10 flex size-7 shrink-0 items-center justify-center rounded-full ring-4 ring-card',
+                meta.tone,
+              )}
+            >
               <Icon className="size-3.5" />
             </span>
             <div className="min-w-0 flex-1 space-y-1.5 pt-0.5">

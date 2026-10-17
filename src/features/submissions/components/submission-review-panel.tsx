@@ -10,12 +10,7 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { ButtonGroup } from '@/components/ui/button-group'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Kbd } from '@/components/ui/kbd'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -107,7 +102,7 @@ export function SubmissionReviewPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4 sm:p-5">
+      <div className="relative min-h-0 flex-1 space-y-6 overflow-y-auto p-4 sm:p-5">
         <header className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={sub.status} />
@@ -147,7 +142,9 @@ export function SubmissionReviewPanel({
           >
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-info" />
             <div className="space-y-1">
-              <p className="font-medium">{liveDue ? 'Live check due: open the link and confirm it is still up' : 'Waiting for the live-hold period'}</p>
+              <p className="font-medium">
+                {liveDue ? 'Live check due: open the link and confirm it is still up' : 'Waiting for the live-hold period'}
+              </p>
               <p className="text-muted-foreground">
                 Must stay live {gig.liveHoldHours}h, until {formatDateTime(sub.liveCheckAt)}.{' '}
                 {!liveDue ? <Countdown to={sub.liveCheckAt} prefix="Check" className="align-middle" /> : null}
@@ -191,42 +188,59 @@ export function SubmissionReviewPanel({
           </summary>
           <div className="space-y-3 border-t px-3.5 py-3 text-sm">
             <p className="whitespace-pre-wrap">{gig.brief}</p>
-            {gig.contentGuidelines ? (
-              <p className="whitespace-pre-wrap text-muted-foreground">{gig.contentGuidelines}</p>
-            ) : null}
+            {gig.contentGuidelines ? <p className="whitespace-pre-wrap text-muted-foreground">{gig.contentGuidelines}</p> : null}
           </div>
         </details>
 
         <Section title="Activity">
           <ReviewThread events={events} />
-          <div className="space-y-2">
+          <div className="flex items-end gap-2">
             <Label htmlFor={`note-${id}`} className="sr-only">
               Message the worker
             </Label>
             <Textarea
               id={`note-${id}`}
-              rows={2}
+              rows={1}
               value={note}
               onChange={(e) => setNote(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'Enter' && note.trim()) comment.mutate(note.trim())
+              }}
               placeholder="Message the worker without changing status…"
-              className="min-h-0 resize-none text-sm"
+              className="field-sizing-content max-h-40 min-h-9 resize-none text-sm"
             />
-            <div className="flex justify-end">
-              <Button size="sm" variant="outline" disabled={!note.trim() || comment.isPending} onClick={() => comment.mutate(note.trim())}>
-                <MessageSquarePlus /> Send comment
-              </Button>
-            </div>
+            <Button
+              size="icon"
+              variant="outline"
+              className="shrink-0"
+              disabled={!note.trim() || comment.isPending}
+              onClick={() => comment.mutate(note.trim())}
+              aria-label="Send comment"
+              title="Send comment (⌘↵)"
+            >
+              <MessageSquarePlus />
+            </Button>
           </div>
         </Section>
       </div>
 
       {canDecide ? (
         <footer className="flex flex-wrap items-center gap-2 border-t bg-background/95 p-3 backdrop-blur">
-          <Button variant="outline" onClick={() => setDialog('reject')} disabled={decide.isPending} className="flex-1 sm:flex-none">
+          <Button
+            variant="outline"
+            onClick={() => setDialog('reject')}
+            disabled={decide.isPending}
+            className="flex-1 sm:flex-none"
+          >
             <X /> {isLiveCheck ? 'Removed: reject' : 'Reject'} <Kbd className="ml-1 hidden sm:inline-flex">R</Kbd>
           </Button>
           {!isLiveCheck ? (
-            <Button variant="outline" onClick={() => setDialog('changes')} disabled={decide.isPending} className="flex-1 sm:flex-none">
+            <Button
+              variant="outline"
+              onClick={() => setDialog('changes')}
+              disabled={decide.isPending}
+              className="flex-1 sm:flex-none"
+            >
               <RotateCcw /> Changes <Kbd className="ml-1 hidden sm:inline-flex">C</Kbd>
             </Button>
           ) : null}

@@ -76,7 +76,11 @@ export function StatusStepper({
   return (
     <ol className={cn('flex w-full items-start', className)} aria-label="Task progress">
       {steps.map((s, i) => (
-        <li key={s.key} className="relative flex flex-1 flex-col items-center gap-1.5 text-center" aria-current={s.state === 'current' ? 'step' : undefined}>
+        <li
+          key={s.key}
+          className="relative flex flex-1 flex-col items-center gap-1.5 text-center"
+          aria-current={s.state === 'current' ? 'step' : undefined}
+        >
           {i > 0 ? (
             <span
               aria-hidden

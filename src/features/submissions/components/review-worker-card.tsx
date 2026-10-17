@@ -34,7 +34,12 @@ export function ReviewWorkerCard({ worker, history }: { worker: Worker; history:
           >
             {worker.fullName}
           </Link>
-          <a href={worker.redditUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
+          <a
+            href={worker.redditUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          >
             u/{worker.redditUsername} <ExternalLink className="size-3" />
           </a>
         </div>
@@ -52,7 +57,11 @@ export function ReviewWorkerCard({ worker, history }: { worker: Worker; history:
           </div>
         ))}
       </dl>
-      {rejected ? <p className="mt-2 text-xs text-muted-foreground">{rejected} past rejection{rejected === 1 ? '' : 's'} · {worker.state}</p> : null}
+      {rejected ? (
+        <p className="mt-2 text-xs text-muted-foreground">
+          {rejected} past rejection{rejected === 1 ? '' : 's'} · {worker.state}
+        </p>
+      ) : null}
     </div>
   )
 }

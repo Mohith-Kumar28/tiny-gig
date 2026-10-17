@@ -74,7 +74,9 @@ export function WorkerTaskRow({ task }: { task: WorkerTask }) {
           <StatusBadge status={task.status} />
           <TaskWhen task={task} />
           {task.community ? (
-            <span className="hidden truncate text-xs text-muted-foreground sm:inline">{task.community || PLATFORM_LABELS[task.platform]}</span>
+            <span className="hidden truncate text-xs text-muted-foreground sm:inline">
+              {task.community || PLATFORM_LABELS[task.platform]}
+            </span>
           ) : null}
         </div>
       </div>

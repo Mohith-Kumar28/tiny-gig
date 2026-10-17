@@ -17,7 +17,12 @@ export function ReviewScreenshots({ keys }: { keys: string[] }) {
             onClick={() => setIndex(i)}
             className="group relative aspect-[4/3] overflow-hidden rounded-lg border bg-muted"
           >
-            <img src={`/api/uploads/${k}`} alt={`Screenshot ${i + 1}`} loading="lazy" className="size-full object-cover transition group-hover:scale-[1.03]" />
+            <img
+              src={`/api/uploads/${k}`}
+              alt={`Screenshot ${i + 1}`}
+              loading="lazy"
+              className="size-full object-cover object-top transition group-hover:scale-[1.03]"
+            />
           </button>
         ))}
       </div>

@@ -14,9 +14,7 @@ export function SubmissionReviewSheet({
       <SheetContent className="w-full gap-0 p-0 sm:max-w-xl">
         <SheetTitle className="sr-only">Review submission</SheetTitle>
         <SheetDescription className="sr-only">Proof, worker and decision</SheetDescription>
-        {submissionId ? (
-          <SubmissionReviewPanel id={submissionId} hotkeys onDecided={() => onOpenChange(false)} />
-        ) : null}
+        {submissionId ? <SubmissionReviewPanel id={submissionId} hotkeys onDecided={() => onOpenChange(false)} /> : null}
       </SheetContent>
     </Sheet>
   )
