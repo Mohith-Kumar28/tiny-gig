@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm'
 import type { Db } from '@/db/client'
-import { appSetting } from '@/db/schema'
+import { appSetting, user } from '@/db/schema'
 import { adminEmails } from '@/lib/env'
 import { type AppSettings, DEFAULT_SETTINGS } from '../schemas'
 
@@ -14,5 +14,6 @@ export async function loadSettings(db: Db): Promise<AppSettings> {
 /** Env admins + any extra alert addresses configured in settings. */
 export async function alertRecipients(db: Db) {
   const s = await loadSettings(db)
-  return [...new Set([...adminEmails(), ...s.alertEmails.map((e) => e.toLowerCase())])]
+  const admins = await db.select({ email: user.email }).from(user).where(eq(user.role, 'admin'))
+  return [...new Set([...adminEmails(), ...admins.map((a) => a.email.toLowerCase()), ...s.alertEmails.map((e) => e.toLowerCase())])]
 }

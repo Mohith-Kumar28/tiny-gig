@@ -5,7 +5,8 @@ import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { eq } from 'drizzle-orm'
 import { getDb, schema } from '@/db/client'
 import { sendEmail } from '@/emails/send-email'
-import { adminEmails, env } from './env'
+import { isAdminEmail } from '@/features/settings/server/admin-store'
+import { env } from './env'
 
 function createAuth() {
   const googleConfigured = Boolean(env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET)
@@ -88,7 +89,7 @@ function createAuth() {
         },
         create: {
           before: async (user) => {
-            const isAdmin = adminEmails().includes(user.email.toLowerCase())
+            const isAdmin = await isAdminEmail(getDb(), user.email)
             const name = user.name?.trim() || user.email.split('@')[0] || 'TinyGig user'
             return { data: { ...user, name, role: isAdmin ? 'admin' : 'worker' } }
           },

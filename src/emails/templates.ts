@@ -47,6 +47,17 @@ export const emailTemplates = {
     footerNote: "If you didn't ask to reset your password, you can ignore this email. Your password won't change.",
   }),
 
+  adminInvite: (d: { invitedBy: string; url: string }, _ctx: Ctx): Content => ({
+    subject: 'You now have admin access to TinyGig',
+    preview: `${d.invitedBy} added you as a TinyGig admin.`,
+    heading: "You're a TinyGig admin",
+    paragraphs: [
+      `${d.invitedBy} gave you admin access to TinyGig.`,
+      'Sign in with this email address (email code, password or Google) to open the admin dashboard.',
+    ],
+    cta: { label: 'Sign in', href: d.url },
+  }),
+
   applicationReceived: (d: { name: string }, ctx: Ctx): Content => ({
     subject: 'We received your TinyGig application',
     preview: "Thanks for applying — we'll review it shortly.",

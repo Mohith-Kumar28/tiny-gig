@@ -31,7 +31,12 @@ export const userMiddleware = createMiddleware({ type: 'function' })
 export const adminMiddleware = createMiddleware({ type: 'function' })
   .middleware([userMiddleware])
   .server(async ({ next, context }) => {
-    if (context.user.role !== 'admin') throw new AppError('FORBIDDEN', 'Admins only.')
+    // Read the role from the DB, not the cached session cookie, so removed admins lose access immediately.
+    const row = await context.db.query.user.findFirst({
+      where: eq(schema.user.id, context.user.id),
+      columns: { role: true, banned: true },
+    })
+    if (row?.role !== 'admin' || row.banned) throw new AppError('FORBIDDEN', 'Admins only.')
     return next()
   })
 
