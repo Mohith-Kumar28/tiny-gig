@@ -38,7 +38,8 @@ function NavLinks({ groups, badges }: { groups: NavGroup[]; badges?: Record<stri
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((item) => {
-                const active = item.exact ? pathname === item.to : pathname === item.to || pathname.startsWith(`${item.to}/`)
+                const base = item.match ?? item.to
+                const active = item.exact ? pathname === item.to : pathname === base || pathname.startsWith(`${base}/`)
                 const badge = item.badgeKey ? badges?.[item.badgeKey] : undefined
                 return (
                   <SidebarMenuItem key={item.to}>

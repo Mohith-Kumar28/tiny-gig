@@ -1,7 +1,10 @@
 import type { QueryClient } from '@tanstack/react-query'
 import { createRootRouteWithContext, HeadContent, Outlet, Scripts } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
+import { AuthUiProvider } from '@/components/shared/auth-ui-provider'
 import { THEME_INIT_SCRIPT, ThemeProvider } from '@/components/shared/theme-provider'
+import { viewerQuery } from '@/features/auth/queries'
+import { getAuthConfig } from '@/features/auth/server/auth-config'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { SITE } from '@/lib/site'
@@ -23,9 +26,23 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
     ],
   }),
-  component: () => <Outlet />,
+  loader: async ({ context }) => {
+    const [config] = await Promise.all([getAuthConfig(), context.queryClient.ensureQueryData(viewerQuery())])
+    return config
+  },
+  staleTime: Number.POSITIVE_INFINITY,
+  component: RootComponent,
   shellComponent: RootDocument,
 })
+
+function RootComponent() {
+  const { google } = Route.useLoaderData()
+  return (
+    <AuthUiProvider google={google}>
+      <Outlet />
+    </AuthUiProvider>
+  )
+}
 
 function RootDocument({ children }: { children: ReactNode }) {
   return (

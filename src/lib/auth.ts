@@ -1,7 +1,8 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { admin, emailOTP } from 'better-auth/plugins'
+import { admin, emailOTP, twoFactor } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
+import { eq } from 'drizzle-orm'
 import { getDb, schema } from '@/db/client'
 import { sendEmail } from '@/emails/send-email'
 import { adminEmails, env } from './env'
@@ -31,6 +32,8 @@ function createAuth() {
         '/sign-in/email': { window: 60, max: 10 },
         '/sign-up/email': { window: 60, max: 5 },
         '/request-password-reset': { window: 60, max: 3 },
+        '/two-factor/verify-totp': { window: 60, max: 5 },
+        '/two-factor/verify-backup-code': { window: 60, max: 5 },
       },
     },
     advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'] } },
@@ -63,9 +66,26 @@ function createAuth() {
         await sendEmail({ to: user.email, template: 'verifyEmail', data: { url } })
       },
     },
+    user: {
+      changeEmail: {
+        enabled: true,
+        sendChangeEmailConfirmation: async ({ user, newEmail, url }) => {
+          await sendEmail({ to: user.email, template: 'confirmEmailChange', data: { url, newEmail } })
+        },
+      },
+    },
     account: { accountLinking: { enabled: true, trustedProviders: ['google', 'email-otp'] } },
     databaseHooks: {
       user: {
+        update: {
+          // Keep the worker profile's contact email in sync with the login email.
+          after: async (user) => {
+            await getDb()
+              .update(schema.workerProfile)
+              .set({ email: user.email })
+              .where(eq(schema.workerProfile.userId, user.id))
+          },
+        },
         create: {
           before: async (user) => {
             const isAdmin = adminEmails().includes(user.email.toLowerCase())
@@ -92,6 +112,7 @@ function createAuth() {
         },
       }),
       admin({ defaultRole: 'worker', adminRoles: ['admin'] }),
+      twoFactor({ issuer: env.APP_NAME }),
       tanstackStartCookies(),
     ],
   })

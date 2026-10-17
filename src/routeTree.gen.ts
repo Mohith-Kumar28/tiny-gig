@@ -26,7 +26,10 @@ import { Route as AppAppRouteImport } from './routes/_app/app'
 import { Route as AppOnboardingRouteImport } from './routes/_app/onboarding'
 import { Route as AppPendingRouteImport } from './routes/_app/pending'
 import { Route as AppWRouteImport } from './routes/_app/w'
+import { Route as AuthPathRouteImport } from './routes/auth/$path'
 import { Route as RCodeRouteImport } from './routes/r/$code'
+import { Route as AppAccountIndexRouteImport } from './routes/_app/account/index'
+import { Route as AppAccountPathRouteImport } from './routes/_app/account/$path'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
@@ -39,6 +42,8 @@ import { Route as AppWPaymentsRouteImport } from './routes/_app/w/payments'
 import { Route as AppWProfileRouteImport } from './routes/_app/w/profile'
 import { Route as AppWReferralsRouteImport } from './routes/_app/w/referrals'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiAvatarsIndexRouteImport } from './routes/api/avatars/index'
+import { Route as ApiAvatarsSplatRouteImport } from './routes/api/avatars/$'
 import { Route as ApiUploadsIndexRouteImport } from './routes/api/uploads/index'
 import { Route as ApiUploadsSplatRouteImport } from './routes/api/uploads/$'
 import { Route as AppAdminGigsIndexRouteImport } from './routes/_app/admin/gigs/index'
@@ -138,10 +143,25 @@ const AppWRoute = AppWRouteImport.update({
   path: '/w',
   getParentRoute: () => AppRoute,
 } as any)
+const AuthPathRoute = AuthPathRouteImport.update({
+  id: '/auth/$path',
+  path: '/auth/$path',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RCodeRoute = RCodeRouteImport.update({
   id: '/r/$code',
   path: '/r/$code',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AppAccountIndexRoute = AppAccountIndexRouteImport.update({
+  id: '/account/',
+  path: '/account/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAccountPathRoute = AppAccountPathRouteImport.update({
+  id: '/account/$path',
+  path: '/account/$path',
+  getParentRoute: () => AppRoute,
 } as any)
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
@@ -201,6 +221,16 @@ const AppWReferralsRoute = AppWReferralsRouteImport.update({
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAvatarsIndexRoute = ApiAvatarsIndexRouteImport.update({
+  id: '/api/avatars/',
+  path: '/api/avatars/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAvatarsSplatRoute = ApiAvatarsSplatRouteImport.update({
+  id: '/api/avatars/$',
+  path: '/api/avatars/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiUploadsIndexRoute = ApiUploadsIndexRouteImport.update({
@@ -292,7 +322,9 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof AppOnboardingRoute
   '/pending': typeof AppPendingRoute
   '/w': typeof AppWRouteWithChildren
+  '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
+  '/account/$path': typeof AppAccountPathRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -303,9 +335,12 @@ export interface FileRoutesByFullPath {
   '/w/profile': typeof AppWProfileRoute
   '/w/referrals': typeof AppWReferralsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
+  '/account/': typeof AppAccountIndexRoute
   '/admin/': typeof AppAdminIndexRoute
   '/w/': typeof AppWIndexRoute
+  '/api/avatars/': typeof ApiAvatarsIndexRoute
   '/api/uploads/': typeof ApiUploadsIndexRoute
   '/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
@@ -335,7 +370,9 @@ export interface FileRoutesByTo {
   '/app': typeof AppAppRoute
   '/onboarding': typeof AppOnboardingRoute
   '/pending': typeof AppPendingRoute
+  '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
+  '/account/$path': typeof AppAccountPathRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -346,9 +383,12 @@ export interface FileRoutesByTo {
   '/w/profile': typeof AppWProfileRoute
   '/w/referrals': typeof AppWReferralsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
+  '/account': typeof AppAccountIndexRoute
   '/admin': typeof AppAdminIndexRoute
   '/w': typeof AppWIndexRoute
+  '/api/avatars': typeof ApiAvatarsIndexRoute
   '/api/uploads': typeof ApiUploadsIndexRoute
   '/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
@@ -382,7 +422,9 @@ export interface FileRoutesById {
   '/_app/onboarding': typeof AppOnboardingRoute
   '/_app/pending': typeof AppPendingRoute
   '/_app/w': typeof AppWRouteWithChildren
+  '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
+  '/_app/account/$path': typeof AppAccountPathRoute
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
@@ -393,9 +435,12 @@ export interface FileRoutesById {
   '/_app/w/profile': typeof AppWProfileRoute
   '/_app/w/referrals': typeof AppWReferralsRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
+  '/_app/account/': typeof AppAccountIndexRoute
   '/_app/admin/': typeof AppAdminIndexRoute
   '/_app/w/': typeof AppWIndexRoute
+  '/api/avatars/': typeof ApiAvatarsIndexRoute
   '/api/uploads/': typeof ApiUploadsIndexRoute
   '/_app/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/_app/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
@@ -429,7 +474,9 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/pending'
     | '/w'
+    | '/auth/$path'
     | '/r/$code'
+    | '/account/$path'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -440,9 +487,12 @@ export interface FileRouteTypes {
     | '/w/profile'
     | '/w/referrals'
     | '/api/auth/$'
+    | '/api/avatars/$'
     | '/api/uploads/$'
+    | '/account/'
     | '/admin/'
     | '/w/'
+    | '/api/avatars/'
     | '/api/uploads/'
     | '/admin/gigs/new'
     | '/admin/referrals/programs'
@@ -472,7 +522,9 @@ export interface FileRouteTypes {
     | '/app'
     | '/onboarding'
     | '/pending'
+    | '/auth/$path'
     | '/r/$code'
+    | '/account/$path'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -483,9 +535,12 @@ export interface FileRouteTypes {
     | '/w/profile'
     | '/w/referrals'
     | '/api/auth/$'
+    | '/api/avatars/$'
     | '/api/uploads/$'
+    | '/account'
     | '/admin'
     | '/w'
+    | '/api/avatars'
     | '/api/uploads'
     | '/admin/gigs/new'
     | '/admin/referrals/programs'
@@ -518,7 +573,9 @@ export interface FileRouteTypes {
     | '/_app/onboarding'
     | '/_app/pending'
     | '/_app/w'
+    | '/auth/$path'
     | '/r/$code'
+    | '/_app/account/$path'
     | '/_app/admin/applicants'
     | '/_app/admin/emails'
     | '/_app/admin/payouts'
@@ -529,9 +586,12 @@ export interface FileRouteTypes {
     | '/_app/w/profile'
     | '/_app/w/referrals'
     | '/api/auth/$'
+    | '/api/avatars/$'
     | '/api/uploads/$'
+    | '/_app/account/'
     | '/_app/admin/'
     | '/_app/w/'
+    | '/api/avatars/'
     | '/api/uploads/'
     | '/_app/admin/gigs/new'
     | '/_app/admin/referrals/programs'
@@ -560,9 +620,12 @@ export interface RootRouteChildren {
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  AuthPathRoute: typeof AuthPathRoute
   RCodeRoute: typeof RCodeRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
+  ApiAvatarsSplatRoute: typeof ApiAvatarsSplatRoute
   ApiUploadsSplatRoute: typeof ApiUploadsSplatRoute
+  ApiAvatarsIndexRoute: typeof ApiAvatarsIndexRoute
   ApiUploadsIndexRoute: typeof ApiUploadsIndexRoute
 }
 
@@ -687,12 +750,33 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWRouteImport
       parentRoute: typeof AppRoute
     }
+    '/auth/$path': {
+      id: '/auth/$path'
+      path: '/auth/$path'
+      fullPath: '/auth/$path'
+      preLoaderRoute: typeof AuthPathRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/r/$code': {
       id: '/r/$code'
       path: '/r/$code'
       fullPath: '/r/$code'
       preLoaderRoute: typeof RCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_app/account/': {
+      id: '/_app/account/'
+      path: '/account'
+      fullPath: '/account/'
+      preLoaderRoute: typeof AppAccountIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/account/$path': {
+      id: '/_app/account/$path'
+      path: '/account/$path'
+      fullPath: '/account/$path'
+      preLoaderRoute: typeof AppAccountPathRouteImport
+      parentRoute: typeof AppRoute
     }
     '/_app/admin/': {
       id: '/_app/admin/'
@@ -776,6 +860,20 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/$'
       fullPath: '/api/auth/$'
       preLoaderRoute: typeof ApiAuthSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/avatars/': {
+      id: '/api/avatars/'
+      path: '/api/avatars'
+      fullPath: '/api/avatars/'
+      preLoaderRoute: typeof ApiAvatarsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/avatars/$': {
+      id: '/api/avatars/$'
+      path: '/api/avatars/$'
+      fullPath: '/api/avatars/$'
+      preLoaderRoute: typeof ApiAvatarsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/uploads/': {
@@ -949,6 +1047,8 @@ interface AppRouteChildren {
   AppOnboardingRoute: typeof AppOnboardingRoute
   AppPendingRoute: typeof AppPendingRoute
   AppWRoute: typeof AppWRouteWithChildren
+  AppAccountPathRoute: typeof AppAccountPathRoute
+  AppAccountIndexRoute: typeof AppAccountIndexRoute
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -957,6 +1057,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppOnboardingRoute: AppOnboardingRoute,
   AppPendingRoute: AppPendingRoute,
   AppWRoute: AppWRouteWithChildren,
+  AppAccountPathRoute: AppAccountPathRoute,
+  AppAccountIndexRoute: AppAccountIndexRoute,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -974,9 +1076,12 @@ const rootRouteChildren: RootRouteChildren = {
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  AuthPathRoute: AuthPathRoute,
   RCodeRoute: RCodeRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
+  ApiAvatarsSplatRoute: ApiAvatarsSplatRoute,
   ApiUploadsSplatRoute: ApiUploadsSplatRoute,
+  ApiAvatarsIndexRoute: ApiAvatarsIndexRoute,
   ApiUploadsIndexRoute: ApiUploadsIndexRoute,
 }
 export const routeTree = rootRouteImport

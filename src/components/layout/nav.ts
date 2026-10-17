@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   Briefcase,
+  CircleUserRound,
   ClipboardCheck,
   Gift,
   Inbox,
@@ -20,6 +21,8 @@ export type NavItem = {
   icon: LucideIcon
   exact?: boolean
   badgeKey?: string
+  /** Path prefix that marks this item active (defaults to `to`). */
+  match?: string
 }
 
 export const WORKER_NAV: NavItem[] = [
@@ -28,7 +31,8 @@ export const WORKER_NAV: NavItem[] = [
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
   { to: '/w/payments', label: 'Payments', icon: Wallet },
   { to: '/w/referrals', label: 'Referrals', icon: Gift },
-  { to: '/w/profile', label: 'Profile', icon: UserRound },
+  { to: '/w/profile', label: 'Work profile', icon: UserRound },
+  { to: '/account/settings', label: 'Account', icon: CircleUserRound, match: '/account' },
 ]
 
 export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
@@ -54,6 +58,7 @@ export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
       { to: '/admin/payouts', label: 'Payouts', icon: Wallet },
       { to: '/admin/emails', label: 'Email log', icon: Mail },
       { to: '/admin/settings', label: 'Settings', icon: Settings },
+      { to: '/account/settings', label: 'Account', icon: CircleUserRound, match: '/account' },
     ],
   },
 ]

@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
-import { LogOut, UserRound } from 'lucide-react'
+import { CircleUserRound, LogOut, ShieldCheck, UserRound } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -44,10 +44,20 @@ export function UserMenu({ viewer }: { viewer: Viewer }) {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Signed in as {viewer.user.role === 'admin' ? 'admin' : 'worker'}
             </DropdownMenuLabel>
-            {isWorker ? (
+            <DropdownMenuItem asChild>
+              <Link to="/account/$path" params={{ path: 'settings' }}>
+                <CircleUserRound /> Account
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link to="/account/$path" params={{ path: 'security' }}>
+                <ShieldCheck /> Security
+              </Link>
+            </DropdownMenuItem>
+            {isWorker && viewer.profileStatus === 'approved' ? (
               <DropdownMenuItem asChild>
                 <Link to="/w/profile">
-                  <UserRound /> Profile
+                  <UserRound /> Work profile
                 </Link>
               </DropdownMenuItem>
             ) : null}

@@ -1,6 +1,6 @@
 import { Menu } from 'lucide-react'
 import { Container } from './container'
-import { CtaLink } from './cta-link'
+import { HeaderAuth } from './header-auth'
 import { Logo } from './logo'
 
 const NAV = [
@@ -28,12 +28,7 @@ export function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1 sm:gap-2">
-          <a href="/login" className={`${linkClass} hidden sm:inline-flex`}>
-            Sign in
-          </a>
-          <CtaLink href="/login" className="h-9 px-4 sm:h-10 sm:px-5">
-            Apply now
-          </CtaLink>
+          <HeaderAuth />
           {/* CSS-only mobile menu */}
           <details className="group relative md:hidden">
             <summary
@@ -46,7 +41,7 @@ export function SiteHeader() {
               aria-label="Mobile"
               className="absolute right-0 top-12 flex w-52 flex-col rounded-2xl border bg-popover p-2 text-popover-foreground shadow-[0_20px_50px_-20px_oklch(0.3_0.05_50/0.35)]"
             >
-              {[...NAV, { href: '/login', label: 'Sign in' }].map((item) => (
+              {NAV.map((item) => (
                 <a key={item.href} href={item.href} className="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-accent">
                   {item.label}
                 </a>

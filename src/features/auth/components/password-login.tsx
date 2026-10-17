@@ -53,7 +53,7 @@ export function PasswordLogin({ redirectTo }: { redirectTo?: string }) {
         setSentTo({ email: value, kind: 'verify' })
         return
       }
-      const { error } = await authClient.signIn.email({ email: value, password, callbackURL })
+      const { data, error } = await authClient.signIn.email({ email: value, password, callbackURL })
       if (error) {
         if (error.code === 'EMAIL_NOT_VERIFIED') {
           setSentTo({ email: value, kind: 'verify' })
@@ -65,6 +65,8 @@ export function PasswordLogin({ redirectTo }: { redirectTo?: string }) {
             : (error.message ?? 'Could not sign in'),
         )
       }
+      // Accounts with 2FA continue on /auth/two-factor (the client plugin redirects there).
+      if (data && 'twoFactorRedirect' in data && data.twoFactorRedirect) return
       await finish()
     } finally {
       setBusy(false)

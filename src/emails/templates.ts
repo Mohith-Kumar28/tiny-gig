@@ -29,6 +29,15 @@ export const emailTemplates = {
     footerNote: "If you didn't create a TinyGig account, you can ignore this email.",
   }),
 
+  confirmEmailChange: (d: { url: string; newEmail: string }, _ctx: Ctx): Content => ({
+    subject: 'Confirm your new TinyGig email',
+    preview: `Approve changing your login email to ${d.newEmail}.`,
+    heading: 'Confirm email change',
+    paragraphs: [`Someone asked to change your TinyGig login email to ${d.newEmail}. If this was you, confirm below.`],
+    cta: { label: 'Confirm change', href: d.url },
+    footerNote: "If you didn't ask for this, ignore this email and your email stays the same.",
+  }),
+
   resetPassword: (d: { url: string }, _ctx: Ctx): Content => ({
     subject: 'Reset your TinyGig password',
     preview: 'Set a new password. This link expires in 1 hour.',
