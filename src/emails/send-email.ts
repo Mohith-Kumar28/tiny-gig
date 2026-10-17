@@ -43,21 +43,21 @@ export async function sendEmail<T extends EmailTemplateName>({ to, template, dat
   const results = await Promise.allSettled(
     recipients.map((r) => resend.emails.send({ from: env.EMAIL_FROM, to: r, subject, html, text })),
   )
-  await db.insert(schema.emailLog).values(
-    results.map((res, i) => {
-      const ok = res.status === 'fulfilled' && !res.value.error
-      const error =
-        res.status === 'rejected' ? String(res.reason) : res.value.error ? res.value.error.message : null
-      return {
-        to: recipients[i],
-        template,
-        subject,
-        status: ok ? ('sent' as const) : ('failed' as const),
-        providerId: res.status === 'fulfilled' ? (res.value.data?.id ?? null) : null,
-        error,
-      }
-    }),
-  )
+  const rows = results.map((res, i) => {
+    const ok = res.status === 'fulfilled' && !res.value.error
+    const error = res.status === 'rejected' ? String(res.reason) : res.value.error ? res.value.error.message : null
+    return {
+      to: recipients[i] as string,
+      template,
+      subject,
+      status: ok ? ('sent' as const) : ('failed' as const),
+      providerId: res.status === 'fulfilled' ? (res.value.data?.id ?? null) : null,
+      error,
+    }
+  })
+  await db.insert(schema.emailLog).values(rows)
+  const failed = rows.find((r) => r.status === 'failed')
+  if (failed) throw new Error(`Email could not be sent: ${failed.error ?? 'unknown error'}`)
 }
 
 /** Fire-and-forget: keeps the request fast, the Worker finishes sending after the response. */

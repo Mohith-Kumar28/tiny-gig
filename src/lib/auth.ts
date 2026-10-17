@@ -3,7 +3,7 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { admin, emailOTP } from 'better-auth/plugins'
 import { tanstackStartCookies } from 'better-auth/tanstack-start'
 import { getDb, schema } from '@/db/client'
-import { queueEmail } from '@/emails/send-email'
+import { sendEmail } from '@/emails/send-email'
 import { adminEmails, env } from './env'
 
 function createAuth() {
@@ -56,8 +56,16 @@ function createAuth() {
       emailOTP({
         otpLength: 6,
         expiresIn: 60 * 10,
+        // Sent inline (not queued) so a delivery failure surfaces on the login screen.
         sendVerificationOTP: async ({ email, otp, type }) => {
-          queueEmail({ to: email, template: 'otp', data: { otp, type } })
+          try {
+            await sendEmail({ to: email, template: 'otp', data: { otp, type } })
+          } catch (err) {
+            if (env.APP_URL.startsWith('http://localhost')) {
+              console.warn(`[dev] Email failed; sign-in code for ${email} is ${otp}`)
+            }
+            throw err
+          }
         },
       }),
       admin({ defaultRole: 'worker', adminRoles: ['admin'] }),
