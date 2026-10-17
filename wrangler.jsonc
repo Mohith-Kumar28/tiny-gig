@@ -14,7 +14,7 @@
 	"observability": { "enabled": true },
 	"upload_source_maps": true,
 	"vars": {
-		"APP_URL": "http://localhost:3000",
+		"APP_URL": "https://tinygig.mohithkumar808.workers.dev",
 		"APP_NAME": "TinyGig",
 		"EMAIL_FROM": "TinyGig <hello@tinygig.in>",
 		"ADMIN_EMAILS": "mohith@tokgency.com"
@@ -23,11 +23,11 @@
 		{
 			"binding": "DB",
 			"database_name": "tinygig-db",
-			"database_id": "00000000-0000-0000-0000-000000000000",
+			"database_id": "20ba147e-3cf0-4df0-bc84-efb200ca5443",
 			"migrations_dir": "drizzle"
 		}
 	],
-	"kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000000" }],
+	"kv_namespaces": [{ "binding": "CACHE", "id": "d58126541e1c4277988dcbabe1e8d359" }],
 	"r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "tinygig-uploads" }],
 	"triggers": { "crons": ["*/15 * * * *"] }
 }

@@ -3,3 +3,6 @@ GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
 # Leave empty in dev to log emails (and OTP codes) to the console instead of sending.
 RESEND_API_KEY=
+
+# Local override of the production APP_URL in wrangler.jsonc
+APP_URL=http://localhost:3000
