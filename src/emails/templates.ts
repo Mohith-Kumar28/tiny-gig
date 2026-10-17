@@ -20,6 +20,24 @@ export const emailTemplates = {
     footerNote: "If you didn't request this, you can safely ignore this email.",
   }),
 
+  verifyEmail: (d: { url: string }, _ctx: Ctx): Content => ({
+    subject: 'Confirm your email for TinyGig',
+    preview: 'One click to confirm your email address.',
+    heading: 'Confirm your email',
+    paragraphs: ['Click the button below to confirm your email and finish creating your TinyGig account.'],
+    cta: { label: 'Confirm email', href: d.url },
+    footerNote: "If you didn't create a TinyGig account, you can ignore this email.",
+  }),
+
+  resetPassword: (d: { url: string }, _ctx: Ctx): Content => ({
+    subject: 'Reset your TinyGig password',
+    preview: 'Set a new password. This link expires in 1 hour.',
+    heading: 'Reset your password',
+    paragraphs: ['Click the button below to choose a new password. The link expires in 1 hour.'],
+    cta: { label: 'Set new password', href: d.url },
+    footerNote: "If you didn't ask to reset your password, you can ignore this email. Your password won't change.",
+  }),
+
   applicationReceived: (d: { name: string }, ctx: Ctx): Content => ({
     subject: 'We received your TinyGig application',
     preview: "Thanks for applying — we'll review it shortly.",

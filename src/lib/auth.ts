@@ -28,6 +28,9 @@ function createAuth() {
       customRules: {
         '/email-otp/send-verification-otp': { window: 60, max: 3 },
         '/sign-in/email-otp': { window: 60, max: 10 },
+        '/sign-in/email': { window: 60, max: 10 },
+        '/sign-up/email': { window: 60, max: 5 },
+        '/request-password-reset': { window: 60, max: 3 },
       },
     },
     advanced: { ipAddress: { ipAddressHeaders: ['cf-connecting-ip', 'x-forwarded-for'] } },
@@ -40,6 +43,26 @@ function createAuth() {
           },
         }
       : {},
+    emailAndPassword: {
+      enabled: true,
+      minPasswordLength: 8,
+      maxPasswordLength: 128,
+      requireEmailVerification: true,
+      revokeSessionsOnPasswordReset: true,
+      resetPasswordTokenExpiresIn: 60 * 60,
+      sendResetPassword: async ({ user, url }) => {
+        await sendEmail({ to: user.email, template: 'resetPassword', data: { url } })
+      },
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      sendOnSignIn: true,
+      autoSignInAfterVerification: true,
+      expiresIn: 60 * 60 * 24,
+      sendVerificationEmail: async ({ user, url }) => {
+        await sendEmail({ to: user.email, template: 'verifyEmail', data: { url } })
+      },
+    },
     account: { accountLinking: { enabled: true, trustedProviders: ['google', 'email-otp'] } },
     databaseHooks: {
       user: {
