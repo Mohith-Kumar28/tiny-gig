@@ -156,7 +156,7 @@ export function WorkerOverview({ overview, earnings }: { overview: Overview; ear
                       <p className="truncate text-sm font-medium">{t.title}</p>
                       <div className="flex flex-wrap items-center gap-2">
                         <StatusBadge status={t.status} />
-                        <TaskWhen task={{ ...t, submittedAt: null }} />
+                        <TaskWhen task={t} />
                       </div>
                     </div>
                     <Money paise={t.payoutAmount} className="shrink-0 text-sm" />

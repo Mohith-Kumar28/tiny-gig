@@ -50,7 +50,7 @@ function MyWorkPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="My work" description="Every gig you've claimed, with its status and deadline." />
+      <PageHeader title="My work" />
       <Tabs value={tab} onValueChange={(v) => navigate({ search: { tab: v === 'active' ? undefined : (v as MyWorkTab) }, replace: true })}>
         <div className="-mx-3 overflow-x-auto px-3 [scrollbar-width:none] sm:mx-0 sm:px-0">
           <TabsList>

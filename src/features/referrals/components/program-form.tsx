@@ -29,7 +29,7 @@ function Section({ title, description, children }: { title: string; description?
         <h3 className="text-sm font-semibold">{title}</h3>
         {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid items-start gap-4 sm:grid-cols-2">{children}</div>
     </section>
   )
 }
@@ -162,7 +162,7 @@ export function ProgramForm({
                 />
               </Section>
 
-              <Section title="When a referred worker…" description="The milestone each referred worker has to reach to count.">
+              <Section title="When a referred worker…">
                 <FormField
                   control={form.control}
                   name="trigger"
@@ -208,7 +208,7 @@ export function ProgramForm({
                 ) : null}
               </Section>
 
-              <Section title="How many referred workers" description="Qualifying referrals needed for one referrer reward.">
+              <Section title="How many referred workers">
                 <FormField
                   control={form.control}
                   name="threshold"
@@ -224,7 +224,7 @@ export function ProgramForm({
                 />
               </Section>
 
-              <Section title="Rewards" description="Either can be ₹0, but not both.">
+              <Section title="Rewards">
                 <FormField
                   control={form.control}
                   name="referrerRewardRupees"
@@ -255,7 +255,7 @@ export function ProgramForm({
                 />
               </Section>
 
-              <Section title="Repeat" description="Whether referrers can earn this more than once.">
+              <Section title="Repeat">
                 <FormField
                   control={form.control}
                   name="repeatMode"
@@ -298,7 +298,7 @@ export function ProgramForm({
                 ) : null}
               </Section>
 
-              <Section title="Limits" description="All optional. The date window applies to when the referred worker joined.">
+              <Section title="Limits">
                 <FormField
                   control={form.control}
                   name="qualifyWithinDays"

@@ -94,7 +94,7 @@ function EmailChipsInput({ value, onChange, id }: { value: string[]; onChange: (
 
 function Group({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="grid gap-x-8 gap-y-4 border-t py-6 first:border-t-0 first:pt-0 md:grid-cols-[220px_1fr]">
+    <section className="space-y-4 border-t py-6 first:border-t-0 first:pt-0">
       <div className="space-y-1">
         <h2 className="text-sm font-semibold">{title}</h2>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
@@ -104,12 +104,12 @@ function Group({ title, description, children }: { title: string; description?: 
   )
 }
 
-function SwitchRow({ label, description, checked, onChange }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void }) {
+function SwitchRow({ label, description, checked, onChange }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <FormItem className="flex items-start justify-between gap-4 rounded-lg border p-3">
+    <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3">
       <div className="space-y-0.5">
         <FormLabel>{label}</FormLabel>
-        <FormDescription>{description}</FormDescription>
+        {description ? <FormDescription>{description}</FormDescription> : null}
       </div>
       <FormControl>
         <Switch checked={checked} onCheckedChange={onChange} />
@@ -119,9 +119,9 @@ function SwitchRow({ label, description, checked, onChange }: { label: string; d
 }
 
 const ALERT_OPTIONS = [
-  { value: 'immediate', label: 'Immediately', hint: 'One email per new submission' },
-  { value: 'digest', label: 'Digest', hint: 'Batched summary of new submissions' },
-  { value: 'off', label: 'Off', hint: 'Check the review inbox yourself' },
+  { value: 'immediate', label: 'Every submission', hint: '' },
+  { value: 'digest', label: 'Daily digest', hint: '' },
+  { value: 'off', label: 'Off', hint: '' },
 ] as const
 
 export function SettingsForm({ initial }: { initial: AppSettings }) {
@@ -134,20 +134,20 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
     invalidate: [['admin', 'settings']],
     onSuccess: (r) => form.reset(r),
   })
-  const num = (name: 'reminderHoursBefore' | 'defaultClaimWindowHours' | 'defaultLiveHoldHours', label: string, description: string, suffix: string) => (
+  const num = (name: 'reminderHoursBefore' | 'defaultClaimWindowHours' | 'defaultLiveHoldHours', label: string, description: string | null, suffix: string) => (
     <FormField
       control={form.control}
       name={name}
       render={({ field }) => (
         <FormItem>
           <FormLabel>{label}</FormLabel>
-          <div className="flex max-w-48 items-center gap-2">
+          <div className="flex items-center gap-2">
             <FormControl>
-              <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
+              <Input type="number" inputMode="numeric" min={0} className="w-24 tabular" {...field} value={field.value as never} />
             </FormControl>
-            <span className="text-sm text-muted-foreground">{suffix}</span>
+            <span className="whitespace-nowrap text-sm text-muted-foreground">{suffix}</span>
           </div>
-          <FormDescription>{description}</FormDescription>
+          {description ? <FormDescription>{description}</FormDescription> : null}
           <FormMessage />
         </FormItem>
       )}
@@ -157,7 +157,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((v) => save.mutate(v))} noValidate className="rounded-xl border bg-card p-4 sm:p-6">
-        <Group title="Admin alerts" description="Who gets notified, and how often. Admin emails from the environment always get alerts.">
+        <Group title="Admin alerts">
           <FormField
             control={form.control}
             name="alertEmails"
@@ -167,7 +167,6 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
                 <FormControl>
                   <EmailChipsInput value={field.value} onChange={field.onChange} />
                 </FormControl>
-                <FormDescription>Press Enter or comma to add. Up to 20.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -177,19 +176,16 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             name="submissionAlerts"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>New submission alerts</FormLabel>
+                <FormLabel>Submission emails</FormLabel>
                 <FormControl>
                   <RadioGroup value={field.value} onValueChange={field.onChange} className="grid gap-2 sm:grid-cols-3">
                     {ALERT_OPTIONS.map((o) => (
                       <label
                         key={o.value}
-                        className="flex cursor-pointer items-start gap-2.5 rounded-lg border p-3 has-[[data-state=checked]]:border-primary/50 has-[[data-state=checked]]:bg-primary/[0.04]"
+                        className="flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 has-[[data-state=checked]]:border-primary/50 has-[[data-state=checked]]:bg-primary/[0.04]"
                       >
-                        <RadioGroupItem value={o.value} className="mt-0.5" />
-                        <span className="space-y-0.5">
-                          <span className="block text-sm font-medium">{o.label}</span>
-                          <span className="block text-xs text-muted-foreground">{o.hint}</span>
-                        </span>
+                        <RadioGroupItem value={o.value} />
+                        <span className="text-sm font-medium">{o.label}</span>
                       </label>
                     ))}
                   </RadioGroup>
@@ -202,7 +198,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             control={form.control}
             name="applicantAlerts"
             render={({ field }) => (
-              <SwitchRow label="New applicant alerts" description="Email when someone applies to become a worker." checked={field.value} onChange={field.onChange} />
+              <SwitchRow label="Email me about new applicants" checked={field.value} onChange={field.onChange} />
             )}
           />
           <FormField
@@ -210,21 +206,20 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             name="dailyDigest"
             render={({ field }) => (
               <SwitchRow
-                label="Daily digest"
-                description="A morning summary: reviews waiting, live checks due, unpaid balance."
+                label="Morning summary email"
                 checked={field.value}
                 onChange={field.onChange}
               />
             )}
           />
         </Group>
-        <Group title="Worker reminders">
-          {num('reminderHoursBefore', 'Deadline reminder', 'Email workers this long before a claimed task expires. 0 turns reminders off.', 'hours before')}
+        <Group title="Reminders">
+          {num('reminderHoursBefore', 'Remind workers before deadline', '0 = no reminders', 'hours before')}
         </Group>
-        <Group title="New gig defaults" description="Pre-filled on the new gig form. Each gig can override them.">
-          <div className="grid gap-5 sm:grid-cols-2">
-            {num('defaultClaimWindowHours', 'Claim window', 'Time to submit proof after claiming.', 'hours')}
-            {num('defaultLiveHoldHours', 'Live hold', '0 = approve immediately.', 'hours')}
+        <Group title="New gig defaults">
+          <div className="grid items-start gap-5 sm:grid-cols-2">
+            {num('defaultClaimWindowHours', 'Time to submit', null, 'hours')}
+            {num('defaultLiveHoldHours', 'Keep live for', '0 = no live check', 'hours')}
           </div>
         </Group>
         <div className="flex items-center justify-end gap-3 border-t pt-4">

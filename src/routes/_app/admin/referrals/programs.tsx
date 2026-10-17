@@ -63,7 +63,7 @@ function ProgramsPage() {
         </Button>
         <PageHeader
           title="Referral programs"
-          description="Rules that turn referrals into rewards. Several programs can run at once; each one rewards independently."
+          description="Several programs can run at once."
           actions={
             <>
               {programs?.length && !needsReevaluate ? reevaluateButton('outline') : null}

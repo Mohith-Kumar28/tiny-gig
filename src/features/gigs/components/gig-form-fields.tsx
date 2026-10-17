@@ -168,7 +168,6 @@ export function ChecklistEditor({ value, onChange }: { value: string[]; onChange
           <Plus /> Add
         </Button>
       </div>
-      <p className="pl-6.5 text-xs text-muted-foreground">Reviewers tick these off while reviewing. Alt + ↑/↓ reorders.</p>
     </div>
   )
 }

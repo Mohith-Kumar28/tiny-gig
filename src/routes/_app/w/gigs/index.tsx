@@ -34,7 +34,6 @@ function FindGigsPage() {
     <div className="space-y-5">
       <PageHeader
         title="Find gigs"
-        description="Pick a gig, claim a slot, then post and submit your link before the deadline."
       />
       <WorkerGigFilters search={search} onChange={onChange} />
       <p className="text-sm text-muted-foreground" aria-live="polite">
@@ -57,7 +56,7 @@ function FindGigsPage() {
         <EmptyState
           icon={SearchX}
           title="No gigs match right now"
-          description="New gigs are posted often. Try clearing filters, or check back later. We'll email you when new gigs go live."
+          description="Try clearing filters, or check back later."
           action={
             <Button variant="outline" onClick={() => navigate({ search: {} })}>
               Clear filters

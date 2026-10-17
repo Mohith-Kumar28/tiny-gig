@@ -19,9 +19,9 @@ export const Route = createFileRoute('/_app/admin/settings')({
 function SettingsPage() {
   const { data: settings } = useSuspenseQuery(settingsQuery())
   return (
-    <div className="max-w-5xl space-y-10">
+    <div className="max-w-4xl space-y-10">
       <div className="space-y-6">
-        <PageHeader title="Settings" description="Alerts, reminders and defaults for new gigs." />
+        <PageHeader title="Settings" />
         <SettingsForm initial={settings} />
       </div>
       <ReviewTemplatesManager />

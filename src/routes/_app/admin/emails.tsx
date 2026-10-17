@@ -33,7 +33,7 @@ function EmailLogPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Email log" description="Every email TinyGig has sent or tried to send. Hover a failed status to see the error." />
+      <PageHeader title="Email log" />
       <DataTable<EmailRow>
         columns={emailColumns}
         data={data}

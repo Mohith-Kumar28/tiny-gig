@@ -22,7 +22,7 @@ function NewGigPage() {
             <ArrowLeft /> Gigs
           </Link>
         </Button>
-        <PageHeader title="New gig" description="Save as a draft to finish later, or publish to open it to workers now." />
+        <PageHeader title="New gig" />
       </div>
       <GigForm
         initial={{ claimWindowHours: settings.defaultClaimWindowHours, liveHoldHours: settings.defaultLiveHoldHours }}

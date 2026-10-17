@@ -142,6 +142,7 @@ export const getWorkerOverview = createServerFn({ method: 'GET' })
           id: submission.id,
           status: submission.status,
           dueAt: submission.dueAt,
+          submittedAt: submission.submittedAt,
           liveCheckAt: submission.liveCheckAt,
           payoutAmount: submission.payoutAmount,
           title: gig.title,

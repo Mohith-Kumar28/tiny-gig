@@ -130,15 +130,11 @@ function GigDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 divide-x divide-y overflow-hidden rounded-xl border bg-card sm:grid-cols-4 sm:divide-y-0 xl:grid-cols-8 [&>*]:border-border">
-        <Kpi label="Slots claimed" value={<SlotsBar claimed={g.claimedSlots} total={g.totalSlots} className="w-full max-w-28 [&>div:first-child]:text-base" />} />
-        <Kpi label="Waiting review" value={formatNumber(waiting)} tone={waiting ? 'attention' : undefined} hint={counts.resubmitted ? `${counts.resubmitted} resubmitted` : undefined} />
-        <Kpi label="Live check" value={formatNumber(counts.live_check ?? 0)} hint={g.liveHoldHours ? `${formatHours(g.liveHoldHours)} hold` : 'No hold'} />
+      <div className="grid grid-cols-2 divide-x divide-y overflow-hidden rounded-xl border bg-card sm:grid-cols-4 sm:divide-y-0 [&>*]:border-border">
+        <Kpi label="Slots" value={<SlotsBar claimed={g.claimedSlots} total={g.totalSlots} className="w-full max-w-28 [&>div:first-child]:text-base" />} />
+        <Kpi label="To review" value={formatNumber(waiting)} tone={waiting ? 'attention' : undefined} />
         <Kpi label="Approved" value={formatNumber(approved)} />
-        <Kpi label="Rejected" value={formatNumber(counts.rejected ?? 0)} hint={counts.changes_requested ? `${counts.changes_requested} fixing` : undefined} />
-        <Kpi label="Expired" value={formatNumber(counts.expired ?? 0)} hint={counts.claimed ? `${counts.claimed} in progress` : undefined} />
-        <Kpi label="Payout / task" value={<Money paise={g.payoutAmount} />} />
-        <Kpi label="Committed spend" value={<Money paise={approved * g.payoutAmount} />} hint={`of ${formatMoney(g.totalSlots * g.payoutAmount)} budget`} />
+        <Kpi label="Spent" value={<Money paise={approved * g.payoutAmount} />} hint={`of ${formatMoney(g.totalSlots * g.payoutAmount)}`} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">

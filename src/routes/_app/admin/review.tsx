@@ -141,16 +141,17 @@ function ReviewInbox() {
   const filtersActive = Boolean(search.q || search.gigId || search.platform?.length)
 
   return (
-    <div className="-mx-3 -my-5 flex h-[calc(100dvh-3.25rem)] flex-col sm:-mx-6 sm:-my-6">
-      <div className="space-y-3 border-b px-3 pt-4 pb-3 sm:px-6">
+    <div className="-mx-4 -my-6 flex h-[calc(100dvh-3.25rem)] min-w-0 flex-col sm:-mx-6 lg:-mx-8">
+      <div className="min-w-0 space-y-3 border-b px-4 pt-4 pb-3 sm:px-6 lg:px-8">
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-2xl font-semibold tracking-tight">Review inbox</h1>
           <Button variant="ghost" size="sm" className="ml-auto text-muted-foreground" onClick={() => setHelp(true)}>
             <Keyboard /> Shortcuts
           </Button>
         </div>
-        <Tabs value={tab} onValueChange={(v) => onSearchChange({ tab: v === 'needs_review' ? undefined : v, selected: undefined })}>
-          <TabsList className="h-auto w-full justify-start overflow-x-auto bg-transparent p-0 [scrollbar-width:none]">
+        <Tabs className="min-w-0" value={tab} onValueChange={(v) => onSearchChange({ tab: v === 'needs_review' ? undefined : v, selected: undefined })}>
+          <div className="-mx-4 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+          <TabsList className="h-auto w-max justify-start bg-transparent p-0">
             {REVIEW_TABS.map((t) => (
               <TabsTrigger
                 key={t}
@@ -171,6 +172,7 @@ function ReviewInbox() {
               </TabsTrigger>
             ))}
           </TabsList>
+          </div>
         </Tabs>
         <div className="flex flex-wrap items-center gap-2">
           <DataTableSearch value={search.q} onChange={(q) => onSearchChange({ q, selected: undefined })} placeholder="Search worker, gig, link…" />
@@ -189,8 +191,8 @@ function ReviewInbox() {
         </div>
       </div>
 
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(320px,400px)_1fr]">
-        <div className="flex min-h-0 flex-col border-r">
+      <div className="grid min-h-0 flex-1 grid-cols-1 lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+        <div className="flex min-h-0 min-w-0 flex-col lg:border-r">
           <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
             <Checkbox
               checked={allChecked || (checked.size > 0 && 'indeterminate')}

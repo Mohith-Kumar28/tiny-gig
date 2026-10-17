@@ -56,7 +56,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((v) => save.mutate(v))} className="space-y-6" noValidate>
-        <FormSection title="About you" description="How we contact you about your work.">
+        <FormSection title="About you">
           <FormField
             control={form.control}
             name="fullName"
@@ -123,14 +123,13 @@ export function ProfileForm({ profile }: { profile: Profile }) {
                 <FormControl>
                   <Textarea rows={3} maxLength={500} placeholder="Topics you know well, communities you're active in…" {...field} />
                 </FormControl>
-                <FormDescription>Helps us match you to the right gigs.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
         </FormSection>
 
-        <FormSection title="Reddit account" description="Keep karma up to date. Some gigs need a minimum.">
+        <FormSection title="Reddit account">
           <FormField
             control={form.control}
             name="redditUrl"
@@ -173,7 +172,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           />
         </FormSection>
 
-        <FormSection title="Other socials" description="Optional. Unlocks gigs on these platforms.">
+        <FormSection title="Other socials">
           {SOCIALS.map((s) => (
             <FormField
               key={s.name}
@@ -193,7 +192,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
         </FormSection>
 
         <div id="payments" className="scroll-mt-20">
-          <FormSection title="Payments" description="Approved earnings are paid to this UPI ID.">
+          <FormSection title="Payments">
             <FormField
               control={form.control}
               name="upiId"
@@ -206,12 +205,9 @@ export function ProfileForm({ profile }: { profile: Profile }) {
                   {upiChanged ? (
                     <p className="flex items-start gap-2 rounded-md bg-warning/15 p-2.5 text-xs text-warning-foreground dark:text-warning">
                       <AlertTriangle className="mt-px size-3.5 shrink-0" />
-                      Future payouts will go to this new UPI ID. Payouts already being processed still go to {profile.upiId}. Double-check it is
-                      correct.
+                      Future payouts go to this new UPI ID. Double-check it.
                     </p>
-                  ) : (
-                    <FormDescription>Changing this only affects future payouts.</FormDescription>
-                  )}
+                  ) : null}
                   <FormMessage />
                 </FormItem>
               )}
@@ -219,7 +215,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </FormSection>
         </div>
 
-        <FormSection title="Email updates" description="Important account and payment emails are always sent.">
+        <FormSection title="Email updates">
           <FormField
             control={form.control}
             name="emailPrefs.newGigs"
@@ -227,7 +223,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
               <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
                 <div className="space-y-0.5">
                   <FormLabel>New gig alerts</FormLabel>
-                  <FormDescription>Email me when new gigs go live.</FormDescription>
+                  
                 </div>
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -242,7 +238,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
               <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
                 <div className="space-y-0.5">
                   <FormLabel>Deadline reminders</FormLabel>
-                  <FormDescription>Remind me before a claimed task is due.</FormDescription>
+                  
                 </div>
                 <FormControl>
                   <Switch checked={field.value} onCheckedChange={field.onChange} />
@@ -252,7 +248,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           />
         </FormSection>
 
-        <FormSection title="Referral code" description="Share it so friends can join with your code.">
+        <FormSection title="Referral code">
           <div className="flex items-center gap-2 rounded-lg border bg-muted/40 p-2 pl-3 sm:col-span-2">
             <span className="flex-1 font-mono text-sm font-semibold">{profile.ownReferralCode}</span>
             <span className="text-xs text-muted-foreground">{profile.referredCount} joined</span>

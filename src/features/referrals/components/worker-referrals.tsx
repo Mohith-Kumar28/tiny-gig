@@ -1,4 +1,4 @@
-import { Gift, Link2, Sparkles, Users } from 'lucide-react'
+import { Gift, Link2, Users } from 'lucide-react'
 import { CopyButton } from '@/components/shared/copy-button'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
@@ -35,7 +35,7 @@ export function WorkerReferrals({ data }: { data: Data }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Referrals" description="Invite friends who are active on Reddit. You both can earn rewards." />
+      <PageHeader title="Referrals" />
 
       <section className="overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
@@ -66,69 +66,47 @@ export function WorkerReferrals({ data }: { data: Data }) {
         </div>
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="space-y-3">
-          <h2 className="font-display text-lg font-semibold">Active programs</h2>
-          {data.programs.length ? (
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
-              {data.programs.map((p) => {
-                const pct = p.progress.target ? (p.progress.current / p.progress.target) * 100 : 0
-                return (
-                  <article key={p.id} className="space-y-3 rounded-xl border bg-card p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <h3 className="font-display font-semibold">{p.name}</h3>
-                      {p.referrerReward > 0 ? (
-                        <Money paise={p.referrerReward} className="shrink-0 font-display text-lg font-semibold text-primary" />
-                      ) : null}
-                    </div>
-                    {p.description ? <p className="text-sm text-muted-foreground">{p.description}</p> : null}
-                    <p className="text-sm">{describeProgram(p)}</p>
-                    {p.endsAt ? <p className="text-xs text-muted-foreground">Ends {formatDate(p.endsAt)}</p> : null}
+      <section className="space-y-3">
+        <h2 className="font-display text-lg font-semibold">Rewards you can earn</h2>
+        {data.programs.length ? (
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {data.programs.map((p) => {
+              const tracksReferrer = p.referrerReward > 0
+              const pct = p.progress.target ? (p.progress.current / p.progress.target) * 100 : 0
+              return (
+                <article key={p.id} className="space-y-3 rounded-xl border bg-card p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <h3 className="font-display font-semibold">{p.name}</h3>
+                    <Money
+                      paise={tracksReferrer ? p.referrerReward : p.refereeReward}
+                      className="shrink-0 font-display text-lg font-semibold text-primary"
+                    />
+                  </div>
+                  <p className="text-sm text-muted-foreground">{describeProgram(p)}</p>
+                  {p.endsAt ? <p className="text-xs text-muted-foreground">Ends {formatDate(p.endsAt)}</p> : null}
+                  {tracksReferrer ? (
                     <div className="space-y-1.5">
                       <div className="flex justify-between text-xs">
                         <span className="text-muted-foreground">
-                          {p.progress.done ? 'Completed' : 'Progress to next reward'}
+                          {p.progress.done ? 'Done' : p.progress.earned > 0 ? `Earned ${p.progress.earned} · next reward` : 'Next reward'}
                         </span>
                         <span className="font-medium tabular">
                           {p.progress.current} / {p.progress.target}
                         </span>
                       </div>
                       <Progress value={pct} className={cn('h-2', p.progress.done && '[&>*]:bg-success')} />
-                      {p.progress.earned > 0 ? (
-                        <p className="text-xs font-medium text-success">
-                          Earned {p.progress.earned} reward{p.progress.earned === 1 ? '' : 's'} from this program
-                        </p>
-                      ) : null}
                     </div>
-                  </article>
-                )
-              })}
-            </div>
-          ) : (
-            <EmptyState icon={Gift} title="No referral programs right now" description="You can still share your link. New programs will count people who join." />
-          )}
-        </section>
-
-        <aside className="space-y-3">
-          <h2 className="font-display text-lg font-semibold">How it works</h2>
-          <ol className="space-y-3 rounded-xl border bg-card p-4 text-sm">
-            {[
-              'Share your link or code with friends.',
-              'They apply on TinyGig and get approved.',
-              'When they reach a program milestone, you get a reward.',
-              'We verify the reward, then add it to your balance.',
-            ].map((s, i) => (
-              <li key={s} className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">{i + 1}</span>
-                <span className="pt-0.5">{s}</span>
-              </li>
-            ))}
-            <li className="flex gap-2 border-t pt-3 text-xs text-muted-foreground">
-              <Sparkles className="size-3.5 shrink-0" /> Fake or duplicate accounts are not counted.
-            </li>
-          </ol>
-        </aside>
-      </div>
+                  ) : (
+                    <p className="text-xs font-medium text-muted-foreground">Bonus for your friends</p>
+                  )}
+                </article>
+              )
+            })}
+          </div>
+        ) : (
+          <EmptyState icon={Gift} title="No referral programs right now" description="You can still share your link." />
+        )}
+      </section>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <section className="space-y-3">
@@ -151,7 +129,7 @@ export function WorkerReferrals({ data }: { data: Data }) {
               ))}
             </ul>
           ) : (
-            <EmptyState icon={Users} title="No one yet" description="Share your link. People who join with it will show up here." />
+            <EmptyState icon={Users} title="No one yet"  />
           )}
         </section>
 
@@ -173,7 +151,7 @@ export function WorkerReferrals({ data }: { data: Data }) {
               ))}
             </ul>
           ) : (
-            <EmptyState icon={Gift} title="No rewards yet" description="Rewards appear here once a referred friend hits a milestone." />
+            <EmptyState icon={Gift} title="No rewards yet"  />
           )}
         </section>
       </div>

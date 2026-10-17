@@ -39,7 +39,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit((v) => submit.mutate(v))} className="space-y-6" noValidate>
-        <FormSection title="About you" description="Used to contact you about your work and payments.">
+        <FormSection title="About you">
           <FormField
             control={form.control}
             name="fullName"
@@ -94,7 +94,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
           />
         </FormSection>
 
-        <FormSection title="Reddit account" description="Most gigs are on Reddit. We check your profile before approving.">
+        <FormSection title="Reddit account" description="We check your profile before approving.">
           <FormField
             control={form.control}
             name="redditUrl"
@@ -138,7 +138,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
           />
         </FormSection>
 
-        <FormSection title="Payments" description="Approved earnings are paid to this UPI ID.">
+        <FormSection title="Payments">
           <FormField
             control={form.control}
             name="upiId"
@@ -154,7 +154,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
           />
         </FormSection>
 
-        <FormSection title="Referral" description="Were you invited by a TinyGig worker?">
+        <FormSection title="Referral">
           <FormField
             control={form.control}
             name="referralCode"

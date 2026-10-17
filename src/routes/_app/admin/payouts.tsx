@@ -65,7 +65,6 @@ function PayoutsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Payouts"
-        description="Lock approved earnings into payouts, pay each worker over UPI outside the app, then mark them paid with the UTR."
       />
       <Tabs value={tab} onValueChange={(v) => navigate({ search: v === 'to_pay' ? {} : { tab: v as Tab }, replace: true })}>
         <TabsList>
@@ -128,14 +127,9 @@ function ToPay({ rows, total }: { rows: BalanceRow[] | undefined; total: number 
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard label="Owed to workers" value={<Money paise={total} />} icon={Wallet} tone={total ? 'attention' : 'default'} hint="Approved, not yet in a payout" />
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatCard label="Owed to workers" value={<Money paise={total} />} icon={Wallet} tone={total ? 'attention' : 'default'} />
         <StatCard label="Workers to pay" value={formatNumber(rows?.length ?? 0)} icon={HandCoins} />
-        <StatCard
-          label="Largest balance"
-          value={rows?.length ? <Money paise={Math.max(...rows.map((r) => r.total))} /> : '—'}
-          hint={rows?.length ? `Average ${formatMoney(Math.round(total / rows.length))}` : undefined}
-        />
       </div>
       <DataTable<BalanceRow>
         columns={balanceColumns}
@@ -157,7 +151,7 @@ function ToPay({ rows, total }: { rows: BalanceRow[] | undefined; total: number 
           <EmptyState
             icon={CheckCheck}
             title="Nothing to pay"
-            description="Approved gig earnings and approved referral rewards show up here."
+            description="Approved earnings will show up here."
             className="border-0 bg-transparent"
           />
         }
@@ -197,16 +191,14 @@ function PayoutList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <StatCard
-          label="Open (pending + processing)"
+          label="Not paid yet"
           value={<Money paise={data?.sums.pending ?? 0} />}
           icon={Clock}
           tone={data?.sums.pending ? 'attention' : 'default'}
-          hint="Created but not marked paid yet"
         />
         <StatCard label="Paid to date" value={<Money paise={data?.sums.paid ?? 0} />} icon={CheckCheck} tone="success" />
-        <StatCard label="In this view" value={formatNumber(data?.total ?? 0)} icon={Wallet} hint="Payouts matching the filters" />
       </div>
       <DataTable<PayoutRow>
         columns={payoutColumns}

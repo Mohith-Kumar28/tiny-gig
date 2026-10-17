@@ -30,7 +30,6 @@ export function WorkerPayments({ earnings, upiId }: { earnings: Earnings; upiId:
     <div className="space-y-6">
       <PageHeader
         title="Payments"
-        description="Approved earnings collect in your balance. We send payouts to your UPI by hand, and you get the UTR number as proof."
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

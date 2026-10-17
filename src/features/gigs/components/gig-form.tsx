@@ -11,7 +11,6 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
@@ -64,7 +63,7 @@ function Section({ title, description, children }: { title: string; description?
         <h2 className="text-sm font-semibold">{title}</h2>
         {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid items-start gap-4 sm:grid-cols-2">{children}</div>
     </section>
   )
 }
@@ -131,7 +130,7 @@ export function GigForm({
         className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
       >
         <div className="min-w-0 space-y-4">
-          <Section title="Task" description="What should the worker do, and where?">
+          <Section title="Task">
             <FormField
               control={form.control}
               name="title"
@@ -213,7 +212,7 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Target URL</FormLabel>
                   <FormControl>
-                    <Input inputMode="url" placeholder="https://… (post to comment on, optional)" {...field} value={field.value ?? ''} />
+                    <Input inputMode="url" placeholder="https://… (optional)" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -221,7 +220,7 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Brief" description="Workers see all of this on the gig page.">
+          <Section title="Brief">
             <FormField
               control={form.control}
               name="brief"
@@ -263,7 +262,7 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Reviewer checklist" description="What you check before approving.">
+          <Section title="Reviewer checklist">
             <FormField
               control={form.control}
               name="reviewChecklist"
@@ -302,9 +301,7 @@ export function GigForm({
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={Math.max(1, claimedSlots)} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
-                  <FormDescription>
-                    {claimedSlots ? `${claimedSlots} already claimed, can't go lower.` : 'How many workers can do this.'}
-                  </FormDescription>
+                  {claimedSlots ? <FormDescription>{claimedSlots} already claimed</FormDescription> : null}
                   <FormMessage />
                 </FormItem>
               )}
@@ -314,11 +311,10 @@ export function GigForm({
               name="claimWindowHours"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Claim window (hours)</FormLabel>
+                  <FormLabel>Time to submit (hours)</FormLabel>
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={1} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
-                  <FormDescription>Time to submit proof after claiming.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -328,24 +324,24 @@ export function GigForm({
               name="liveHoldHours"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Live hold (hours)</FormLabel>
+                  <FormLabel>Keep live for (hours)</FormLabel>
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
-                  <FormDescription>0 = approve immediately. Otherwise we re-check the post is still up.</FormDescription>
+                  <FormDescription>0 = no live check</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
           </Section>
 
-          <Section title="Requirements" description="Only workers who meet these can see and claim the gig.">
+          <Section title="Requirements">
             <FormField
               control={form.control}
               name="minKarma"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Minimum karma</FormLabel>
+                  <FormLabel>Min karma</FormLabel>
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
@@ -358,7 +354,7 @@ export function GigForm({
               name="minAccountAgeMonths"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Minimum account age (months)</FormLabel>
+                  <FormLabel>Min account age (months)</FormLabel>
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
@@ -375,7 +371,6 @@ export function GigForm({
                   <FormControl>
                     <StatesMultiSelect value={field.value} onChange={field.onChange} />
                   </FormControl>
-                  <FormDescription>Leave empty to allow workers from anywhere in India.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -388,11 +383,10 @@ export function GigForm({
               name="startsAt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Starts</FormLabel>
+                  <FormLabel>Starts (optional)</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>Empty = as soon as it's published.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -402,11 +396,10 @@ export function GigForm({
               name="endsAt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Ends</FormLabel>
+                  <FormLabel>Ends (optional)</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} value={field.value ?? ''} />
                   </FormControl>
-                  <FormDescription>Empty = runs until slots fill or you close it.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -416,33 +409,9 @@ export function GigForm({
               name="priority"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Priority (0–10)</FormLabel>
+                  <FormLabel>Priority (0–10, higher first)</FormLabel>
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={0} max={10} className="tabular" {...field} value={field.value as never} />
-                  </FormControl>
-                  <FormDescription>Higher shows first in the worker gig list.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </Section>
-
-          <Section title="Publishing">
-            <FormField
-              control={form.control}
-              name="status"
-              render={({ field }) => (
-                <FormItem className="sm:col-span-2">
-                  <FormLabel>Status</FormLabel>
-                  <FormControl>
-                    <RadioGroup value={field.value} onValueChange={field.onChange} className="flex flex-wrap gap-4">
-                      {(isDraft ? (['draft', 'live'] as const) : (['live', 'paused', 'closed'] as const)).map((s) => (
-                        <label key={s} className="flex cursor-pointer items-center gap-2 text-sm">
-                          <RadioGroupItem value={s} />
-                          {s === 'draft' ? 'Draft (hidden from workers)' : s === 'live' ? 'Live' : s === 'paused' ? 'Paused' : 'Closed'}
-                        </label>
-                      ))}
-                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -454,12 +423,8 @@ export function GigForm({
               render={({ field }) => (
                 <FormItem className="flex items-start justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
                   <div className="space-y-0.5">
-                    <FormLabel>Email eligible workers when published</FormLabel>
-                    <FormDescription>
-                      {publishedAt
-                        ? 'Already published once, so no announcement will be sent again.'
-                        : 'Approved workers who meet the requirements and opted in to new-gig emails.'}
-                    </FormDescription>
+                    <FormLabel>Email eligible workers on publish</FormLabel>
+                    {publishedAt ? <FormDescription>Already announced</FormDescription> : null}
                   </div>
                   <FormControl>
                     <Switch checked={field.value} onCheckedChange={field.onChange} disabled={!!publishedAt} />

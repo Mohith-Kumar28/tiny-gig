@@ -65,7 +65,6 @@ function ApplicantsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Applicants"
-        description="Review new worker applications. Check the Reddit profile, then approve or reject. Workers are emailed automatically."
       />
       <DataTable<WorkerRow>
         columns={applicantColumns}
@@ -104,7 +103,7 @@ function ApplicantsPage() {
             </Button>
           </>
         }
-        empty={<EmptyState icon={UserCheck} title="No applicants here" description="New applications will show up in this list." className="border-0 bg-transparent" />}
+        empty={<EmptyState icon={UserCheck} title="No applicants here"  className="border-0 bg-transparent" />}
         bulkActions={(rows, clear) => (
           <>
             <Button

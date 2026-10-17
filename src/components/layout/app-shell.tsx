@@ -106,13 +106,13 @@ export function AppShell({
         <SidebarRail />
       </Sidebar>
       <SidebarInset>
-        <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/85 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-4">
-          <SidebarTrigger className="-ml-1" />
+        <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6 lg:px-8">
+          <SidebarTrigger className="-ml-2" />
           <div className="flex min-w-0 flex-1 items-center gap-2">{headerExtra}</div>
           <ThemeToggle />
           <NotificationBell allHref={notificationsHref} />
         </header>
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-3 py-5 sm:px-6 sm:py-6">{children}</main>
+        <main className="w-full min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

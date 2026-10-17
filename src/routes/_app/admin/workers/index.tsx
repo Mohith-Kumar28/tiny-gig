@@ -61,7 +61,6 @@ function WorkersPage() {
     <div className="space-y-6">
       <PageHeader
         title="Workers"
-        description="Everyone who has applied. Open a worker to see their submissions, payouts and referrals."
         actions={
           <Button variant="outline" size="sm" onClick={() => exportWorkersCsv(data?.rows ?? [])} disabled={!data?.rows.length}>
             <Download /> Export page

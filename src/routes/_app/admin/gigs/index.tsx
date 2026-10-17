@@ -47,7 +47,6 @@ function GigsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Gigs"
-        description="Every task you've posted. Click a gig to see its submissions and spend."
         actions={
           <Button asChild>
             <Link to="/admin/gigs/new">

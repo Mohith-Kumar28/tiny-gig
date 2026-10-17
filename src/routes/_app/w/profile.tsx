@@ -13,8 +13,8 @@ export const Route = createFileRoute('/_app/w/profile')({
 function ProfilePage() {
   const { data: profile } = useSuspenseQuery(myProfileQuery())
   return (
-    <div className="max-w-4xl space-y-6">
-      <PageHeader title="Profile" description="Keep your details up to date so you qualify for gigs and get paid on time." />
+    <div className="max-w-3xl space-y-6">
+      <PageHeader title="Profile" />
       <ProfileForm profile={profile} />
     </div>
   )

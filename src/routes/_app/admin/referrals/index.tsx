@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { AlertTriangle, BadgeCheck, CircleDollarSign, Clock, Percent, Settings2, UserPlus, Users, Wallet } from 'lucide-react'
+import { AlertTriangle, Clock, Settings2, UserPlus, Wallet } from 'lucide-react'
 import { z } from 'zod'
 import { useTableSearch } from '@/components/data-table/use-table-search'
 import { Money } from '@/components/shared/money'
@@ -81,7 +81,6 @@ function ReferralsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Referrals"
-        description="Track who brings in new workers, review the rewards your programs create, and catch self-referrals before they're paid."
         actions={
           <Button asChild>
             <Link to="/admin/referrals/programs">
@@ -92,26 +91,19 @@ function ReferralsPage() {
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Total referrals" icon={UserPlus} value={formatNumber(stats?.total ?? 0)} />
-        <StatCard label="Approved" icon={BadgeCheck} value={formatNumber(stats?.approved ?? 0)} hint="Referred workers approved" />
-        <StatCard label="Active" icon={Users} tone="success" value={formatNumber(stats?.active ?? 0)} hint="Finished their first gig" />
-        <StatCard label="Conversion" icon={Percent} value={`${conversion}%`} hint="Referred → first gig done" />
-        <StatCard label="Rewards owed" icon={Wallet} value={<Money paise={stats?.owed ?? 0} className="font-semibold" />} hint="Approved + awaiting review" />
-        <StatCard label="Rewards paid" icon={CircleDollarSign} value={<Money paise={stats?.paid ?? 0} className="font-semibold" />} />
+        <StatCard label="Referrals" icon={UserPlus} value={formatNumber(stats?.total ?? 0)} hint={`${conversion}% did a gig`} />
         <StatCard
-          label="Pending review"
+          label="Rewards to check"
           icon={Clock}
           tone={stats?.pendingReview ? 'attention' : 'default'}
           value={formatNumber(stats?.pendingReview ?? 0)}
-          to="/admin/referrals"
-          search={{}}
         />
+        <StatCard label="Rewards owed" icon={Wallet} value={<Money paise={stats?.owed ?? 0} className="font-semibold" />} />
         <StatCard
-          label="Flagged referrals"
+          label="Flagged"
           icon={AlertTriangle}
           tone={stats?.flagged ? 'attention' : 'default'}
           value={formatNumber(stats?.flagged ?? 0)}
-          hint="Shared phone, UPI or Reddit"
           to="/admin/referrals"
           search={{ tab: 'referrals', flagged: true }}
         />

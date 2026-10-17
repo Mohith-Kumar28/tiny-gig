@@ -151,7 +151,7 @@ export function ReviewTemplatesManager() {
         <EmptyState
           icon={MessageSquareText}
           title="No templates yet"
-          description="Start with a set of common reasons for changes, rejections and applicant decisions. You can edit them after."
+          description="Saved comments for faster reviews."
           action={
             <Button onClick={() => seed.mutate(undefined)} disabled={seed.isPending}>
               {seed.isPending ? <Spinner /> : <Sparkles />}
@@ -170,7 +170,6 @@ export function ReviewTemplatesManager() {
                     <h3 className="text-sm font-semibold">
                       {k.title} <span className="font-normal text-muted-foreground tabular">· {list.length}</span>
                     </h3>
-                    <p className="text-xs text-muted-foreground">{k.description}</p>
                   </div>
                   <Button size="icon" variant="ghost" className="size-7" onClick={() => setEditing({ label: '', body: '', kind: k.kind })} aria-label={`Add ${k.title} template`}>
                     <Plus />

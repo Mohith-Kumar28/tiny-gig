@@ -214,24 +214,23 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
             </ul>
           </Section>
 
-          <Section title="How it works">
+          <Section title="Steps">
             <ol className="space-y-3 text-sm">
               <li className="flex gap-3">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">1</span>
                 <span>
-                  Claim a slot. You then have <strong>{formatHours(gig.claimWindowHours)}</strong> to post and submit your proof link.
+                  Claim, then post and submit the link within <strong>{formatHours(gig.claimWindowHours)}</strong>.
                 </span>
               </li>
               <li className="flex gap-3">
                 <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">2</span>
-                <span>Our team reviews it. If something needs fixing, we'll tell you exactly what.</span>
+                <span>We review it.</span>
               </li>
               {gig.liveHoldHours > 0 ? (
                 <li className="flex gap-3">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">3</span>
                   <span>
-                    <strong>Live check:</strong> your post must stay up (not deleted or removed) for{' '}
-                    <strong>{formatHours(gig.liveHoldHours)}</strong> after you submit. Then it's approved.
+                    Keep the post up for <strong>{formatHours(gig.liveHoldHours)}</strong>.
                   </span>
                 </li>
               ) : null}
@@ -240,7 +239,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                   {gig.liveHoldHours > 0 ? 4 : 3}
                 </span>
                 <span>
-                  <Money paise={gig.payoutAmount} /> is added to your balance and paid to your UPI.
+                  Get <Money paise={gig.payoutAmount} /> on UPI.
                 </span>
               </li>
             </ol>
