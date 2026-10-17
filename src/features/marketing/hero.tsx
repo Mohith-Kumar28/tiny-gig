@@ -22,7 +22,7 @@ export function Hero() {
         <div className="max-w-xl">
           <p className="mk-rise mb-6 inline-flex items-center gap-2 rounded-full border bg-card/60 px-3 py-1 text-sm text-muted-foreground" style={{ '--i': 0 } as CSSProperties}>
             <span className="font-mono font-semibold text-primary">₹</span>
-            Paid gigs for people in India
+            Paid gigs for your time
           </p>
           <h1
             id="hero-title"
