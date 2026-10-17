@@ -1,0 +1,5 @@
+BETTER_AUTH_SECRET=replace-with-32+-random-chars
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+# Leave empty in dev to log emails (and OTP codes) to the console instead of sending.
+RESEND_API_KEY=

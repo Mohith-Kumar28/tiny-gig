@@ -1,0 +1,33 @@
+/**
+ * TinyGig — Cloudflare Worker config.
+ * Replace the placeholder IDs after running:
+ *   wrangler d1 create tinygig-db
+ *   wrangler kv namespace create CACHE
+ *   wrangler r2 bucket create tinygig-uploads
+ */
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "tinygig",
+	"compatibility_date": "2025-09-02",
+	"compatibility_flags": ["nodejs_compat"],
+	"main": "./src/server.ts",
+	"observability": { "enabled": true },
+	"upload_source_maps": true,
+	"vars": {
+		"APP_URL": "http://localhost:3000",
+		"APP_NAME": "TinyGig",
+		"EMAIL_FROM": "TinyGig <hello@tinygig.in>",
+		"ADMIN_EMAILS": "mohith@tokgency.com"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tinygig-db",
+			"database_id": "00000000-0000-0000-0000-000000000000",
+			"migrations_dir": "drizzle"
+		}
+	],
+	"kv_namespaces": [{ "binding": "CACHE", "id": "00000000000000000000000000000000" }],
+	"r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "tinygig-uploads" }],
+	"triggers": { "crons": ["*/15 * * * *"] }
+}
