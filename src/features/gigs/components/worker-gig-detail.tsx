@@ -289,7 +289,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
       </div>
 
       {/* Mobile sticky CTA */}
-      <div className="sticky bottom-0 z-20 -mx-3 mt-4 border-t bg-background/95 px-3 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
+      <div className="sticky bottom-[var(--mobile-nav-offset,0px)] z-20 -mx-3 mt-4 border-t bg-background/95 px-3 pt-3 pb-3 backdrop-blur sm:-mx-6 sm:px-6 lg:hidden">
         <div className="mb-2 flex items-center justify-between text-xs text-muted-foreground">
           <span>
             {formatHours(gig.claimWindowHours)} to finish

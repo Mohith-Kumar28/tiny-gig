@@ -44,23 +44,33 @@ export function UserMenu({ viewer }: { viewer: Viewer }) {
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Signed in as {viewer.user.role === 'admin' ? 'admin' : 'worker'}
             </DropdownMenuLabel>
-            <DropdownMenuItem asChild>
-              <Link to="/account/$path" params={{ path: 'settings' }}>
-                <CircleUserRound /> Account
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/account/$path" params={{ path: 'security' }}>
-                <ShieldCheck /> Security
-              </Link>
-            </DropdownMenuItem>
             {isWorker && viewer.profileStatus === 'approved' ? (
-              <DropdownMenuItem asChild>
-                <Link to="/w/profile">
-                  <UserRound /> Work profile
-                </Link>
-              </DropdownMenuItem>
-            ) : null}
+              <>
+                <DropdownMenuItem asChild>
+                  <Link to="/w/profile">
+                    <UserRound /> Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/w/profile" search={{ tab: 'security' }}>
+                    <ShieldCheck /> Security
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link to="/account/$path" params={{ path: 'settings' }}>
+                    <CircleUserRound /> Account
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/account/$path" params={{ path: 'security' }}>
+                    <ShieldCheck /> Security
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={signOut}>
               <LogOut /> Sign out

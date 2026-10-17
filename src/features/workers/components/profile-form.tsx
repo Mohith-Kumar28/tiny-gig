@@ -73,7 +73,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           <div className="space-y-2">
             <Label htmlFor="profile-email">Email</Label>
             <Input id="profile-email" value={profile.email} readOnly disabled />
-            <p className="text-xs text-muted-foreground">This is your login email and can't be changed.</p>
+            <p className="text-xs text-muted-foreground">Change it in the Account tab.</p>
           </div>
           <FormField
             control={form.control}
@@ -256,7 +256,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </div>
         </FormSection>
 
-        <div className="sticky bottom-0 z-10 -mx-3 flex items-center justify-end gap-3 border-t bg-background/95 px-3 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="sticky bottom-[var(--mobile-nav-offset,0px)] z-10 -mx-3 flex items-center justify-end gap-3 border-t bg-background/95 px-3 py-3 backdrop-blur sm:-mx-6 sm:px-6">
           {form.formState.isDirty ? <span className="mr-auto text-xs text-muted-foreground">You have unsaved changes</span> : null}
           <Button type="button" variant="ghost" disabled={!form.formState.isDirty || save.isPending} onClick={() => form.reset()}>
             Discard

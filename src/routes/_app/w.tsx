@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { AppShell } from '@/components/layout/app-shell'
-import { WORKER_NAV } from '@/components/layout/nav'
+import { BottomNav } from '@/components/layout/bottom-nav'
+import { WORKER_BOTTOM_NAV, WORKER_NAV } from '@/components/layout/nav'
 import { homeFor } from '@/features/auth/guards'
 import { myWorkCountsQuery } from '@/features/submissions/queries'
 
@@ -24,6 +25,7 @@ function WorkerLayout() {
       groups={[{ items: WORKER_NAV }]}
       badges={{ active: counts?.active ?? 0 }}
       notificationsHref="/w/notifications"
+      mobileNav={<BottomNav items={WORKER_BOTTOM_NAV} badges={{ active: counts?.active ?? 0 }} />}
     >
       <Outlet />
     </AppShell>

@@ -5,7 +5,7 @@ import { myEarningsQuery } from '@/features/payouts/queries'
 import { myProfileQuery } from '@/features/workers/queries'
 
 export const Route = createFileRoute('/_app/w/payments')({
-  head: () => ({ meta: [{ title: 'Payments · TinyGig' }] }),
+  head: () => ({ meta: [{ title: 'Earnings · TinyGig' }] }),
   loader: ({ context }) => {
     void context.queryClient.prefetchQuery(myProfileQuery())
     return context.queryClient.ensureQueryData(myEarningsQuery())

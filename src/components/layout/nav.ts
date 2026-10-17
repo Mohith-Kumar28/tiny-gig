@@ -4,6 +4,7 @@ import {
   CircleUserRound,
   ClipboardCheck,
   Gift,
+  House,
   Inbox,
   LayoutDashboard,
   Mail,
@@ -22,17 +23,31 @@ export type NavItem = {
   exact?: boolean
   badgeKey?: string
   /** Path prefix that marks this item active (defaults to `to`). */
-  match?: string
+  match?: string | string[]
+}
+
+export function isNavActive(item: NavItem, pathname: string) {
+  if (item.exact) return pathname === item.to
+  const bases = Array.isArray(item.match) ? item.match : [item.match ?? item.to]
+  return bases.some((b) => pathname === b || pathname.startsWith(`${b}/`))
 }
 
 export const WORKER_NAV: NavItem[] = [
   { to: '/w', label: 'Overview', icon: LayoutDashboard, exact: true },
   { to: '/w/gigs', label: 'Find gigs', icon: Search },
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
-  { to: '/w/payments', label: 'Payments', icon: Wallet },
+  { to: '/w/payments', label: 'Earnings', icon: Wallet },
   { to: '/w/referrals', label: 'Referrals', icon: Gift },
-  { to: '/w/profile', label: 'Work profile', icon: UserRound },
-  { to: '/account/settings', label: 'Account', icon: CircleUserRound, match: '/account' },
+  { to: '/w/profile', label: 'Profile', icon: UserRound },
+]
+
+/** Phone tab bar: the four daily destinations + a "Me" hub for everything else. */
+export const WORKER_BOTTOM_NAV: NavItem[] = [
+  { to: '/w', label: 'Home', icon: House, exact: true },
+  { to: '/w/gigs', label: 'Gigs', icon: Search },
+  { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
+  { to: '/w/payments', label: 'Earnings', icon: Wallet },
+  { to: '/w/me', label: 'Me', icon: CircleUserRound, match: ['/w/me', '/w/profile', '/w/referrals', '/w/notifications'] },
 ]
 
 export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [

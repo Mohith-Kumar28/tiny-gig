@@ -29,7 +29,7 @@ export function WorkerPayments({ earnings, upiId }: { earnings: Earnings; upiId:
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Payments"
+        title="Earnings"
       />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

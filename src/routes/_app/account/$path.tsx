@@ -1,7 +1,7 @@
 import { AccountView } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AppShell } from '@/components/layout/app-shell'
-import { ADMIN_NAV, WORKER_NAV } from '@/components/layout/nav'
+import { ADMIN_NAV } from '@/components/layout/nav'
 import { SimpleShell } from '@/components/layout/simple-shell'
 import { PageHeader } from '@/components/shared/page-header'
 
@@ -10,7 +10,11 @@ const PATHS = ['settings', 'security'] as const
 /** Account & security (Better Auth UI), shared by admins and workers. */
 export const Route = createFileRoute('/_app/account/$path')({
   head: () => ({ meta: [{ title: 'Account · TinyGig' }] }),
-  beforeLoad: ({ params }) => {
+  beforeLoad: ({ params, context }) => {
+    const { viewer } = context
+    if (viewer.user.role === 'worker' && viewer.profileStatus === 'approved') {
+      throw redirect({ to: '/w/profile', search: { tab: params.path === 'security' ? 'security' : 'account' } })
+    }
     if (!PATHS.includes(params.path as (typeof PATHS)[number])) {
       throw redirect({ to: '/account/$path', params: { path: 'settings' } })
     }
@@ -37,13 +41,6 @@ function AccountPage() {
   if (viewer.user.role === 'admin') {
     return (
       <AppShell viewer={viewer} home="/admin" groups={ADMIN_NAV}>
-        {content}
-      </AppShell>
-    )
-  }
-  if (viewer.profileStatus === 'approved') {
-    return (
-      <AppShell viewer={viewer} home="/w" groups={[{ items: WORKER_NAV }]} notificationsHref="/w/notifications">
         {content}
       </AppShell>
     )

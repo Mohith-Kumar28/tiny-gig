@@ -20,7 +20,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import type { Viewer } from '@/features/auth/server/viewer'
-import type { NavItem } from './nav'
+import { isNavActive, type NavItem } from './nav'
 import { NotificationBell } from './notification-bell'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
@@ -38,8 +38,7 @@ function NavLinks({ groups, badges }: { groups: NavGroup[]; badges?: Record<stri
           <SidebarGroupContent>
             <SidebarMenu>
               {group.items.map((item) => {
-                const base = item.match ?? item.to
-                const active = item.exact ? pathname === item.to : pathname === base || pathname.startsWith(`${base}/`)
+                const active = isNavActive(item, pathname)
                 const badge = item.badgeKey ? badges?.[item.badgeKey] : undefined
                 return (
                   <SidebarMenuItem key={item.to}>
@@ -70,6 +69,7 @@ export function AppShell({
   home,
   headerExtra,
   notificationsHref,
+  mobileNav,
   children,
 }: {
   viewer: Viewer
@@ -78,6 +78,8 @@ export function AppShell({
   home: string
   headerExtra?: ReactNode
   notificationsHref?: string
+  /** Phone tab bar. When set, the sidebar is desktop-only and content clears the bar. */
+  mobileNav?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -108,12 +110,27 @@ export function AppShell({
       </Sidebar>
       <SidebarInset>
         <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6 lg:px-8">
-          <SidebarTrigger className="-ml-2" />
+          <SidebarTrigger className={mobileNav ? '-ml-2 hidden md:inline-flex' : '-ml-2'} />
+          {mobileNav ? (
+            <Link to={home} className="flex items-center gap-2 font-display font-semibold md:hidden">
+              <LogoMark className="size-7" />
+              TinyGig
+            </Link>
+          ) : null}
           <div className="flex min-w-0 flex-1 items-center gap-2">{headerExtra}</div>
           <ThemeToggle />
           <NotificationBell allHref={notificationsHref} />
         </header>
-        <main className="w-full min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8">{children}</main>
+        <main
+          className={
+            mobileNav
+              ? 'w-full min-w-0 flex-1 px-4 pt-5 pb-[calc(5.5rem+env(safe-area-inset-bottom))] [--mobile-nav-offset:calc(4rem+env(safe-area-inset-bottom))] sm:px-6 md:py-6 md:[--mobile-nav-offset:0px] lg:px-8'
+              : 'w-full min-w-0 flex-1 px-4 py-6 sm:px-6 lg:px-8'
+          }
+        >
+          {children}
+        </main>
+        {mobileNav}
       </SidebarInset>
     </SidebarProvider>
   )
