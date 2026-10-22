@@ -19,7 +19,7 @@ const TAB_LABELS: Record<MyWorkTab, string> = {
 }
 
 const EMPTY: Record<MyWorkTab, { title: string; description: string }> = {
-  active: { title: 'Nothing to do right now', description: 'Claim a gig and it will show up here with its deadline.' },
+  active: { title: 'Nothing to do right now', description: 'When you’re selected for a gig it shows up here with its deadline.' },
   in_review: { title: 'Nothing in review', description: 'Tasks you submit wait here while our team checks them.' },
   approved: { title: 'No approved tasks yet', description: 'Approved tasks and their earnings will show up here.' },
   closed: { title: 'No closed tasks', description: 'Rejected, expired and withdrawn tasks show up here.' },

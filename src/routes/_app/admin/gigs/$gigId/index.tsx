@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, Copy, ExternalLink, Inbox, ListChecks, Pencil } from 'lucide-react'
+import { ArrowLeft, Copy, ExternalLink, Hand, Inbox, ListChecks, Pencil } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
@@ -12,6 +12,7 @@ import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
+import { ClientChip } from '@/features/accounts/components/client-chip'
 import { statusTransitions, useDuplicateGig, useGigStatus } from '@/features/gigs/components/gig-actions'
 import { SlotsBar } from '@/features/gigs/components/gig-columns'
 import { gigSubmissionColumns, SUBMISSION_STATUS_OPTIONS } from '@/features/gigs/components/submission-columns'
@@ -87,6 +88,7 @@ function GigDetailPage() {
                 {g.community ? ` · ${g.community}` : ''} · {TASK_TYPE_LABELS[g.taskType]}
               </span>
               <StatusBadge status={g.status} />
+              {data.client ? <ClientChip name={data.client.name} color={data.client.color} /> : null}
             </div>
             <h1 className="font-display text-2xl font-semibold tracking-tight text-balance sm:text-[1.65rem]">{g.title}</h1>
             <p className="text-sm text-muted-foreground">
@@ -100,6 +102,13 @@ function GigDetailPage() {
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap items-center gap-2">
+            {g.status === 'live' && g.claimedSlots < g.totalSlots ? (
+              <Button asChild size="sm" variant={data.interested ? 'default' : 'outline'}>
+                <Link to="/admin/gigs/$gigId/select" params={{ gigId }}>
+                  <Hand /> Pick accounts{data.interested ? ` · ${formatNumber(data.interested)} interested` : ''}
+                </Link>
+              </Button>
+            ) : null}
             {waiting ? (
               <Button asChild size="sm">
                 <Link to="/admin/review" search={{ gigId }}>

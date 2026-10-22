@@ -31,7 +31,7 @@ function LoginPage() {
             Small tasks. <span className="text-primary">Real UPI payouts.</span>
           </p>
           <ul className="space-y-2.5 text-sm opacity-80">
-            <li>• Claim Reddit, X, LinkedIn & Threads gigs in one tap</li>
+            <li>• Get picked for Reddit, X, LinkedIn & Threads gigs</li>
             <li>• Submit a link, get reviewed by a real person</li>
             <li>• Approved earnings go straight to your UPI ID</li>
           </ul>

@@ -1,4 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
+import { PushToggle } from '@/features/push/components/push-toggle'
 import { createFileRoute } from '@tanstack/react-router'
 import { CheckCheck } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
@@ -36,6 +37,7 @@ function NotificationsPage() {
           </Button>
         }
       />
+      <PushToggle />
       <WorkerNotificationsList rows={data.rows} onOpen={(id) => markOne.mutate(id)} />
     </div>
   )

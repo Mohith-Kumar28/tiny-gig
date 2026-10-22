@@ -10,17 +10,25 @@ export const getAdminBadges = createServerFn({ method: 'GET' })
   .middleware([adminMiddleware])
   .handler(async ({ context }) => {
     const { db } = context
-    const [[subs], [apps], [rewards]] = await Promise.all([
+    const [[subs], [apps], [rewards], [toSelect]] = await Promise.all([
       db
         .select({ n: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted') or (${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${Date.now()}) then 1 else 0 end)` })
         .from(submission),
       db.select({ n: sql<number>`sum(case when ${workerProfile.status} = 'pending' then 1 else 0 end)` }).from(workerProfile),
       db.select({ n: sql<number>`sum(case when ${referralReward.status} = 'pending_review' then 1 else 0 end)` }).from(referralReward),
+      // Live gigs with open slots, interest window over, and someone waiting to be picked.
+      db
+        .select({ n: sql<number>`count(*)` })
+        .from(gig)
+        .where(
+          sql`${gig.status} = 'live' and ${gig.claimedSlots} < ${gig.totalSlots} and (${gig.interestClosesAt} is null or ${gig.interestClosesAt} <= ${Date.now()}) and exists (select 1 from "gig_interest" i where i."gig_id" = ${gig.id} and i."status" = 'interested')`,
+        ),
     ])
     return {
       needs_review: Number(subs?.n ?? 0),
       pending_applicants: Number(apps?.n ?? 0),
       rewards_pending: Number(rewards?.n ?? 0),
+      to_select: Number(toSelect?.n ?? 0),
     }
   })
 

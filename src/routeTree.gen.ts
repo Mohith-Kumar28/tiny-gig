@@ -63,6 +63,7 @@ import { Route as AppWWorkIndexRouteImport } from './routes/_app/w/work/index'
 import { Route as AppWWorkSubmissionIdRouteImport } from './routes/_app/w/work/$submissionId'
 import { Route as AppAdminGigsGigIdIndexRouteImport } from './routes/_app/admin/gigs/$gigId/index'
 import { Route as AppAdminGigsGigIdEditRouteImport } from './routes/_app/admin/gigs/$gigId/edit'
+import { Route as AppAdminGigsGigIdSelectRouteImport } from './routes/_app/admin/gigs/$gigId/select'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -334,6 +335,11 @@ const AppAdminGigsGigIdEditRoute = AppAdminGigsGigIdEditRouteImport.update({
   path: '/gigs/$gigId/edit',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminGigsGigIdSelectRoute = AppAdminGigsGigIdSelectRouteImport.update({
+  id: '/gigs/$gigId/select',
+  path: '/gigs/$gigId/select',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -388,6 +394,7 @@ export interface FileRoutesByFullPath {
   '/w/gigs/': typeof AppWGigsIndexRoute
   '/w/work/': typeof AppWWorkIndexRoute
   '/admin/gigs/$gigId/edit': typeof AppAdminGigsGigIdEditRoute
+  '/admin/gigs/$gigId/select': typeof AppAdminGigsGigIdSelectRoute
   '/admin/gigs/$gigId/': typeof AppAdminGigsGigIdIndexRoute
 }
 export interface FileRoutesByTo {
@@ -441,6 +448,7 @@ export interface FileRoutesByTo {
   '/w/gigs': typeof AppWGigsIndexRoute
   '/w/work': typeof AppWWorkIndexRoute
   '/admin/gigs/$gigId/edit': typeof AppAdminGigsGigIdEditRoute
+  '/admin/gigs/$gigId/select': typeof AppAdminGigsGigIdSelectRoute
   '/admin/gigs/$gigId': typeof AppAdminGigsGigIdIndexRoute
 }
 export interface FileRoutesById {
@@ -498,6 +506,7 @@ export interface FileRoutesById {
   '/_app/w/gigs/': typeof AppWGigsIndexRoute
   '/_app/w/work/': typeof AppWWorkIndexRoute
   '/_app/admin/gigs/$gigId/edit': typeof AppAdminGigsGigIdEditRoute
+  '/_app/admin/gigs/$gigId/select': typeof AppAdminGigsGigIdSelectRoute
   '/_app/admin/gigs/$gigId/': typeof AppAdminGigsGigIdIndexRoute
 }
 export interface FileRouteTypes {
@@ -555,6 +564,7 @@ export interface FileRouteTypes {
     | '/w/gigs/'
     | '/w/work/'
     | '/admin/gigs/$gigId/edit'
+    | '/admin/gigs/$gigId/select'
     | '/admin/gigs/$gigId/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -608,6 +618,7 @@ export interface FileRouteTypes {
     | '/w/gigs'
     | '/w/work'
     | '/admin/gigs/$gigId/edit'
+    | '/admin/gigs/$gigId/select'
     | '/admin/gigs/$gigId'
   id:
     | '__root__'
@@ -664,6 +675,7 @@ export interface FileRouteTypes {
     | '/_app/w/gigs/'
     | '/_app/w/work/'
     | '/_app/admin/gigs/$gigId/edit'
+    | '/_app/admin/gigs/$gigId/select'
     | '/_app/admin/gigs/$gigId/'
   fileRoutesById: FileRoutesById
 }
@@ -1069,6 +1081,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminGigsGigIdEditRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/gigs/$gigId/select': {
+      id: '/_app/admin/gigs/$gigId/select'
+      path: '/gigs/$gigId/select'
+      fullPath: '/admin/gigs/$gigId/select'
+      preLoaderRoute: typeof AppAdminGigsGigIdSelectRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
   }
 }
 
@@ -1089,6 +1108,7 @@ interface AppAdminRouteChildren {
   AppAdminReferralsIndexRoute: typeof AppAdminReferralsIndexRoute
   AppAdminWorkersIndexRoute: typeof AppAdminWorkersIndexRoute
   AppAdminGigsGigIdEditRoute: typeof AppAdminGigsGigIdEditRoute
+  AppAdminGigsGigIdSelectRoute: typeof AppAdminGigsGigIdSelectRoute
   AppAdminGigsGigIdIndexRoute: typeof AppAdminGigsGigIdIndexRoute
 }
 
@@ -1109,6 +1129,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminReferralsIndexRoute: AppAdminReferralsIndexRoute,
   AppAdminWorkersIndexRoute: AppAdminWorkersIndexRoute,
   AppAdminGigsGigIdEditRoute: AppAdminGigsGigIdEditRoute,
+  AppAdminGigsGigIdSelectRoute: AppAdminGigsGigIdSelectRoute,
   AppAdminGigsGigIdIndexRoute: AppAdminGigsGigIdIndexRoute,
 }
 

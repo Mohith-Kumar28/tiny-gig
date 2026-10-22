@@ -411,7 +411,7 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                 <AlertDialogHeader>
                   <AlertDialogTitle>Withdraw from this gig?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    Your slot goes back to other workers and you can't claim this gig again. You won't be paid for it.
+                    Your slot goes back to other workers and you can't take this gig again. You won't be paid for it.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

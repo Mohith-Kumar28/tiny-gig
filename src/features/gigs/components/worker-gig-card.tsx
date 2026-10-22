@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { Lock, ShieldCheck, Timer } from 'lucide-react'
+import { Check, Hand, Lock, ShieldCheck, Timer } from 'lucide-react'
 import { Countdown } from '@/components/shared/countdown'
 import { Money } from '@/components/shared/money'
 import { PlatformLabel } from '@/components/shared/platform-icon'
@@ -15,6 +15,7 @@ export function WorkerGigCard({ gig }: { gig: AvailableGig }) {
   const left = slotsLeft(gig)
   const pct = gig.totalSlots ? (gig.claimedSlots / gig.totalSlots) * 100 : 100
   const ineligible = Boolean(gig.ineligible)
+  const windowOpen = gig.interestClosesAt ? new Date(gig.interestClosesAt) > new Date() : false
   return (
     <Link
       to="/w/gigs/$gigId"
@@ -63,10 +64,22 @@ export function WorkerGigCard({ gig }: { gig: AvailableGig }) {
         {gig.endsAt ? <Countdown to={gig.endsAt} prefix="Closes" /> : null}
       </div>
 
-      {ineligible ? (
+      {gig.interest === 'interested' ? (
+        <div className="-mx-4 -mb-4 flex items-center gap-2 rounded-b-xl border-t border-success/20 bg-success/10 px-4 py-2.5 text-xs font-medium text-success">
+          <Check className="size-3.5" /> You’re in the running
+        </div>
+      ) : gig.interest === 'not_selected' ? (
         <div className="-mx-4 -mb-4 flex items-center gap-2 rounded-b-xl border-t bg-muted px-4 py-2.5 text-xs font-medium text-muted-foreground">
-          <Lock className="size-3.5" />
+          Another account was picked this time
+        </div>
+      ) : ineligible ? (
+        <div className="-mx-4 -mb-4 flex items-center gap-2 rounded-b-xl border-t bg-muted px-4 py-2.5 text-xs font-medium text-muted-foreground">
+          <Lock className="size-3.5 shrink-0" />
           {gig.ineligible}
+        </div>
+      ) : windowOpen && gig.interestClosesAt ? (
+        <div className="-mx-4 -mb-4 flex items-center gap-2 rounded-b-xl border-t border-primary/20 bg-primary/8 px-4 py-2.5 text-xs font-medium text-primary">
+          <Hand className="size-3.5" /> Say you’re interested: <Countdown to={gig.interestClosesAt} prefix="closes" />
         </div>
       ) : null}
     </Link>

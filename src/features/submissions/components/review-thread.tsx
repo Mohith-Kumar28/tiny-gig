@@ -14,7 +14,7 @@ type Event = {
 }
 
 const META: Record<SubmissionAction, { label: string; icon: typeof Clock; tone: string }> = {
-  claimed: { label: 'claimed the gig', icon: Clock, tone: 'text-muted-foreground' },
+  claimed: { label: 'assigned the gig', icon: Clock, tone: 'text-muted-foreground' },
   submitted: { label: 'submitted proof', icon: Send, tone: 'text-primary' },
   resubmitted: { label: 'resubmitted', icon: RotateCcw, tone: 'text-primary' },
   changes_requested: { label: 'requested changes', icon: RotateCcw, tone: 'text-warning-foreground dark:text-warning' },

@@ -48,6 +48,7 @@ export function gigToFormInput(g: AdminGig): GigFormInput {
     payoutRupees: g.payoutAmount / 100,
     totalSlots: g.totalSlots,
     claimWindowHours: g.claimWindowHours,
+    interestWindowMinutes: g.interestWindowMinutes,
     liveHoldHours: g.liveHoldHours,
     minKarma: g.minKarma,
     minAccountAgeMonths: g.minAccountAgeMonths,
@@ -335,7 +336,7 @@ export function GigForm({
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={Math.max(1, claimedSlots)} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
-                  {claimedSlots ? <FormDescription>{claimedSlots} already claimed</FormDescription> : null}
+                  {claimedSlots ? <FormDescription>{claimedSlots} already assigned</FormDescription> : null}
                   <FormMessage />
                 </FormItem>
               )}
@@ -349,6 +350,21 @@ export function GigForm({
                   <FormControl>
                     <Input type="number" inputMode="numeric" min={1} className="tabular" {...field} value={field.value as never} />
                   </FormControl>
+                  <FormDescription>Counted from selection.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="interestWindowMinutes"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Interest window (minutes)</FormLabel>
+                  <FormControl>
+                    <Input type="number" inputMode="numeric" min={1} className="tabular" {...field} value={field.value as never} />
+                  </FormControl>
+                  <FormDescription>How long workers get to raise their hand once it’s live.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

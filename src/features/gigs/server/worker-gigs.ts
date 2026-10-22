@@ -1,14 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, desc, eq, inArray, lt, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import { gig, submission, submissionEvent, workerProfile } from '@/db/schema'
+import { gig, gigInterest, submission } from '@/db/schema'
 import { PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
-import { queueEmail } from '@/emails/send-email'
 import { AppError, workerMiddleware } from '@/lib/server/middleware'
-import { rateLimit } from '@/lib/server/rate-limit'
-import { rankCandidates, workerBlockReason } from '@/features/accounts/cooldowns'
-import { accountLabel, levelFor } from '@/features/accounts/rules'
-import { evaluateWorker, gigFacts, loadEligibility, logBlocks } from '@/features/accounts/server/eligibility'
+import { workerBlockReason } from '@/features/accounts/cooldowns'
+import { accountLabel } from '@/features/accounts/rules'
+import { evaluateWorker, gigFacts, loadEligibility } from '@/features/accounts/server/eligibility'
 import { workerSafeGig } from '@/features/submissions/worker-safe'
 import { gigClosedReason } from '../eligibility'
 
@@ -38,10 +36,12 @@ export const listAvailableGigs = createServerFn({ method: 'GET' })
           ? [sql`coalesce(${gig.endsAt}, 9e15) asc`]
           : [desc(gig.priority), desc(gig.publishedAt)]
 
-    const [rows, mine] = await Promise.all([
+    const [rows, mine, interests] = await Promise.all([
       db.select().from(gig).where(and(...filters)).orderBy(...orderBy).limit(200),
       db.select({ gigId: submission.gigId }).from(submission).where(eq(submission.workerId, user.id)),
+      db.select({ gigId: gigInterest.gigId, status: gigInterest.status }).from(gigInterest).where(eq(gigInterest.workerId, user.id)),
     ])
+    const interestBy = new Map(interests.map((i) => [i.gigId, i.status]))
     const taken = new Set(mine.map((m) => m.gigId))
     const now = new Date()
     const ctx = await loadEligibility(db, [user.id])
@@ -66,6 +66,8 @@ export const listAvailableGigs = createServerFn({ method: 'GET' })
         minAccountAgeMonths: g.minAccountAgeMonths,
         ineligible: gigClosedReason(g, now) ?? block?.message ?? null,
         unlockAt: block?.unlockAt ?? null,
+        interest: interestBy.get(g.id) ?? null,
+        interestClosesAt: g.interestClosesAt,
       }
       })
     return data.eligibleOnly ? gigs.filter((g) => !g.ineligible) : gigs
@@ -78,10 +80,17 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
     const { db, user } = context
     const g = await db.query.gig.findFirst({ where: eq(gig.id, data.id) })
     if (!g || g.status === 'draft') throw new AppError('NOT_FOUND', 'Gig not found.')
-    const mine = await db.query.submission.findFirst({
-      where: and(eq(submission.gigId, g.id), eq(submission.workerId, user.id)),
-      columns: { id: true, status: true },
-    })
+    const [mine, interest] = await Promise.all([
+      db.query.submission.findFirst({
+        where: and(eq(submission.gigId, g.id), eq(submission.workerId, user.id)),
+        columns: { id: true, status: true },
+      }),
+      db
+        .select({ status: gigInterest.status, accountIds: gigInterest.accountIds })
+        .from(gigInterest)
+        .where(and(eq(gigInterest.gigId, g.id), eq(gigInterest.workerId, user.id)))
+        .get(),
+    ])
     const now = new Date()
     const ctx = await loadEligibility(db, [user.id])
     const evals = evaluateWorker(ctx, user.id, gigFacts(g), now)
@@ -108,96 +117,6 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
       ineligible: mine ? null : (gigClosedReason(g, now) ?? block?.message ?? null),
       unlockAt: block?.unlockAt ?? null,
       myAccounts,
-    }
-  })
-
-/**
- * Atomic slot claim: the conditional UPDATE only succeeds while slots remain,
- * so concurrent claims can never oversell a gig.
- */
-export const claimGig = createServerFn({ method: 'POST' })
-  .middleware([workerMiddleware])
-  .validator(z.object({ gigId: z.string() }))
-  .handler(async ({ data, context }) => {
-    const { db, profile, user } = context
-    await rateLimit(`claim:${user.id}`, 20, 3600)
-    const g = await db.query.gig.findFirst({ where: eq(gig.id, data.gigId) })
-    if (!g) throw new AppError('NOT_FOUND', 'Gig not found.')
-    const closed = gigClosedReason(g)
-    if (closed) throw new AppError('FORBIDDEN', closed)
-    const now = new Date()
-    const facts = gigFacts(g)
-    const ctx = await loadEligibility(db, [user.id])
-    const evals = evaluateWorker(ctx, user.id, facts, now)
-    const block = workerBlockReason(evals, now)
-    if (block) {
-      const seen = new Set<string>()
-      await logBlocks(
-        db,
-        'interest',
-        g.id,
-        evals
-          .flatMap((e) => [...e.hard, ...e.soft].map((b) => ({ workerId: user.id, accountId: e.accountId, block: b })))
-          .filter((x) => x.block.rule !== 'platform' && !seen.has(x.block.rule) && seen.add(x.block.rule)),
-      )
-      throw new AppError('FORBIDDEN', block.message)
-    }
-    const accounts = ctx.accountsByWorker.get(user.id) ?? []
-    const [best] = rankCandidates(
-      evals
-        .filter((e) => e.ok)
-        .map((e) => ({ accountId: e.accountId, handle: accounts.find((a) => a.id === e.accountId)?.handle ?? '', evaluation: e, community: facts.community })),
-    )
-    const account = accounts.find((a) => a.id === best?.accountId)
-    const existing = await db.query.submission.findFirst({
-      where: and(eq(submission.gigId, g.id), eq(submission.workerId, user.id)),
-    })
-    if (existing) throw new AppError('CONFLICT', 'You already took this gig.')
-
-    const reserved = await db
-      .update(gig)
-      .set({ claimedSlots: sql`${gig.claimedSlots} + 1` })
-      .where(and(eq(gig.id, g.id), eq(gig.status, 'live'), lt(gig.claimedSlots, gig.totalSlots)))
-      .returning({ id: gig.id })
-    if (!reserved.length) throw new AppError('CONFLICT', 'Sorry, all slots were just taken.')
-
-    const dueAt = new Date(now.getTime() + g.claimWindowHours * 3_600_000)
-    try {
-      const [created] = await db
-        .insert(submission)
-        .values({
-          gigId: g.id,
-          workerId: user.id,
-          status: 'claimed',
-          payoutAmount: g.payoutAmount,
-          claimedAt: now,
-          dueAt,
-          accountId: account?.id ?? null,
-          clientTagId: g.clientTagId,
-          community: facts.community,
-          level: account ? levelFor(account.createdOn, now) : null,
-        })
-        .returning({ id: submission.id })
-      if (!created) throw new Error('insert failed')
-      await db.batch([
-        db.insert(submissionEvent).values({ submissionId: created.id, actorId: user.id, actorRole: 'worker', action: 'claimed' }),
-        db.update(workerProfile).set({ lastActiveAt: now }).where(eq(workerProfile.userId, user.id)),
-      ])
-      queueEmail({
-        to: profile.email,
-        template: 'claimConfirmed',
-        data: {
-          title: g.title,
-          dueAt: dueAt.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' }),
-          submissionId: created.id,
-        },
-      })
-      return { submissionId: created.id }
-    } catch (err) {
-      await db
-        .update(gig)
-        .set({ claimedSlots: sql`max(0, ${gig.claimedSlots} - 1)` })
-        .where(eq(gig.id, g.id))
-      throw err instanceof AppError ? err : new AppError('CONFLICT', 'Could not claim this gig. Try again.')
+      interest: interest ?? null,
     }
   })

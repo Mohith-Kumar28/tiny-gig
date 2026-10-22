@@ -36,7 +36,7 @@ export function howToJsonLd() {
     '@context': 'https://schema.org',
     '@type': 'HowTo',
     name: 'How to earn with TinyGig',
-    description: 'Apply once, claim small paid social media gigs, submit proof and get paid by UPI.',
+    description: 'Apply once, get selected for small paid social media gigs, submit proof and get paid by UPI.',
     inLanguage: 'en-IN',
     estimatedCost: { '@type': 'MonetaryAmount', currency: 'INR', value: 0 },
     step: STEPS.map((step, i) => ({

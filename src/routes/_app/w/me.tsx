@@ -4,6 +4,7 @@ import { AtSign, Bell, ChevronRight, CircleUserRound, Gift, LogOut, Moon, Shield
 import type { ReactNode } from 'react'
 import { useTheme } from '@/components/shared/theme-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { PushToggle } from '@/features/push/components/push-toggle'
 import { notificationsQuery } from '@/features/notifications/queries'
 import { authClient } from '@/lib/auth-client'
 import { initials } from '@/lib/format'
@@ -49,6 +50,8 @@ function MePage() {
         </div>
         <ChevronRight className="size-4 text-muted-foreground" />
       </Link>
+
+      <PushToggle className="rounded-2xl" />
 
       <div className="divide-y overflow-hidden rounded-2xl border bg-card">
         <Row to="/w/accounts" icon={<AtSign />} label="My accounts" />

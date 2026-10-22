@@ -13,7 +13,7 @@ export const PUBLIC_PAGES = [
   { path: '/terms', title: 'Terms of service', description: 'Rules for workers using TinyGig.', priority: '0.3', changefreq: 'yearly' },
 ] as const
 
-const SUMMARY = `> ${SITE.name} is a gig-work platform for India. The team posts small paid social media tasks ("gigs"), mostly Reddit posts, comments and replies in specific subreddits, plus tasks on X (Twitter), LinkedIn, Threads, Instagram and other platforms. Approved workers claim gigs, complete them from their own accounts, submit a proof link, and are paid in Indian rupees (INR) to their UPI ID after human review.`
+const SUMMARY = `> ${SITE.name} is a gig-work platform for India. The team posts small paid social media tasks ("gigs"), mostly Reddit posts, comments and replies in specific subreddits, plus tasks on X (Twitter), LinkedIn, Threads, Instagram and other platforms. Approved workers say they are interested in gigs, the team selects one account per slot, the worker completes it from that account, submit a proof link, and are paid in Indian rupees (INR) to their UPI ID after human review.`
 
 const REQUIREMENTS = `- 18 or older and living in India.
 - A Reddit account (profile link, account age and karma are asked for when applying).

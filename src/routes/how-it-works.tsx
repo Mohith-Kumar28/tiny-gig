@@ -17,7 +17,7 @@ export const Route = createFileRoute('/how-it-works')({
       path: '/how-it-works',
       title: `How it works | ${SITE.name}`,
       description:
-        'How TinyGig works: apply once, get approved in 24 to 48 hours, claim paid Reddit and social media gigs, submit proof and get paid to your UPI ID.',
+        'How TinyGig works: apply once, get approved in 24 to 48 hours, get selected for paid Reddit and social media gigs, submit proof and get paid to your UPI ID.',
     }),
   component: HowItWorksPage,
 })

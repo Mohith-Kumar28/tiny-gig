@@ -8,18 +8,18 @@ export const STEPS: Step[] = [
     summary: 'Sign in with Google or an email code and tell us about your Reddit account and UPI ID.',
     details: [
       'Sign in with Google or a one-time code sent to your email.',
-      'Fill in your name, Reddit profile link, Reddit account age, karma, UPI ID, state, phone and email. Add a referral code if a friend invited you.',
+      'Fill in your name, Reddit profile link, the date your Reddit account was created, karma, UPI ID, state, phone and email. Add a referral code if a friend invited you.',
       'Our team reviews every application by hand, usually within 24 to 48 hours, and emails you when you are approved.',
     ],
   },
   {
     id: 'claim',
-    title: 'Claim a gig',
-    summary: 'Browse open gigs, check the payout and requirements, and claim a slot before they fill up.',
+    title: 'Raise your hand',
+    summary: 'Browse open gigs, check the pay and requirements, and tap “I’m interested”. Our team picks one account per slot.',
     details: [
       'Each gig shows the platform, the brief, the payout in rupees, any requirements (like minimum karma, account age or state) and how many slots are left.',
-      'Slots are limited and first come, first served. Claiming is instant.',
-      'After claiming you have a set window to complete the task and submit.',
+      'Saying you are interested reserves nothing. The team picks the best-fit account for each slot and notifies you if it is yours.',
+      'Once selected you have a set window to complete the task and submit.',
     ],
   },
   {

@@ -14,7 +14,7 @@ export type TimelineEvent = {
 }
 
 const ACTIONS: Record<string, { verb: string; icon: LucideIcon; tone: string }> = {
-  claimed: { verb: 'claimed the gig', icon: Hand, tone: 'bg-info/12 text-info' },
+  claimed: { verb: 'got the gig', icon: Hand, tone: 'bg-info/12 text-info' },
   submitted: { verb: 'submitted proof', icon: Send, tone: 'bg-primary/12 text-primary' },
   resubmitted: { verb: 'resubmitted proof', icon: RotateCcw, tone: 'bg-primary/12 text-primary' },
   changes_requested: {

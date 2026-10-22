@@ -9,7 +9,7 @@ export const FAQ: FaqItem[] = [
     id: 'what-is-tinygig',
     question: 'What is TinyGig?',
     answer:
-      'TinyGig is a gig-work platform for India. Our team posts small paid social media tasks, mostly Reddit posts, comments and replies in specific subreddits, plus tasks on X, LinkedIn, Threads, Instagram and other platforms. You claim a gig, complete it, submit proof and get paid to your UPI ID once the work is approved.',
+      'TinyGig is a gig-work platform for India. Our team posts small paid social media tasks, mostly Reddit posts, comments and replies in specific subreddits, plus tasks on X, LinkedIn, Threads, Instagram and other platforms. You say you are interested in a gig, our team picks one account per slot, and if you are selected you complete it, submit proof and get paid to your UPI ID once the work is approved.',
   },
   {
     id: 'who-can-apply',
@@ -21,19 +21,19 @@ export const FAQ: FaqItem[] = [
     id: 'approval-time',
     question: 'How long does approval take?',
     answer:
-      'Every application is reviewed by a person, usually within 24 to 48 hours. You get an email as soon as you are approved, and you can start claiming gigs right away.',
+      'Every application is reviewed by a person, usually within 24 to 48 hours. You get an email as soon as you are approved, and you can start raising your hand for gigs right away.',
   },
   {
     id: 'karma-requirements',
     question: 'Do I need a lot of Reddit karma?',
     answer:
-      'Not to join. Some gigs set their own requirements, such as minimum karma, account age or a specific state, and you will see those on the gig before you claim it. Gigs without requirements are open to every approved worker.',
+      'Not to join. Some gigs set their own requirements, such as minimum karma, account age or a specific state, and you will see those on the gig before you raise your hand. Gigs without requirements are open to every approved worker.',
   },
   {
     id: 'claiming',
-    question: 'How do I claim a gig?',
+    question: 'How do I get a gig?',
     answer:
-      'Open the list of available gigs and tap claim. Slots are limited and go first come, first served. Once you claim a slot you have a set window to complete the task and submit, shown on the gig. If the window runs out, the slot goes back to the pool.',
+      'Open the list of gigs and tap “I’m interested”, ideally within the first few minutes. That reserves nothing. Our team picks one account for each slot, based on account age, recent activity and fit with the community, and you get a notification if you are selected. You then have a set window, shown on the gig, to post and submit. If the window runs out, the slot goes back to the pool. If a limit stops you from taking a gig, the gig shows you why and when it lifts.',
   },
   {
     id: 'proof',
@@ -63,7 +63,7 @@ export const FAQ: FaqItem[] = [
     id: 'earnings',
     question: 'How much can I earn?',
     answer:
-      'It depends on how many gigs are available and how many you complete. Every gig shows its payout in rupees before you claim it, so you always know what a task pays. There is no guaranteed income or fixed salary.',
+      'It depends on how many gigs are available and how many you complete. Every gig shows what it pays in rupees, and once you are selected the rate is fixed, so you always know what a task pays. There is no guaranteed income or fixed salary.',
   },
   {
     id: 'referrals',

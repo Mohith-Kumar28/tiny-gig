@@ -17,7 +17,7 @@ type Earnings = Awaited<ReturnType<typeof getMyEarnings>>
 
 const STEPS = [
   { icon: Search, title: 'Find a gig', body: 'Browse open gigs and pick one you qualify for.' },
-  { icon: Hand, title: 'Claim a slot', body: 'Slots are limited. Claiming gives you time to finish.' },
+  { icon: Hand, title: 'Raise your hand', body: 'Tap “I’m interested”. We pick one account per slot.' },
   { icon: Send, title: 'Do it & submit', body: 'Post as briefed, then paste the link to your post.' },
   { icon: Wallet, title: 'Get paid', body: 'After approval, money goes to your UPI.' },
 ]
@@ -166,7 +166,7 @@ export function WorkerOverview({ overview, earnings }: { overview: Overview; ear
             </ul>
           ) : (
             <div className="flex flex-col items-center gap-3 px-4 py-10 text-center">
-              <p className="text-sm text-muted-foreground">No active tasks. Claim a gig to get started.</p>
+              <p className="text-sm text-muted-foreground">No active tasks. Raise your hand on a gig to get started.</p>
               <Button asChild variant="outline" size="sm">
                 <Link to="/w/gigs">Find gigs</Link>
               </Button>

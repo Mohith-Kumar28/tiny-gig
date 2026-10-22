@@ -15,7 +15,7 @@ export const Route = createFileRoute('/faq')({
       path: '/faq',
       title: `FAQ | ${SITE.name}`,
       description:
-        'Answers about TinyGig: who can apply, approval time, karma requirements, claiming gigs, proof, the live hold, UPI payouts and referrals.',
+        'Answers about TinyGig: who can apply, approval time, karma requirements, getting selected for gigs, proof, the live hold, UPI payouts and referrals.',
     }),
   component: FaqPage,
 })
@@ -26,7 +26,7 @@ function FaqPage() {
       <JsonLd data={faqPageJsonLd()} />
       <PageIntro
         title="Frequently asked questions"
-        lead="Everything about applying, claiming gigs, reviews and getting paid. If your question is not here, email us."
+        lead="Everything about applying, getting selected, reviews and getting paid. If your question is not here, email us."
       />
       <Container className="grid gap-12 py-14 sm:py-20 lg:grid-cols-[1.4fr_0.6fr] lg:gap-16">
         <FaqList headingLevel={2} />

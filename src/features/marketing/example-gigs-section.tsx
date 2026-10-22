@@ -10,7 +10,7 @@ export function ExampleGigsSection() {
         <div className="lg:sticky lg:top-28 lg:self-start">
           <SectionHeading
             id="examples-title"
-            title="You see the payout before you claim."
+            title="You see the pay before you raise your hand."
             lead="Each gig lists the platform, the community, the brief, any requirements and the exact amount in rupees."
           />
           <p className="mt-6 inline-flex rounded-full border border-dashed px-3 py-1 text-sm text-muted-foreground">

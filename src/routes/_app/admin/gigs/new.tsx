@@ -25,7 +25,11 @@ function NewGigPage() {
         <PageHeader title="New gig" />
       </div>
       <GigForm
-        initial={{ claimWindowHours: settings.defaultClaimWindowHours, liveHoldHours: settings.defaultLiveHoldHours }}
+        initial={{
+          claimWindowHours: settings.defaultClaimWindowHours,
+          liveHoldHours: settings.defaultLiveHoldHours,
+          interestWindowMinutes: settings.interestWindowMinutes,
+        }}
       />
     </div>
   )

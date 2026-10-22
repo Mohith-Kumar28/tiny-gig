@@ -417,9 +417,9 @@ export function rankCandidates<T extends Candidate>(cands: T[]): T[] {
 }
 
 /** "u/foo · L3 · 14 days since last client post · never posted in r/india" */
-export function reasonLine(c: Candidate, now: Date) {
+export function reasonLine(c: Candidate, now: Date, opts: { withHandle?: boolean } = {}) {
   const f = c.evaluation.facts
-  const parts = [`u/${c.handle}`]
+  const parts = opts.withHandle === false ? [] : [`u/${c.handle}`]
   if (f.level) parts.push(f.level === 'warmup' ? 'warm-up' : f.level)
   parts.push(f.daysSinceClientWork == null ? 'no client posts yet' : `${f.daysSinceClientWork} day${f.daysSinceClientWork === 1 ? '' : 's'} since last client post`)
   if (c.community) {

@@ -89,11 +89,11 @@ export const emailTemplates = {
 
   applicationApproved: (d: { name: string }, ctx: Ctx): Content => ({
     subject: "You're in! Your TinyGig account is approved",
-    preview: 'Start claiming gigs today.',
+    preview: 'Add your accounts and start raising your hand for gigs.',
     heading: `Welcome aboard, ${d.name.split(' ')[0]} 🎉`,
     paragraphs: [
       'Your application has been approved. You now have full access to your dashboard.',
-      'Browse available gigs, claim a slot and submit your proof before the deadline to get paid via UPI.',
+      'Add every account you can work from on My accounts, then tap “I’m interested” on gigs that suit you. When you’re selected, post, submit the link and get paid via UPI.',
     ],
     cta: { label: 'Browse gigs', href: url(ctx, '/w/gigs') },
   }),
@@ -110,14 +110,34 @@ export const emailTemplates = {
     cta: { label: 'Open dashboard', href: url(ctx, '/pending') },
   }),
 
-  newGig: (d: { title: string; platform: string; payout: number; gigId: string }, ctx: Ctx): Content => ({
-    subject: `New gig: ${d.title} · ${formatMoney(d.payout)}`,
-    preview: `A new ${d.platform} gig is live — slots are limited.`,
+  newGig: (d: { title: string; platform: string; payout: number; gigId: string; windowMinutes?: number; payLabel?: string }, ctx: Ctx): Content => ({
+    subject: `New gig: ${d.title}`,
+    preview: `Interested? Say so in the next ${d.windowMinutes ?? 10} minutes.`,
     heading: 'A new gig just went live',
-    paragraphs: [`“${d.title}” is open on ${d.platform}. Slots are first come, first served.`],
-    details: [{ label: 'Payout', value: formatMoney(d.payout) }],
-    cta: { label: 'View gig', href: url(ctx, `/w/gigs/${d.gigId}`) },
+    paragraphs: [
+      `“${d.title}” is open on ${d.platform}. Tap “I’m interested” within ${d.windowMinutes ?? 10} minutes and our team picks the best-fit account.`,
+      'Saying you’re interested doesn’t commit you to anything until you’re selected.',
+    ],
+    details: [{ label: 'Pay', value: d.payLabel ?? formatMoney(d.payout) }],
+    cta: { label: 'I’m interested', href: url(ctx, `/w/gigs/${d.gigId}`) },
     footerNote: 'You can turn off new-gig emails in your profile settings.',
+  }),
+
+  selectedForGig: (d: { title: string; account: string; pay: string; dueAt: string; submissionId: string; disclaimer: string }, ctx: Ctx): Content => ({
+    subject: `You’re selected: “${d.title}”`,
+    preview: `Post from ${d.account} and submit the link before ${d.dueAt}.`,
+    heading: 'You’ve been selected',
+    paragraphs: [
+      `We picked ${d.account} for “${d.title}”. Post from that account and submit the link before the deadline.`,
+      'Reply to comments on your post: it’s part of the task.',
+    ],
+    details: [
+      { label: 'Account', value: d.account },
+      { label: 'Pay', value: d.pay },
+      { label: 'Deadline', value: d.dueAt },
+    ],
+    cta: { label: 'Open task', href: url(ctx, `/w/work/${d.submissionId}`) },
+    footerNote: d.disclaimer,
   }),
 
   claimConfirmed: (d: { title: string; dueAt: string; submissionId: string }, ctx: Ctx): Content => ({

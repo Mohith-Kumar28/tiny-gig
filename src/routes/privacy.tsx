@@ -61,7 +61,7 @@ function PrivacyPage() {
       <h2>Why we use it</h2>
       <ul>
         <li>To review your application and decide whether you are eligible for specific gigs.</li>
-        <li>To let you claim gigs, review your submissions and calculate your earnings.</li>
+        <li>To match your accounts to gigs, review your submissions and calculate your earnings.</li>
         <li>To send payouts to your UPI ID and email you the UTR reference.</li>
         <li>To run the referral program and credit referral rewards.</li>
         <li>To send emails about your account, such as approval, review results and payouts.</li>

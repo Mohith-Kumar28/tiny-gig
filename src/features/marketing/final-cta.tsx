@@ -13,7 +13,7 @@ export function FinalCta() {
           id="final-cta-title"
           className="mk-reveal max-w-3xl font-display text-5xl leading-[0.98] font-bold tracking-[-0.035em] text-balance sm:text-7xl"
         >
-          Apply once. Start claiming gigs.
+          Apply once. Start earning from your accounts.
         </h2>
         <p className="mk-reveal max-w-md text-lg text-muted-foreground">
           It takes a few minutes. Free to join, and we email you when you are approved.

@@ -11,7 +11,7 @@ type Action = 'approve' | 'suspend' | 'reactivate'
 const COPY: Record<Action, { title: string; description: string; confirm: string; success: string }> = {
   approve: {
     title: 'Approve worker?',
-    description: 'They get an approval email and can start claiming gigs right away.',
+    description: 'They get an approval email and can start raising their hand for gigs right away.',
     confirm: 'Approve',
     success: 'Approved: worker notified by email',
   },
@@ -23,7 +23,7 @@ const COPY: Record<Action, { title: string; description: string; confirm: string
   },
   reactivate: {
     title: 'Reactivate worker?',
-    description: 'They can claim gigs again.',
+    description: 'They can take gigs again.',
     confirm: 'Reactivate',
     success: 'Worker reactivated',
   },

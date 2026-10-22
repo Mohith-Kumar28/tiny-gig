@@ -26,7 +26,7 @@ function OnboardingPage() {
         <p className="max-w-xl text-muted-foreground">
           {defaults.status === 'rejected'
             ? 'Update your details and re-apply. Our team will take another look.'
-            : 'Fill this once. After approval you can claim paid gigs right away.'}
+            : 'Fill this once. After approval you can add more accounts and start raising your hand for paid gigs.'}
         </p>
       </div>
       <ApplicationForm

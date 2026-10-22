@@ -21,6 +21,7 @@
     "db:seed:local": "wrangler d1 execute tinygig-db --local --file=./scripts/seed.sql"
   },
   "dependencies": {
+    "@block65/webcrypto-web-push": "2.0.0",
     "@daveyplate/better-auth-ui": "3.4.0",
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",

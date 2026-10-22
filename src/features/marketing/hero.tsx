@@ -32,7 +32,7 @@ export function Hero() {
             Get paid to post on <span className="text-primary">Reddit.</span>
           </h1>
           <p className="mk-rise mt-6 max-w-md text-lg leading-relaxed text-muted-foreground sm:text-xl" style={{ '--i': 2 } as CSSProperties}>
-            Claim small paid tasks on Reddit, X, LinkedIn and Threads. Do them from your phone. Get paid by UPI.
+            Get picked for small paid tasks on Reddit, X, LinkedIn and Threads. Do them from your phone. Get paid by UPI.
           </p>
           <div className="mk-rise mt-9 flex flex-wrap items-center gap-3" style={{ '--i': 3 } as CSSProperties}>
             <CtaLink href="/login" size="lg" arrow>

@@ -1,5 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
-import { Link, useRouter } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import {
   ArrowLeft,
   ArrowRight,
@@ -8,6 +7,7 @@ import {
   ExternalLink,
   Lock,
   ShieldCheck,
+  Hand,
   Sparkles,
   Timer,
   X,
@@ -17,7 +17,6 @@ import { CopyButton } from '@/components/shared/copy-button'
 import { Countdown } from '@/components/shared/countdown'
 import { Money } from '@/components/shared/money'
 import { PlatformLabel } from '@/components/shared/platform-icon'
-import { formatDateTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import {
   AlertDialog,
@@ -30,13 +29,13 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/ui/spinner'
-import { myProfileQuery } from '@/features/workers/queries'
 import { useAction } from '@/hooks/use-action'
-import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { claimGig, type getGigForWorker } from '../server/worker-gigs'
+import { expressInterest, withdrawInterest } from '@/features/opportunities/server/interest'
+import type { getGigForWorker } from '../server/worker-gigs'
 import { formatHours, slotsLeft, TASK_TYPE_LABELS } from './worker-gig-meta'
 
 type GigDetailData = Awaited<ReturnType<typeof getGigForWorker>>
@@ -73,22 +72,20 @@ function Requirement({ ok, children }: { ok: boolean | null; children: ReactNode
 }
 
 export function WorkerGigDetail({ data }: { data: GigDetailData }) {
-  const { gig, mySubmission, ineligible } = data
-  const router = useRouter()
-  const { data: profile } = useQuery(myProfileQuery())
+  const { gig, mySubmission, ineligible, interest, myAccounts } = data
   const [confirmOpen, setConfirmOpen] = useState(false)
+  const eligibleAccounts = myAccounts.filter((a) => a.ok)
+  const [offered, setOffered] = useState<string[]>([])
   const left = slotsLeft(gig)
-  const deadlinePreview = new Date(Date.now() + gig.claimWindowHours * 3_600_000)
+  const windowOpen = gig.interestClosesAt ? new Date(gig.interestClosesAt) > new Date() : false
 
-  const claim = useAction(() => claimGig({ data: { gigId: gig.id } }), {
-    success: 'Gig claimed! Your task is ready.',
+  const interested = useAction((accountIds: string[]) => expressInterest({ data: { gigId: gig.id, accountIds } }), {
+    success: 'You’re in the running. We’ll notify you if you’re selected.',
     invalidate: [['w']],
-    onSuccess: async (r) => {
-      setConfirmOpen(false)
-      await router.navigate({ to: '/w/work/$submissionId', params: { submissionId: r.submissionId } })
-    },
+    onSuccess: () => setConfirmOpen(false),
     onError: () => setConfirmOpen(false),
   })
+  const withdraw = useAction(() => withdrawInterest({ data: { gigId: gig.id } }), { success: 'Interest withdrawn', invalidate: [['w']] })
 
   const cta = mySubmission ? (
     <Button asChild size="lg" className="w-full">
@@ -96,18 +93,38 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
         Open your task <ArrowRight />
       </Link>
     </Button>
+  ) : interest?.status === 'interested' ? (
+    <div className="space-y-2">
+      <div className="flex items-center gap-2 rounded-lg border border-success/30 bg-success/10 px-3 py-2.5 text-sm font-medium text-success">
+        <Check className="size-4" /> You’re in the running
+      </div>
+      <Button variant="ghost" size="sm" className="w-full text-muted-foreground" disabled={withdraw.isPending} onClick={() => withdraw.mutate(undefined)}>
+        Withdraw interest
+      </Button>
+    </div>
+  ) : interest?.status === 'not_selected' ? (
+    <Button size="lg" className="w-full" disabled>
+      Filled: another account was picked
+    </Button>
   ) : ineligible ? (
     <Button size="lg" className="w-full" disabled>
-      <Lock /> {ineligible}
+      <Lock /> Not available yet
     </Button>
   ) : (
-    <Button size="lg" className="w-full" onClick={() => setConfirmOpen(true)} disabled={claim.isPending}>
-      {claim.isPending ? <Spinner /> : null}
-      Claim this gig · <Money paise={gig.payoutAmount} />
+    <Button
+      size="lg"
+      className="w-full"
+      onClick={() => {
+        setOffered(eligibleAccounts.map((a) => a.id))
+        setConfirmOpen(true)
+      }}
+      disabled={interested.isPending}
+    >
+      {interested.isPending ? <Spinner /> : <Hand />}
+      I’m interested
     </Button>
   )
 
-  const allowedStates = gig.allowedStates ?? []
 
   return (
     <div className="pb-4">
@@ -139,14 +156,21 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
           {mySubmission ? (
             <div className="flex items-center gap-3 rounded-xl border border-info/30 bg-info/8 p-4 text-sm">
               <Sparkles className="size-4 shrink-0 text-info" />
-              <p className="flex-1">You already claimed this gig. Open your task to submit or track it.</p>
+              <p className="flex-1">You were selected for this gig. Open your task to submit or track it.</p>
+            </div>
+          ) : interest?.status === 'interested' ? (
+            <div className="flex items-center gap-3 rounded-xl border border-success/30 bg-success/8 p-4 text-sm">
+              <Hand className="size-4 shrink-0 text-success" />
+              <p className="flex-1">
+                You’re in the running. Our team picks the best-fit account for each slot and you’ll get a notification if you’re selected.
+              </p>
             </div>
           ) : ineligible ? (
             <div className="flex items-center gap-3 rounded-xl border bg-muted/60 p-4 text-sm">
               <Lock className="size-4 shrink-0 text-muted-foreground" />
               <p className="flex-1">
-                <span className="font-medium">You can't claim this gig: </span>
-                {ineligible}.
+                <span className="font-medium">Not available yet: </span>
+                {ineligible}
               </p>
             </div>
           ) : null}
@@ -198,50 +222,61 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
             </Section>
           ) : null}
 
-          <Section title="Who can do this">
-            <ul className="space-y-2.5">
-              <Requirement ok={profile ? profile.karma >= gig.minKarma : null}>
-                {gig.minKarma > 0 ? `${formatNumber(gig.minKarma)}+ Reddit karma` : 'Any karma'}
-                {profile ? <span className="text-muted-foreground"> (you have {formatNumber(profile.karma)})</span> : null}
-              </Requirement>
-              <Requirement ok={profile ? profile.accountAgeMonths >= gig.minAccountAgeMonths : null}>
-                {gig.minAccountAgeMonths > 0 ? `Account at least ${gig.minAccountAgeMonths} months old` : 'Any account age'}
-                {profile ? <span className="text-muted-foreground"> (yours: {profile.accountAgeMonths} months)</span> : null}
-              </Requirement>
-              <Requirement ok={profile ? !allowedStates.length || allowedStates.includes(profile.state) : null}>
-                {allowedStates.length ? `Only in: ${allowedStates.join(', ')}` : 'Open to all states in India'}
-              </Requirement>
-            </ul>
+          <Section title="Your accounts for this gig">
+            {myAccounts.length ? (
+              <ul className="space-y-2.5">
+                {myAccounts.map((a) => (
+                  <Requirement key={a.id} ok={a.ok}>
+                    <span className="font-medium">{a.label}</span>
+                    {a.level ? <span className="text-muted-foreground"> · {a.level === 'warmup' ? 'warm-up' : a.level}</span> : null}
+                    {a.reason ? <span className="block text-xs text-muted-foreground">{a.reason}</span> : null}
+                  </Requirement>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                You don’t have an account on this platform yet.{' '}
+                <Link to="/w/accounts" className="font-medium text-foreground underline underline-offset-2">
+                  Add one
+                </Link>
+                .
+              </p>
+            )}
+            {gig.minKarma > 0 || gig.minAccountAgeMonths > 0 || (gig.allowedStates ?? []).length ? (
+              <p className="mt-3 border-t pt-3 text-xs text-muted-foreground">
+                Needs{gig.minKarma > 0 ? ` ${gig.minKarma.toLocaleString('en-IN')}+ karma` : ''}
+                {gig.minAccountAgeMonths > 0 ? `${gig.minKarma > 0 ? ',' : ''} an account ${gig.minAccountAgeMonths}+ months old` : ''}
+                {(gig.allowedStates ?? []).length ? ` · only in ${(gig.allowedStates ?? []).join(', ')}` : ''}.
+              </p>
+            ) : null}
           </Section>
 
           <Section title="Steps">
             <ol className="space-y-3 text-sm">
-              <li className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">1</span>
-                <span>
-                  Claim, then post and submit the link within <strong>{formatHours(gig.claimWindowHours)}</strong>.
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">2</span>
-                <span>We review it.</span>
-              </li>
-              {gig.liveHoldHours > 0 ? (
-                <li className="flex gap-3">
-                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">3</span>
-                  <span>
-                    Keep the post up for <strong>{formatHours(gig.liveHoldHours)}</strong>.
-                  </span>
+              {[
+                <>
+                  Tap <strong>I’m interested</strong>{windowOpen ? ' in the next few minutes' : ''}. It doesn’t commit you to anything.
+                </>,
+                <>Our team picks one account per slot. If it’s yours, you’ll get a notification.</>,
+                <>
+                  Post from the selected account and submit the link within <strong>{formatHours(gig.claimWindowHours)}</strong>. Reply to comments on
+                  your post: it’s part of the task.
+                </>,
+                ...(gig.liveHoldHours > 0
+                  ? [
+                      <>
+                        Keep it live for <strong>{formatHours(gig.liveHoldHours)}</strong>, then upload a screenshot of the post’s insights.
+                      </>,
+                    ]
+                  : []),
+                <>Once approved, the pay goes to your TinyGig balance. Balances are paid to your UPI every week.</>,
+              ].map((step, i) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: static list
+                <li key={i} className="flex gap-3">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">{i + 1}</span>
+                  <span>{step}</span>
                 </li>
-              ) : null}
-              <li className="flex gap-3">
-                <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">
-                  {gig.liveHoldHours > 0 ? 4 : 3}
-                </span>
-                <span>
-                  Get <Money paise={gig.payoutAmount} /> on UPI.
-                </span>
-              </li>
+              ))}
             </ol>
           </Section>
         </div>
@@ -266,7 +301,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                 <dt className="flex items-center gap-1.5 text-muted-foreground">
                   <Timer className="size-3.5" /> Time to finish
                 </dt>
-                <dd className="text-right font-medium">{formatHours(gig.claimWindowHours)} after claim</dd>
+                <dd className="text-right font-medium">{formatHours(gig.claimWindowHours)} after selection</dd>
               </div>
               <div className="flex items-start justify-between gap-3">
                 <dt className="flex items-center gap-1.5 text-muted-foreground">
@@ -274,6 +309,14 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                 </dt>
                 <dd className="text-right font-medium">{gig.liveHoldHours > 0 ? `Stay up ${formatHours(gig.liveHoldHours)}` : 'None'}</dd>
               </div>
+              {windowOpen && gig.interestClosesAt ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="text-muted-foreground">Interest window</dt>
+                  <dd>
+                    <Countdown to={gig.interestClosesAt} prefix="Closes" />
+                  </dd>
+                </div>
+              ) : null}
               {gig.endsAt ? (
                 <div className="flex items-start justify-between gap-3">
                   <dt className="text-muted-foreground">Gig closes</dt>
@@ -300,31 +343,48 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
         {cta}
       </div>
 
-      <AlertDialog open={confirmOpen} onOpenChange={(o) => !claim.isPending && setConfirmOpen(o)}>
+      <AlertDialog open={confirmOpen} onOpenChange={(o) => !interested.isPending && setConfirmOpen(o)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Claim this gig?</AlertDialogTitle>
+            <AlertDialogTitle>Interested in this gig?</AlertDialogTitle>
             <AlertDialogDescription asChild>
-              <div className="space-y-2 text-sm text-muted-foreground">
+              <div className="space-y-3 text-sm text-muted-foreground">
                 <p>
-                  You'll have <strong className="text-foreground">{formatHours(gig.claimWindowHours)}</strong> to post and submit your
-                  proof link, until about <strong className="text-foreground">{formatDateTime(deadlinePreview)}</strong>.
+                  This reserves nothing. Our team picks one account per slot. If it’s yours, you’ll have{' '}
+                  <strong className="text-foreground">{formatHours(gig.claimWindowHours)}</strong> to post and submit the link.
                 </p>
-                <p>If you don't submit in time, the slot goes back to other workers. Only claim if you can do it now.</p>
+                {eligibleAccounts.length > 1 ? (
+                  <div className="space-y-2">
+                    <p className="font-medium text-foreground">Accounts you can offer</p>
+                    {eligibleAccounts.map((a) => (
+                      <div key={a.id} className="flex items-center gap-2.5">
+                        <Checkbox
+                          id={`offer-${a.id}`}
+                          checked={offered.includes(a.id)}
+                          onCheckedChange={(v) => setOffered((o) => (v ? [...o, a.id] : o.filter((x) => x !== a.id)))}
+                        />
+                        <label htmlFor={`offer-${a.id}`} className="text-foreground">
+                          {a.label}
+                          {a.level ? <span className="text-muted-foreground"> · {a.level}</span> : null}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ) : null}
               </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={claim.isPending}>Not now</AlertDialogCancel>
+            <AlertDialogCancel disabled={interested.isPending}>Not now</AlertDialogCancel>
             <AlertDialogAction
-              disabled={claim.isPending}
+              disabled={interested.isPending || !offered.length}
               onClick={(e) => {
                 e.preventDefault()
-                claim.mutate(undefined)
+                interested.mutate(offered)
               }}
             >
-              {claim.isPending ? <Spinner /> : null}
-              Yes, claim it
+              {interested.isPending ? <Spinner /> : null}
+              Yes, I’m interested
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

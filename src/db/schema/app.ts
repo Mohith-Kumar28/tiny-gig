@@ -96,6 +96,9 @@ export const gig = sqliteTable(
     totalSlots: integer('total_slots').notNull(),
     claimedSlots: integer('claimed_slots').notNull().default(0),
     claimWindowHours: integer('claim_window_hours').notNull().default(24),
+    /** How long workers get to say they're interested once the gig goes live (R12). */
+    interestWindowMinutes: integer('interest_window_minutes').notNull().default(10),
+    interestClosesAt: timestamp('interest_closes_at'),
     liveHoldHours: integer('live_hold_hours').notNull().default(24),
     startsAt: timestamp('starts_at'),
     endsAt: timestamp('ends_at'),
@@ -177,6 +180,34 @@ export const submission = sqliteTable(
   ],
 )
 
+export const INTEREST_STATUSES = ['interested', 'selected', 'not_selected', 'withdrawn'] as const
+
+/**
+ * "I'm interested" — reserves nothing (§4.1). Staff pick one account from these.
+ * A direct assignment from the roster also gets a row (status selected) so the trail is complete.
+ */
+export const gigInterest = sqliteTable(
+  'gig_interest',
+  {
+    id: id(),
+    gigId: text('gig_id')
+      .notNull()
+      .references(() => gig.id, { onDelete: 'cascade' }),
+    workerId: text('worker_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    /** Eligible accounts the worker offered for this opportunity. */
+    accountIds: text('account_ids', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .$defaultFn(() => []),
+    status: text('status', { enum: INTEREST_STATUSES }).notNull().default('interested'),
+    createdAt: createdAt(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [uniqueIndex('gig_interest_uq').on(t.gigId, t.workerId), index('gig_interest_gig_idx').on(t.gigId, t.status)],
+)
+
 export const submissionEvent = sqliteTable(
   'submission_event',
   {
@@ -233,6 +264,23 @@ export const notification = sqliteTable(
     createdAt: createdAt(),
   },
   (t) => [index('notification_user_idx').on(t.userId, t.createdAt)],
+)
+
+/** Browser push subscriptions — the fastest way to reach a worker inside the interest window (§4.1). */
+export const pushSubscription = sqliteTable(
+  'push_subscription',
+  {
+    id: id(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    endpoint: text('endpoint').notNull().unique(),
+    p256dh: text('p256dh').notNull(),
+    auth: text('auth').notNull(),
+    userAgent: text('user_agent'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('push_subscription_user_idx').on(t.userId)],
 )
 
 export const emailLog = sqliteTable(

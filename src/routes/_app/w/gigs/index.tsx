@@ -37,7 +37,7 @@ function FindGigsPage() {
       />
       <WorkerGigFilters search={search} onChange={onChange} />
       <p className="text-sm text-muted-foreground" aria-live="polite">
-        {isPending ? 'Loading gigs…' : `${pluralize(gigs.length, 'gig')} found${gigs.length !== open ? ` · ${open} you can claim` : ''}`}
+        {isPending ? 'Loading gigs…' : `${pluralize(gigs.length, 'gig')} found${gigs.length !== open ? ` · ${open} open to you` : ''}`}
         {isFetching && !isPending ? ' · updating…' : ''}
       </p>
       {isPending ? (

@@ -34,7 +34,7 @@ export function RequirementsSection() {
             <p className="text-sm leading-relaxed">
               <span className="font-semibold">Some gigs ask for more,</span>{' '}
               <span className="text-muted-foreground">
-                like a minimum karma, account age or state. You will see those on the gig before you claim it.
+                like a minimum karma, account age or state. You will see those on the gig before you raise your hand.
               </span>
             </p>
           </div>

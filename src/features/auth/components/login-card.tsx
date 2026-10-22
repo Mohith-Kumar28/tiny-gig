@@ -8,7 +8,7 @@ export function LoginCard({ google, devEmails, redirectTo }: { google: boolean; 
     <div className="w-full max-w-sm space-y-6">
       <div className="space-y-1.5">
         <h1 className="font-display text-3xl font-semibold tracking-tight">Sign in to TinyGig</h1>
-        <p className="text-sm text-muted-foreground">New here? Create your account, then apply to start claiming gigs.</p>
+        <p className="text-sm text-muted-foreground">New here? Create your account, then apply to start doing paid gigs.</p>
       </div>
       {google ? (
         <>

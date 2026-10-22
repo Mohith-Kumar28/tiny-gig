@@ -14,6 +14,7 @@ import { accountHistoryQuery } from '../queries'
 import { accountAgeDays, accountLabel, communityLabel, formatAge, levelFor } from '../rules'
 import { LevelBadge, platformIconFor } from './account-columns'
 import { STANDING_LABELS, StandingSelect } from './account-editors'
+import { AssignToOpportunity } from '@/features/opportunities/components/assign-to-opportunity'
 import { ClientChip } from './client-chip'
 
 const FIELD_LABELS: Record<string, string> = {
@@ -100,6 +101,7 @@ export function AccountSheet({ accountId, onOpenChange }: { accountId: string | 
                       <ExternalLink /> Profile
                     </a>
                   </Button>
+                  <AssignToOpportunity accountId={a.id} />
                 </div>
               </div>
               {a.standingNote ? <p className="rounded-lg border bg-muted/40 p-3 text-sm">{a.standingNote}</p> : null}

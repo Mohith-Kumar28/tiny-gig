@@ -36,6 +36,20 @@
       "when": 1792663965293,
       "tag": "0004_cooldowns",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1792664465703,
+      "tag": "0005_interest",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1792664988450,
+      "tag": "0006_push",
+      "breakpoints": true
     }
   ]
 }

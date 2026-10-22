@@ -2,7 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Db } from '@/db/client'
-import { gig, submission, workerProfile } from '@/db/schema'
+import { clientTag, gig, gigInterest, submission, workerProfile } from '@/db/schema'
 import { GIG_STATUSES, PLATFORMS, SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
 import { queueBulkEmail } from '@/emails/send-email'
 import { rupeesToPaise } from '@/lib/format'
@@ -93,13 +93,25 @@ export const getGigAdmin = createServerFn({ method: 'GET' })
       .from(submission)
       .where(eq(submission.gigId, data.id))
       .groupBy(submission.status)
+    const [interest] = await context.db
+      .select({ n: count() })
+      .from(gigInterest)
+      .where(and(eq(gigInterest.gigId, data.id), eq(gigInterest.status, 'interested')))
+    const client = row.clientTagId
+      ? await context.db.select({ name: clientTag.name, color: clientTag.color }).from(clientTag).where(eq(clientTag.id, row.clientTagId)).get()
+      : null
     return {
       gig: row,
+      interested: interest?.n ?? 0,
+      client: client ?? null,
       counts: Object.fromEntries(counts.map((c) => [c.status, c.n])) as Partial<
         Record<(typeof SUBMISSION_STATUSES)[number], number>
       >,
     }
   })
+
+/** The interest window starts the moment a gig first goes live (R12). */
+const windowEnd = (minutes: number) => new Date(Date.now() + minutes * 60_000)
 
 function toRow(v: GigFormValues) {
   return {
@@ -116,6 +128,7 @@ function toRow(v: GigFormValues) {
     payoutAmount: rupeesToPaise(v.payoutRupees),
     totalSlots: v.totalSlots,
     claimWindowHours: v.claimWindowHours,
+    interestWindowMinutes: v.interestWindowMinutes,
     liveHoldHours: v.liveHoldHours,
     minKarma: v.minKarma,
     minAccountAgeMonths: v.minAccountAgeMonths,
@@ -186,7 +199,12 @@ export const saveGig = createServerFn({ method: 'POST' })
       wasLive = Boolean(existing.publishedAt)
       ;[saved] = await db
         .update(gig)
-        .set({ ...values, publishedAt: values.status === 'live' ? (existing.publishedAt ?? new Date()) : existing.publishedAt })
+        .set({
+          ...values,
+          publishedAt: values.status === 'live' ? (existing.publishedAt ?? new Date()) : existing.publishedAt,
+          interestClosesAt:
+            values.status === 'live' && !existing.publishedAt ? windowEnd(values.interestWindowMinutes) : existing.interestClosesAt,
+        })
         .where(eq(gig.id, id))
         .returning()
     } else {
@@ -197,6 +215,7 @@ export const saveGig = createServerFn({ method: 'POST' })
           slug: slugify(values.title),
           createdBy: user.id,
           publishedAt: values.status === 'live' ? new Date() : null,
+          interestClosesAt: values.status === 'live' ? windowEnd(values.interestWindowMinutes) : null,
         })
         .returning()
     }
@@ -219,7 +238,11 @@ export const setGigStatus = createServerFn({ method: 'POST' })
       const firstPublish = data.status === 'live' && !t.publishedAt
       const [updated] = await db
         .update(gig)
-        .set({ status: data.status, publishedAt: firstPublish ? new Date() : t.publishedAt })
+        .set({
+          status: data.status,
+          publishedAt: firstPublish ? new Date() : t.publishedAt,
+          interestClosesAt: firstPublish ? windowEnd(t.interestWindowMinutes) : t.interestClosesAt,
+        })
         .where(eq(gig.id, t.id))
         .returning()
       if (firstPublish && updated && data.notifyWorkers !== false) notified += await announceGig(db, updated)
@@ -234,7 +257,7 @@ export const duplicateGig = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const src = await context.db.query.gig.findFirst({ where: eq(gig.id, data.id) })
     if (!src) throw new AppError('NOT_FOUND', 'Gig not found.')
-    const { id: _id, slug: _slug, createdAt: _c, updatedAt: _u, publishedAt: _p, claimedSlots: _cs, ...rest } = src
+    const { id: _id, slug: _slug, createdAt: _c, updatedAt: _u, publishedAt: _p, claimedSlots: _cs, interestClosesAt: _ic, ...rest } = src
     const [copy] = await context.db
       .insert(gig)
       .values({ ...rest, title: `${src.title} (copy)`, slug: slugify(src.title), status: 'draft', createdBy: context.user.id })
