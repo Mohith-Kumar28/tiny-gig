@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, count, desc, eq, inArray, like, lte, or, type SQL, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { submission, submissionEvent, gig, workerProfile, user } from '@/db/schema'
 import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
@@ -7,7 +7,6 @@ import { notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 import { decideOne } from './review-service'
-
 
 export const REVIEW_TABS = ['needs_review', 'resubmitted', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
 export type ReviewTab = (typeof REVIEW_TABS)[number]
@@ -18,6 +17,8 @@ export const reviewSearchSchema = tableSearchSchema.extend({
   platform: facet(PLATFORMS),
   gigId: z.string().optional().catch(undefined),
   workerId: z.string().optional().catch(undefined),
+  /** Only submissions that have been posted (submitted at least once) — the post log. */
+  posted: z.boolean().optional().catch(undefined),
   selected: z.string().optional().catch(undefined),
 })
 export type ReviewSearch = z.infer<typeof reviewSearchSchema>
@@ -54,6 +55,7 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
     if (data.platform?.length) filters.push(inArray(gig.platform, data.platform))
     if (data.gigId) filters.push(eq(submission.gigId, data.gigId))
     if (data.workerId) filters.push(eq(submission.workerId, data.workerId))
+    if (data.posted) filters.push(isNotNull(submission.submittedAt))
     if (data.q) {
       const q = `%${data.q.toLowerCase()}%`
       filters.push(
@@ -66,8 +68,9 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
       )
     }
     const where = filters.length ? and(...filters) : undefined
-    const fallback =
-      tab === 'live_check_due' || tab === 'live_check'
+    const fallback = data.posted
+      ? desc(submission.submittedAt)
+      : tab === 'live_check_due' || tab === 'live_check'
         ? asc(submission.liveCheckAt)
         : tab === 'all'
           ? desc(submission.updatedAt)
@@ -119,7 +122,10 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
       .where(where)
 
     const [rows, [totalRow]] = await Promise.all([
-      base.orderBy(...orderBy).limit(limit).offset(offset),
+      base
+        .orderBy(...orderBy)
+        .limit(limit)
+        .offset(offset),
       db
         .select({ n: count() })
         .from(submission)
@@ -226,6 +232,8 @@ export const addSubmissionComment = createServerFn({ method: 'POST' })
       action: 'comment',
       comment: data.comment,
     })
-    await notify(db, [{ userId: row.workerId, title: `New comment on ${row.title}`, body: data.comment, href: `/w/work/${data.id}` }])
+    await notify(db, [
+      { userId: row.workerId, title: `New comment on ${row.title}`, body: data.comment, href: `/w/work/${data.id}` },
+    ])
     return { ok: true }
   })

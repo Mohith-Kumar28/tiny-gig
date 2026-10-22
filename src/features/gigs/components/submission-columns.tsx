@@ -2,7 +2,7 @@ import type { ColumnDef } from '@tanstack/react-table'
 import { ExternalLink, Image } from 'lucide-react'
 import { Money } from '@/components/shared/money'
 import { PlatformIcon } from '@/components/shared/platform-icon'
-import { RelativeTime } from '@/components/shared/relative-time'
+import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import type { FacetOption } from '@/components/data-table/types'
 import type { SubmissionStatus } from '@/db/schema/enums'
@@ -107,25 +107,52 @@ export const gigSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [
   updated,
 ]
 
+const gigCol: ColumnDef<QueueRow, unknown> = {
+  id: 'gig',
+  header: 'Gig',
+  meta: { sortKey: 'gig' },
+  cell: ({ row }) => (
+    <div className="flex min-w-0 items-center gap-2">
+      <PlatformIcon platform={row.original.platform} />
+      <div className="min-w-0">
+        <div className="max-w-72 truncate font-medium">{row.original.gigTitle}</div>
+        {row.original.community ? <div className="truncate text-xs text-muted-foreground">{row.original.community}</div> : null}
+      </div>
+    </div>
+  ),
+}
+
 /** Submissions of one worker: the gig is the interesting column. */
-export const workerSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [
+export const workerSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [gigCol, status, proof, payout, submitted, updated]
+
+/** Post log: every posted submission across gigs, newest first. */
+export const postLogColumns: ColumnDef<QueueRow, unknown>[] = [
   {
-    id: 'gig',
-    header: 'Gig',
-    meta: { sortKey: 'gig' },
+    id: 'submittedAt',
+    header: 'Posted',
+    meta: { sortKey: 'submittedAt' },
     cell: ({ row }) => (
-      <div className="flex min-w-0 items-center gap-2">
-        <PlatformIcon platform={row.original.platform} />
-        <div className="min-w-0">
-          <div className="max-w-72 truncate font-medium">{row.original.gigTitle}</div>
-          {row.original.community ? <div className="truncate text-xs text-muted-foreground">{row.original.community}</div> : null}
-        </div>
+      <div className="whitespace-nowrap">
+        <RelativeTime date={row.original.submittedAt} />
+        {row.original.submittedAt ? (
+          <div className="text-xs text-muted-foreground tabular">{formatDateTime(row.original.submittedAt)}</div>
+        ) : null}
       </div>
     ),
   },
-  status,
+  gigCol,
+  {
+    id: 'worker',
+    header: 'Worker',
+    meta: { sortKey: 'worker', label: 'Worker' },
+    cell: ({ row }) => (
+      <div className="min-w-0">
+        <div className="truncate font-medium">{row.original.workerName}</div>
+        <div className="truncate text-xs text-muted-foreground">u/{row.original.redditUsername}</div>
+      </div>
+    ),
+  },
   proof,
+  status,
   payout,
-  submitted,
-  updated,
 ]

@@ -8,6 +8,7 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
+  Newspaper,
   Search,
   Settings,
   UserCheck,
@@ -57,6 +58,7 @@ export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
       { to: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
       { to: '/admin/review', label: 'Review inbox', icon: Inbox, badgeKey: 'needs_review' },
       { to: '/admin/gigs', label: 'Gigs', icon: Briefcase },
+      { to: '/admin/posts', label: 'Post log', icon: Newspaper },
     ],
   },
   {

@@ -34,6 +34,7 @@ import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
 import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts'
+import { Route as AppAdminPostsRouteImport } from './routes/_app/admin/posts'
 import { Route as AppAdminReviewRouteImport } from './routes/_app/admin/review'
 import { Route as AppAdminSettingsRouteImport } from './routes/_app/admin/settings'
 import { Route as AppWIndexRouteImport } from './routes/_app/w/index'
@@ -182,6 +183,11 @@ const AppAdminEmailsRoute = AppAdminEmailsRouteImport.update({
 const AppAdminPayoutsRoute = AppAdminPayoutsRouteImport.update({
   id: '/payouts',
   path: '/payouts',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminPostsRoute = AppAdminPostsRouteImport.update({
+  id: '/posts',
+  path: '/posts',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminReviewRoute = AppAdminReviewRouteImport.update({
@@ -334,6 +340,7 @@ export interface FileRoutesByFullPath {
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
+  '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
   '/w/me': typeof AppWMeRoute
@@ -383,6 +390,7 @@ export interface FileRoutesByTo {
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
+  '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
   '/w/me': typeof AppWMeRoute
@@ -436,6 +444,7 @@ export interface FileRoutesById {
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
+  '/_app/admin/posts': typeof AppAdminPostsRoute
   '/_app/admin/review': typeof AppAdminReviewRoute
   '/_app/admin/settings': typeof AppAdminSettingsRoute
   '/_app/w/me': typeof AppWMeRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
+    | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
     | '/w/me'
@@ -538,6 +548,7 @@ export interface FileRouteTypes {
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
+    | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
     | '/w/me'
@@ -590,6 +601,7 @@ export interface FileRouteTypes {
     | '/_app/admin/applicants'
     | '/_app/admin/emails'
     | '/_app/admin/payouts'
+    | '/_app/admin/posts'
     | '/_app/admin/review'
     | '/_app/admin/settings'
     | '/_app/w/me'
@@ -818,6 +830,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminPayoutsRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/posts': {
+      id: '/_app/admin/posts'
+      path: '/posts'
+      fullPath: '/admin/posts'
+      preLoaderRoute: typeof AppAdminPostsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/review': {
       id: '/_app/admin/review'
       path: '/review'
@@ -1000,6 +1019,7 @@ interface AppAdminRouteChildren {
   AppAdminApplicantsRoute: typeof AppAdminApplicantsRoute
   AppAdminEmailsRoute: typeof AppAdminEmailsRoute
   AppAdminPayoutsRoute: typeof AppAdminPayoutsRoute
+  AppAdminPostsRoute: typeof AppAdminPostsRoute
   AppAdminReviewRoute: typeof AppAdminReviewRoute
   AppAdminSettingsRoute: typeof AppAdminSettingsRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
@@ -1017,6 +1037,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminApplicantsRoute: AppAdminApplicantsRoute,
   AppAdminEmailsRoute: AppAdminEmailsRoute,
   AppAdminPayoutsRoute: AppAdminPayoutsRoute,
+  AppAdminPostsRoute: AppAdminPostsRoute,
   AppAdminReviewRoute: AppAdminReviewRoute,
   AppAdminSettingsRoute: AppAdminSettingsRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
@@ -1108,12 +1129,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { createStart } from '@tanstack/react-start'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-  }
-}
