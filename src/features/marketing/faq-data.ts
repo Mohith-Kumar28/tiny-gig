@@ -15,7 +15,7 @@ export const FAQ: FaqItem[] = [
     id: 'who-can-apply',
     question: 'Who can apply?',
     answer:
-      'Anyone 18 or older who lives in India and has a UPI ID and a phone number. Most gigs are on Reddit, so an active Reddit account helps a lot. When you apply we ask for your name, Reddit profile link, Reddit account age, karma, UPI ID, state, phone and email, plus a referral code if you have one.',
+      'Anyone 18 or older who lives in India and has a UPI ID and a phone number. Most gigs are on Reddit, so an active Reddit account helps a lot. When you apply we ask for your name, Reddit profile link, the date your Reddit account was created, karma, UPI ID, state, phone and email, plus a referral code if you have one.',
   },
   {
     id: 'approval-time',
@@ -51,13 +51,19 @@ export const FAQ: FaqItem[] = [
     id: 'live-hold',
     question: 'What is the live hold?',
     answer:
-      'Many gigs need your post or comment to stay live for a hold period, for example 24 hours, before final approval. If it is removed by you, a moderator or the platform during the hold, the gig may not be approved. The hold period is shown on each gig.',
+      'After you submit the link, your post or comment must stay live for the hold period shown on the gig, usually 24 hours. Then you upload a screenshot of the post’s insights (Reddit shows them under the post). If it is removed by you, a moderator or the platform during the hold, it is not paid. Replying to comments on your own post is part of the task.',
+  },
+  {
+    id: 'pay-levels',
+    question: 'Why does the same gig pay different amounts?',
+    answer:
+      'Reddit posts and comments pay by the level of the account that does them, which comes from how old the account is: under two weeks is warm-up only, then L1 up to 3 months, L2 up to 6 months, L3 up to a year and L4 after that. Your rate is fixed the moment your account is selected and never changes afterwards. Accounts move up a level on their own as they get older. Upvotes pay the same at every level.',
   },
   {
     id: 'payouts',
     question: 'How and when do I get paid?',
     answer:
-      'Approved earnings are added to your TinyGig balance. Payouts are sent by our team directly to the UPI ID on your profile, and you get an email with the UTR reference for each payout so you can match it in your bank or UPI app.',
+      'Approved earnings are added to your TinyGig balance. Balances are paid every week, with no minimum, directly to the UPI ID on your profile, and you get an email with the UTR reference for each payout so you can match it in your bank or UPI app.',
   },
   {
     id: 'earnings',

@@ -149,6 +149,25 @@ export const emailTemplates = {
     cta: { label: 'Open task', href: url(ctx, `/w/work/${d.submissionId}`) },
   }),
 
+  insightsDue: (d: { title: string; submissionId: string }, ctx: Ctx): Content => ({
+    subject: `Last step: upload insights for “${d.title}”`,
+    preview: 'Your post has been live for the full hold.',
+    heading: 'Time to upload your insights',
+    paragraphs: [
+      `Your post for “${d.title}” has been live for the full hold. Open it on Reddit, screenshot the insights shown under it, and upload that.`,
+      'Once it’s approved, the pay goes straight to your TinyGig balance.',
+    ],
+    cta: { label: 'Upload insights', href: url(ctx, `/w/work/${d.submissionId}`) },
+  }),
+
+  adminWeeklyPayouts: (d: { created: number; total: number }, ctx: Ctx): Content => ({
+    subject: `Weekly payouts ready: ${d.created} worker${d.created === 1 ? '' : 's'}, ${formatMoney(d.total)}`,
+    preview: 'Send the UPI transfers and record the UTRs.',
+    heading: 'This week’s payouts are ready',
+    paragraphs: [`${d.created} pending payout${d.created === 1 ? '' : 's'} totalling ${formatMoney(d.total)} were created from approved balances.`],
+    cta: { label: 'Open payouts', href: url(ctx, '/admin/payouts') },
+  }),
+
   claimExpiring: (d: { title: string; dueAt: string; submissionId: string }, ctx: Ctx): Content => ({
     subject: `Reminder: “${d.title}” is due soon`,
     preview: `Your claim expires at ${d.dueAt}.`,

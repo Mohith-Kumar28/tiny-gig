@@ -4,12 +4,35 @@ import { z } from 'zod'
 import { gig, gigInterest, submission } from '@/db/schema'
 import { PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
 import { AppError, workerMiddleware } from '@/lib/server/middleware'
-import { workerBlockReason } from '@/features/accounts/cooldowns'
-import { accountLabel } from '@/features/accounts/rules'
-import { evaluateWorker, gigFacts, loadEligibility } from '@/features/accounts/server/eligibility'
+import { type Evaluation, workerBlockReason } from '@/features/accounts/cooldowns'
+import { accountLabel, levelFor } from '@/features/accounts/rules'
+import { type EligibilityContext, evaluateWorker, gigFacts, loadEligibility } from '@/features/accounts/server/eligibility'
+import { rateFor, ratePreview, rateRange, usesLevels } from '@/features/opportunities/server/rates'
 import { workerSafeGig } from '@/features/submissions/worker-safe'
 import { gigClosedReason } from '../eligibility'
 
+
+/**
+ * Pay as a worker sees it: a range for everyone (R28), and for a signed-in worker the rate with
+ * their best eligible account plus what the next level pays (R29).
+ */
+function payFor(g: typeof gig.$inferSelect, evals: Evaluation[], ctx: EligibilityContext, userId: string, now: Date) {
+  const range = rateRange(g, ctx.settings)
+  const accounts = ctx.accountsByWorker.get(userId) ?? []
+  const candidates = evals
+    .filter((e) => e.ok || !e.hard.length)
+    .map((e) => accounts.find((a) => a.id === e.accountId))
+    .filter((a): a is NonNullable<typeof a> => !!a)
+  const best = candidates
+    .map((a) => ({ a, p: ratePreview(g, a.createdOn, ctx.settings, now) }))
+    .sort((x, y) => y.p.rate - x.p.rate)[0]
+  return {
+    min: range.min,
+    max: range.max,
+    byLevel: usesLevels(g),
+    mine: best && usesLevels(g) ? { rate: best.p.rate, label: accountLabel(best.a.platform, best.a.handle), next: best.p.next } : null,
+  }
+}
 
 export const availableGigsSearchSchema = z.object({
   platform: z.array(z.enum(PLATFORMS)).optional().catch(undefined),
@@ -48,7 +71,8 @@ export const listAvailableGigs = createServerFn({ method: 'GET' })
     const gigs = rows
       .filter((g) => !taken.has(g.id))
       .map((g) => {
-        const block = gigClosedReason(g, now) ? null : workerBlockReason(evaluateWorker(ctx, user.id, gigFacts(g), now), now)
+        const evals = evaluateWorker(ctx, user.id, gigFacts(g), now)
+        const block = gigClosedReason(g, now) ? null : workerBlockReason(evals, now)
         return {
         id: g.id,
         title: g.title,
@@ -68,6 +92,7 @@ export const listAvailableGigs = createServerFn({ method: 'GET' })
         unlockAt: block?.unlockAt ?? null,
         interest: interestBy.get(g.id) ?? null,
         interestClosesAt: g.interestClosesAt,
+        pay: payFor(g, evals, ctx, user.id, now),
       }
       })
     return data.eligibleOnly ? gigs.filter((g) => !g.ineligible) : gigs
@@ -105,6 +130,7 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
         return {
           id: e.accountId,
           label: a ? accountLabel(a.platform, a.handle) : '',
+          rate: a ? rateFor(g, levelFor(a.createdOn, now), a.platform, ctx.settings) : null,
           level: e.facts.level,
           ok: e.ok,
           reason: first?.workerMessage ?? null,
@@ -118,5 +144,6 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
       unlockAt: block?.unlockAt ?? null,
       myAccounts,
       interest: interest ?? null,
+      pay: payFor(g, evals, ctx, user.id, now),
     }
   })

@@ -4,6 +4,7 @@ import { clientTag, socialAccount } from './accounts'
 import { user } from './auth'
 import {
   GIG_STATUSES,
+  PAY_MODES,
   PAYOUT_STATUSES,
   PLATFORMS,
   SUBMISSION_ACTIONS,
@@ -92,7 +93,11 @@ export const gig = sqliteTable(
       .$type<string[]>()
       .notNull()
       .$defaultFn(() => []),
+    /** Flat rate (paise). Used when payMode is flat; ignored for level-priced gigs. */
     payoutAmount: integer('payout_amount').notNull(),
+    payMode: text('pay_mode', { enum: PAY_MODES }).notNull().default('flat'),
+    /** Per-gig override of the settings rate table (R23), e.g. { L1: 9000, L4: 15000 } in paise. */
+    levelRateOverrides: text('level_rate_overrides', { mode: 'json' }).$type<Partial<Record<'L1' | 'L2' | 'L3' | 'L4', number>>>(),
     totalSlots: integer('total_slots').notNull(),
     claimedSlots: integer('claimed_slots').notNull().default(0),
     claimWindowHours: integer('claim_window_hours').notNull().default(24),

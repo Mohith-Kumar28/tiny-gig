@@ -18,6 +18,10 @@ export type AccountStanding = (typeof ACCOUNT_STANDINGS)[number]
 export const TASK_TYPES = ['post', 'comment', 'reply', 'upvote', 'other'] as const
 export type TaskType = (typeof TASK_TYPES)[number]
 
+/** levels = rate from the selected account's level (Reddit posts/comments); flat = the gig's own amount. */
+export const PAY_MODES = ['levels', 'flat'] as const
+export type PayMode = (typeof PAY_MODES)[number]
+
 export const GIG_STATUSES = ['draft', 'live', 'paused', 'closed'] as const
 export type GigStatus = (typeof GIG_STATUSES)[number]
 
@@ -27,6 +31,10 @@ export const SUBMISSION_STATUSES = [
   'changes_requested',
   'resubmitted',
   'live_check',
+  /** Two-step proof: link submitted, post must stay live for the hold (R31). */
+  'on_hold',
+  /** Two-step proof: insights screenshot uploaded, waiting for the reviewer (R32). */
+  'in_review',
   'approved',
   'rejected',
   'expired',
@@ -40,6 +48,7 @@ export const SUBMISSION_ACTIONS = [
   'resubmitted',
   'changes_requested',
   'moved_to_live_check',
+  'insights_submitted',
   'approved',
   'rejected',
   'expired',

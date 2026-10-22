@@ -19,10 +19,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { type GigStatus, PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
 import { tagDot } from '@/features/accounts/components/client-chip'
 import { clientsQuery } from '@/features/clients/queries'
+import { settingsQuery } from '@/features/settings/queries'
 import { useAction } from '@/hooks/use-action'
 import { formatMoney, formatNumber, rupeesToPaise } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import { GIG_FORM_DEFAULTS, type GigFormInput, type GigFormValues, gigFormSchema } from '../schemas'
+import { GIG_FORM_DEFAULTS, type GigFormInput, type GigFormValues, gigFormSchemaRefined, PAID_LEVEL_KEYS } from '../schemas'
 import { type getGigAdmin, saveGig } from '../server/admin-gigs'
 import { ChecklistEditor, StatesMultiSelect } from './gig-form-fields'
 import { formatHours, TASK_TYPE_LABELS } from './worker-gig-meta'
@@ -45,7 +46,14 @@ export function gigToFormInput(g: AdminGig): GigFormInput {
     contentGuidelines: g.contentGuidelines ?? '',
     sampleContent: g.sampleContent ?? '',
     reviewChecklist: g.reviewChecklist,
+    payMode: g.payMode,
     payoutRupees: g.payoutAmount / 100,
+    levelOverrides: {
+      L1: g.levelRateOverrides?.L1 ? String(g.levelRateOverrides.L1 / 100) : '',
+      L2: g.levelRateOverrides?.L2 ? String(g.levelRateOverrides.L2 / 100) : '',
+      L3: g.levelRateOverrides?.L3 ? String(g.levelRateOverrides.L3 / 100) : '',
+      L4: g.levelRateOverrides?.L4 ? String(g.levelRateOverrides.L4 / 100) : '',
+    },
     totalSlots: g.totalSlots,
     claimWindowHours: g.claimWindowHours,
     interestWindowMinutes: g.interestWindowMinutes,
@@ -95,8 +103,9 @@ export function GigForm({
 }) {
   const navigate = useNavigate()
   const { data: clients } = useQuery(clientsQuery())
+  const { data: settings } = useQuery(settingsQuery())
   const form = useForm<GigFormInput, unknown, GigFormValues>({
-    resolver: zodResolver(gigFormSchema),
+    resolver: zodResolver(gigFormSchemaRefined),
     defaultValues: { ...GIG_FORM_DEFAULTS, ...initial },
   })
   const initialStatus = (initial?.status ?? 'draft') as GigStatus
@@ -124,6 +133,9 @@ export function GigForm({
   const platform = useWatch({ control: form.control, name: 'platform' })
   const status = useWatch({ control: form.control, name: 'status' })
   const hint = COMMUNITY_HINT[platform] ?? COMMUNITY_HINT.other!
+  const payMode = useWatch({ control: form.control, name: 'payMode' })
+  const taskType = useWatch({ control: form.control, name: 'taskType' })
+  const levelsApply = platform === 'reddit' && (taskType === 'post' || taskType === 'comment' || taskType === 'upvote')
 
   return (
     <Form {...form}>
@@ -187,7 +199,7 @@ export function GigForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {TASK_TYPES.map((t) => (
+                      {TASK_TYPES.filter((t) => t !== 'reply' || field.value === 'reply').map((t) => (
                         <SelectItem key={t} value={t}>
                           {TASK_TYPE_LABELS[t]}
                         </SelectItem>
@@ -313,20 +325,87 @@ export function GigForm({
           <Section title="Payout & slots">
             <FormField
               control={form.control}
-              name="payoutRupees"
+              name="payMode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Payout per task</FormLabel>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                  <FormLabel>Pay</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
-                      <Input type="number" inputMode="decimal" min={1} step="any" className="pl-7 tabular" {...field} value={field.value as never} />
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
                     </FormControl>
-                  </div>
+                    <SelectContent>
+                      <SelectItem value="levels">By account level</SelectItem>
+                      <SelectItem value="flat">Flat rate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>
+                    {payMode === 'levels' && !levelsApply
+                      ? 'Level pricing applies to Reddit posts, comments and upvotes; this gig will pay its flat rate.'
+                      : 'Replies to comments on a worker’s own post are part of the task and never paid separately.'}
+                  </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {payMode === 'levels' && levelsApply ? (
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-sm font-medium">Rate by level{taskType === 'upvote' ? ' (upvotes pay the same at every level)' : ''}</p>
+                {taskType === 'upvote' ? (
+                  <p className="text-sm text-muted-foreground">
+                    {settings ? formatMoney(settings.upvoteRate) : '—'} per upvote, from Settings.
+                  </p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {PAID_LEVEL_KEYS.map((l) => (
+                      <FormField
+                        key={l}
+                        control={form.control}
+                        name={`levelOverrides.${l}`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground">{l}</FormLabel>
+                            <div className="relative">
+                              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                              <FormControl>
+                                <Input
+                                  type="number"
+                                  inputMode="decimal"
+                                  min={1}
+                                  className="pl-7 tabular"
+                                  placeholder={settings ? String(settings.levelRates[taskType === 'comment' ? 'comment' : 'post'][l] / 100) : ''}
+                                  {...field}
+                                />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    ))}
+                  </div>
+                )}
+                <p className="text-xs text-muted-foreground">Empty = the rate table in Settings. The rate locks when an account is selected.</p>
+              </div>
+            ) : (
+              <FormField
+                control={form.control}
+                name="payoutRupees"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Payout per task</FormLabel>
+                    <div className="relative">
+                      <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                      <FormControl>
+                        <Input type="number" inputMode="decimal" min={1} step="any" className="pl-7 tabular" {...field} value={field.value as never} />
+                      </FormControl>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="totalSlots"
@@ -533,7 +612,17 @@ function SummaryRow({ icon: Icon, children }: { icon: typeof Clock; children: Re
 /** Live preview of how the gig reads to workers. */
 function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFormInput, unknown, GigFormValues>>['control'] }) {
   const v = useWatch({ control }) as GigFormInput
-  const payout = Number(v.payoutRupees) || 0
+  const { data: settings } = useQuery(settingsQuery())
+  const levelPriced = v.payMode === 'levels' && v.platform === 'reddit' && (v.taskType === 'post' || v.taskType === 'comment' || v.taskType === 'upvote')
+  const rates =
+    levelPriced && settings
+      ? v.taskType === 'upvote'
+        ? [settings.upvoteRate]
+        : PAID_LEVEL_KEYS.map((l) => (v.levelOverrides?.[l] ? rupeesToPaise(Number(v.levelOverrides[l])) : settings.levelRates[v.taskType === 'comment' ? 'comment' : 'post'][l]))
+      : null
+  const flat = rupeesToPaise(Number(v.payoutRupees) || 0)
+  const minRate = rates ? Math.min(...rates) : flat
+  const maxRate = rates ? Math.max(...rates) : flat
   const slots = Number(v.totalSlots) || 0
   const claim = Number(v.claimWindowHours) || 0
   const hold = Number(v.liveHoldHours) || 0
@@ -558,20 +647,22 @@ function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFor
             {v.title || 'Untitled gig'}
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-semibold tabular">{formatMoney(rupeesToPaise(payout))}</span>
-            <span className="text-xs text-muted-foreground">per approved task</span>
+            <span className="font-display text-2xl font-semibold tabular">
+              {minRate === maxRate ? formatMoney(maxRate) : `${formatMoney(minRate)}–${formatMoney(maxRate)}`}
+            </span>
+            <span className="text-xs text-muted-foreground">{minRate === maxRate ? 'per approved task' : 'depending on the account'}</span>
           </div>
         </div>
         <div className="space-y-2 border-t bg-muted/30 p-4">
           <SummaryRow icon={Users}>
             <span className="tabular">{formatNumber(slots)}</span> slot{slots === 1 ? '' : 's'}
           </SummaryRow>
-          <SummaryRow icon={Clock}>{claim ? `${formatHours(claim)} to submit after claiming` : 'Set a claim window'}</SummaryRow>
+          <SummaryRow icon={Clock}>{claim ? `${formatHours(claim)} to submit after selection` : 'Set a time to submit'}</SummaryRow>
           <SummaryRow icon={CalendarClock}>
             {endsAt && !Number.isNaN(endsAt.getTime()) ? `Ends ${formatDateTime(endsAt)}` : 'No end date'}
           </SummaryRow>
           <SummaryRow icon={ShieldCheck}>
-            {hold ? `Paid after the post stays up ${formatHours(hold)}` : 'Approved right after review'}
+            {hold ? `Live ${formatHours(hold)}, then insights screenshot` : 'Approved right after review'}
           </SummaryRow>
           <SummaryRow icon={MapPin}>{states.length ? states.join(', ') : 'Open to all of India'}</SummaryRow>
           <div className="pt-1 text-xs text-muted-foreground">
@@ -582,8 +673,9 @@ function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFor
         </div>
       </div>
       <div className="rounded-xl border p-4 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Total budget </span>
-        <span className="tabular">{formatMoney(rupeesToPaise(payout * slots))}</span> if every slot is approved.
+        <span className="font-medium text-foreground">{minRate === maxRate ? 'Total budget ' : 'Maximum exposure '}</span>
+        <span className="tabular">{formatMoney(maxRate * slots)}</span>
+        {minRate === maxRate ? ' if every slot is approved.' : ' if every slot goes to a top-level account.'}
         {checklist.length ? <span className="mt-1 block">{checklist.length} reviewer checks.</span> : null}
       </div>
     </div>

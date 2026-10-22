@@ -8,7 +8,9 @@ import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 import { decideOne } from './review-service'
 
-export const REVIEW_TABS = ['needs_review', 'resubmitted', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
+export const REVIEW_TABS = ['needs_review', 'on_hold', 'insights_overdue', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
+/** Insights are overdue a day after the hold ends. */
+const INSIGHTS_GRACE_MS = 24 * 3_600_000
 export type ReviewTab = (typeof REVIEW_TABS)[number]
 
 export const reviewSearchSchema = tableSearchSchema.extend({
@@ -26,9 +28,11 @@ export type ReviewSearch = z.infer<typeof reviewSearchSchema>
 function tabFilter(tab: ReviewTab, now: Date): SQL | undefined {
   switch (tab) {
     case 'needs_review':
-      return inArray(submission.status, ['submitted', 'resubmitted'])
-    case 'resubmitted':
-      return eq(submission.status, 'resubmitted')
+      return inArray(submission.status, ['submitted', 'resubmitted', 'in_review'])
+    case 'on_hold':
+      return eq(submission.status, 'on_hold')
+    case 'insights_overdue':
+      return and(eq(submission.status, 'on_hold'), lte(submission.liveCheckAt, new Date(now.getTime() - INSIGHTS_GRACE_MS)))
     case 'live_check_due':
       return and(eq(submission.status, 'live_check'), lte(submission.liveCheckAt, now))
     case 'live_check':
@@ -70,7 +74,7 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
     const where = filters.length ? and(...filters) : undefined
     const fallback = data.posted
       ? desc(submission.submittedAt)
-      : tab === 'live_check_due' || tab === 'live_check'
+      : tab === 'live_check_due' || tab === 'live_check' || tab === 'on_hold' || tab === 'insights_overdue'
         ? asc(submission.liveCheckAt)
         : tab === 'all'
           ? desc(submission.updatedAt)
@@ -142,8 +146,9 @@ export const getReviewCounts = createServerFn({ method: 'GET' })
     const now = Date.now()
     const [row] = await context.db
       .select({
-        needs_review: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted') then 1 else 0 end)`,
-        resubmitted: sql<number>`sum(case when ${submission.status} = 'resubmitted' then 1 else 0 end)`,
+        needs_review: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted','in_review') then 1 else 0 end)`,
+        on_hold: sql<number>`sum(case when ${submission.status} = 'on_hold' then 1 else 0 end)`,
+        insights_overdue: sql<number>`sum(case when ${submission.status} = 'on_hold' and ${submission.liveCheckAt} <= ${now - INSIGHTS_GRACE_MS} then 1 else 0 end)`,
         live_check: sql<number>`sum(case when ${submission.status} = 'live_check' then 1 else 0 end)`,
         live_check_due: sql<number>`sum(case when ${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${now} then 1 else 0 end)`,
         changes_requested: sql<number>`sum(case when ${submission.status} = 'changes_requested' then 1 else 0 end)`,
@@ -200,6 +205,7 @@ export const decideSubmissions = createServerFn({ method: 'POST' })
       comment: z.string().trim().max(2000).optional(),
       checklist: z.array(z.string().max(200)).max(20).optional(),
       skipLiveCheck: z.boolean().optional(),
+      markRemoved: z.boolean().optional(),
     }),
   )
   .handler(async ({ data, context }) => {

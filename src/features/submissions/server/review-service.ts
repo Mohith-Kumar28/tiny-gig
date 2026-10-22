@@ -1,6 +1,7 @@
 import { eq, sql } from 'drizzle-orm'
 import type { Db } from '@/db/client'
-import { submission, submissionEvent, gig, workerProfile } from '@/db/schema'
+import { gig, socialAccount, submission, submissionEvent, workerProfile } from '@/db/schema'
+import { formatMoney } from '@/lib/format'
 import type { SubmissionStatus } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
 import { audit, notify } from '@/lib/server/activity'
@@ -14,6 +15,8 @@ export type DecisionInput = {
   comment?: string
   checklist?: string[]
   skipLiveCheck?: boolean
+  /** Rejecting because the post was removed (by the worker, a moderator or Reddit): mark the account (R37). */
+  markRemoved?: boolean
 }
 
 export type DecisionResult = { id: string; ok: boolean; status?: SubmissionStatus; error?: string }
@@ -92,7 +95,9 @@ export async function decideOne(db: Db, adminId: string, id: string, input: Deci
       queueEmail({ to: worker.email, template: 'movedToLiveCheck', data: { title: g.title, hours: g.liveHoldHours, submissionId: id } })
       break
     case 'approved':
-      await notify(db, [{ userId: sub.workerId, title: `Approved: ${g.title}`, body: 'Payment added to your balance', href }])
+      await notify(db, [
+        { userId: sub.workerId, title: `Approved: ${g.title}`, body: `${formatMoney(sub.payoutAmount)} added to your TinyGig balance. Paid out weekly.`, href },
+      ])
       queueEmail({ to: worker.email, template: 'submissionApproved', data: { title: g.title, payout: sub.payoutAmount } })
       break
     case 'changes_requested':
@@ -107,6 +112,16 @@ export async function decideOne(db: Db, adminId: string, id: string, input: Deci
       await notify(db, [{ userId: sub.workerId, title: `Not approved: ${g.title}`, body: input.comment, href }])
       queueEmail({ to: worker.email, template: 'submissionRejected', data: { title: g.title, reason: input.comment ?? '', submissionId: id } })
       break
+  }
+
+  // A removal is information about the account, not just the task (R37).
+  if (t.status === 'rejected' && input.markRemoved && sub.accountId) {
+    const acc = await db.select().from(socialAccount).where(eq(socialAccount.id, sub.accountId)).get()
+    if (acc && acc.standing === 'active') {
+      const note = `Post removed during the live hold (${g.title}, ${now.toISOString().slice(0, 10)})`
+      await db.update(socialAccount).set({ standing: 'warned', standingNote: note }).where(eq(socialAccount.id, acc.id))
+      await audit(db, { actorId: adminId, action: 'account.standing', entityType: 'social_account', entityId: acc.id, meta: { field: 'standing', from: acc.standing, to: 'warned' } })
+    }
   }
 
   if (t.final) {

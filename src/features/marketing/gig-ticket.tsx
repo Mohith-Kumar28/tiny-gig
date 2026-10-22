@@ -1,7 +1,7 @@
 import { Clock, Users } from 'lucide-react'
 import type { CSSProperties } from 'react'
 import { cn } from '@/lib/utils'
-import { type ExampleGig, formatInr } from './example-gigs'
+import { type ExampleGig, formatGigPay } from './example-gigs'
 import { PLATFORM_LABEL, PlatformMark } from './platform-mark'
 
 type GigTicketProps = { gig: ExampleGig; slotsLeft: string; className?: string; style?: CSSProperties }
@@ -25,8 +25,8 @@ export function GigTicket({ gig, slotsLeft, className, style }: GigTicketProps) 
           <h3 className="font-display text-lg leading-snug font-semibold text-balance">{gig.task}</h3>
         </div>
         <p className="shrink-0 text-right">
-          <span className="block font-mono text-2xl font-semibold tracking-tight tabular">{formatInr(gig.payout)}</span>
-          <span className="text-xs text-muted-foreground">per slot</span>
+          <span className="block font-mono text-2xl font-semibold tracking-tight tabular">{formatGigPay(gig)}</span>
+          <span className="text-xs text-muted-foreground">{gig.payoutMax ? 'depending on your account' : 'per task'}</span>
         </p>
       </div>
       {/* perforation */}

@@ -29,9 +29,10 @@ import { cn } from '@/lib/utils'
 
 const TAB_LABELS: Record<ReviewTab, string> = {
   needs_review: 'Needs review',
-  resubmitted: 'Resubmitted',
-  live_check_due: 'Live check due',
-  live_check: 'In live check',
+  on_hold: 'On hold (live 24h)',
+  insights_overdue: 'Insights overdue',
+  live_check_due: 'Live check due (old flow)',
+  live_check: 'In live check (old flow)',
   changes_requested: 'Changes requested',
   all: 'All',
 }
@@ -154,7 +155,7 @@ function ReviewInbox() {
             <SelectValue />
           </SelectTrigger>
           <SelectContent align="start">
-            {REVIEW_TABS.map((t) => (
+            {REVIEW_TABS.filter((t) => !t.startsWith('live_check') || (counts?.[t] ?? 0) > 0 || t === tab).map((t) => (
               <SelectItem key={t} value={t}>
                 {TAB_LABELS[t]}
                 <TabCount tab={t} count={counts?.[t]} />

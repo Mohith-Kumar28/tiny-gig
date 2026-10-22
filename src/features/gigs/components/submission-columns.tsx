@@ -13,6 +13,8 @@ export const SUBMISSION_STATUS_OPTIONS: FacetOption[] = (
   [
     ['submitted', 'Submitted'],
     ['resubmitted', 'Resubmitted'],
+    ['on_hold', 'On hold'],
+    ['in_review', 'In review'],
     ['live_check', 'Live check'],
     ['changes_requested', 'Changes requested'],
     ['approved', 'Approved'],

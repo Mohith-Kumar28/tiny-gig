@@ -15,13 +15,14 @@ type Event = {
 
 const META: Record<SubmissionAction, { label: string; icon: typeof Clock; tone: string }> = {
   claimed: { label: 'assigned the gig', icon: Clock, tone: 'text-muted-foreground' },
-  submitted: { label: 'submitted proof', icon: Send, tone: 'text-primary' },
+  submitted: { label: 'submitted the link', icon: Send, tone: 'text-primary' },
   resubmitted: { label: 'resubmitted', icon: RotateCcw, tone: 'text-primary' },
   changes_requested: { label: 'requested changes', icon: RotateCcw, tone: 'text-warning-foreground dark:text-warning' },
   moved_to_live_check: { label: 'passed review: live check started', icon: ShieldCheck, tone: 'text-info' },
+  insights_submitted: { label: 'uploaded insights', icon: ShieldCheck, tone: 'text-primary' },
   approved: { label: 'approved', icon: CheckCircle2, tone: 'text-success' },
   rejected: { label: 'rejected', icon: XCircle, tone: 'text-destructive' },
-  expired: { label: 'claim expired', icon: Clock, tone: 'text-muted-foreground' },
+  expired: { label: 'deadline passed', icon: Clock, tone: 'text-muted-foreground' },
   withdrawn: { label: 'withdrew', icon: Undo2, tone: 'text-muted-foreground' },
   comment: { label: 'commented', icon: MessageSquare, tone: 'text-muted-foreground' },
 }

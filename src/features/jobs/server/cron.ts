@@ -1,7 +1,10 @@
-import { and, eq, gt, inArray, isNull, lte, sql } from 'drizzle-orm'
+import { and, eq, gt, inArray, isNotNull, isNull, lte, sql } from 'drizzle-orm'
 import { getDb } from '@/db/client'
-import { submission, submissionEvent, gig, workerProfile, appSetting } from '@/db/schema'
+import { appSetting, gig, socialAccount, submission, submissionEvent, workerProfile } from '@/db/schema'
 import { sendEmail } from '@/emails/send-email'
+import { levelFor } from '@/features/accounts/rules'
+import { lockBalancesIntoPayouts } from '@/features/payouts/server/payout-service'
+import { formatMoney } from '@/lib/format'
 import { evaluateAllReferrers } from '@/features/referrals/server/engine'
 import { alertRecipients, loadSettings } from '@/features/settings/server/settings-store'
 import { releaseSlotIfNeeded } from '@/features/submissions/server/review-service'
@@ -18,6 +21,9 @@ export async function runCronJobs(now: Date) {
     ['expire-claims', () => expireClaims(db, now)],
     ['claim-reminders', () => sendReminders(db, now, settings.reminderHoursBefore)],
     ['auto-close-gigs', () => closeEndedGigs(db, now)],
+    ['insights-reminders', () => sendInsightsReminders(db, now)],
+    ['level-ups', () => notifyLevelUps(db, now, settings.levelRates.post)],
+    ['weekly-payouts', () => (settings.weeklyPayouts ? weeklyPayoutRun(db, now) : Promise.resolve())],
     ['admin-digest', () => (settings.dailyDigest ? sendDailyDigest(db, now) : Promise.resolve())],
     ['referrals', () => (now.getUTCMinutes() < 15 ? evaluateAllReferrers(db) : Promise.resolve())],
   ]
@@ -49,7 +55,7 @@ async function expireClaims(db: Db, now: Date) {
     const release = releaseSlotIfNeeded(db, sub.gigId, sub.status, 'expired')
     if (release) await db.batch([update, event, release])
     else await db.batch([update, event])
-    await notify(db, [{ userId: sub.workerId, title: `Claim expired: ${title}`, href: `/w/work/${sub.id}` }])
+    await notify(db, [{ userId: sub.workerId, title: `Expired: ${title}`, body: 'The deadline passed without a submission.', href: `/w/work/${sub.id}` }])
     await sendEmail({ to: email, template: 'claimExpired', data: { title } })
   }
 }
@@ -99,7 +105,7 @@ async function sendDailyDigest(db: Db, now: Date) {
 
   const [row] = await db
     .select({
-      pendingReviews: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted') then 1 else 0 end)`,
+      pendingReviews: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted','in_review') then 1 else 0 end)`,
       liveChecks: sql<number>`sum(case when ${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${now.getTime()} then 1 else 0 end)`,
     })
     .from(submission)
@@ -120,4 +126,62 @@ async function sendDailyDigest(db: Db, now: Date) {
   }
   if (data.pendingReviews + data.liveChecks + data.applicants === 0) return
   await sendEmail({ to: await alertRecipients(db), template: 'adminDigest', data })
+}
+
+/** Once the live hold is over, remind the worker to upload insights (R36) — most missed steps are forgetting. */
+async function sendInsightsReminders(db: Db, now: Date) {
+  const due = await db
+    .select({ sub: submission, title: gig.title, email: workerProfile.email, prefs: workerProfile.emailPrefs })
+    .from(submission)
+    .innerJoin(gig, eq(gig.id, submission.gigId))
+    .innerJoin(workerProfile, eq(workerProfile.userId, submission.workerId))
+    .where(and(eq(submission.status, 'on_hold'), lte(submission.liveCheckAt, now), isNull(submission.insightsRemindedAt)))
+    .limit(200)
+  for (const { sub, title, email, prefs } of due) {
+    await db.update(submission).set({ insightsRemindedAt: now }).where(eq(submission.id, sub.id))
+    await notify(db, [{ userId: sub.workerId, title: `Upload insights: ${title}`, body: 'Your post has been live for the full hold. One last step.', href: `/w/work/${sub.id}` }])
+    if (prefs.reminders) await sendEmail({ to: email, template: 'insightsDue', data: { title, submissionId: sub.id } })
+  }
+}
+
+/** IST day key, and whether this IST-day job already ran (dedupe via app_setting). */
+async function oncePerIstDay(db: Db, now: Date, key: string, afterHour = 9) {
+  const ist = new Date(now.getTime() + 5.5 * 3_600_000)
+  if (ist.getUTCHours() < afterHour) return null
+  const today = ist.toISOString().slice(0, 10)
+  const last = await db.query.appSetting.findFirst({ where: eq(appSetting.key, key) })
+  if (last?.value === today) return null
+  await db.insert(appSetting).values({ key, value: today }).onConflictDoUpdate({ target: appSetting.key, set: { value: today } })
+  return { today, ist }
+}
+
+/**
+ * Age is recomputed every day (R25): accounts climb levels on their own. Tell the worker when one
+ * of theirs crossed a boundary in the last day — a reason to keep accounts healthy.
+ */
+async function notifyLevelUps(db: Db, now: Date, postRates: Record<'L1' | 'L2' | 'L3' | 'L4', number>) {
+  if (!(await oncePerIstDay(db, now, 'levelups:last'))) return
+  const yesterday = new Date(now.getTime() - 86_400_000)
+  const accounts = await db
+    .select({ workerId: socialAccount.workerId, handle: socialAccount.handle, createdOn: socialAccount.createdOn })
+    .from(socialAccount)
+    .where(and(eq(socialAccount.platform, 'reddit'), eq(socialAccount.standing, 'active'), isNotNull(socialAccount.createdOn)))
+  const items = accounts.flatMap((a) => {
+    const before = levelFor(a.createdOn, yesterday)
+    const after = levelFor(a.createdOn, now)
+    if (!after || before === after || after === 'warmup') return []
+    const title =
+      before === 'warmup' ? `u/${a.handle} can now take paid gigs` : `u/${a.handle} reached ${after}`
+    return [{ userId: a.workerId, title, body: `Posts from this account now pay ${formatMoney(postRates[after])}.`, href: '/w/accounts' }]
+  })
+  await notify(db, items)
+}
+
+/** Weekly payout run (§13, answer 9): Monday morning IST, no minimum. Staff still send UPI and record UTRs. */
+async function weeklyPayoutRun(db: Db, now: Date) {
+  const ist = new Date(now.getTime() + 5.5 * 3_600_000)
+  if (ist.getUTCDay() !== 1) return
+  if (!(await oncePerIstDay(db, now, 'payouts:weekly:last', 8))) return
+  const r = await lockBalancesIntoPayouts(db, { actorId: null, note: `Weekly payout · ${ist.toISOString().slice(0, 10)}` })
+  if (r.created) await sendEmail({ to: await alertRecipients(db), template: 'adminWeeklyPayouts', data: r })
 }

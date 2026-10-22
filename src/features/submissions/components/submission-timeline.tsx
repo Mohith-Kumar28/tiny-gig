@@ -15,7 +15,7 @@ export type TimelineEvent = {
 
 const ACTIONS: Record<string, { verb: string; icon: LucideIcon; tone: string }> = {
   claimed: { verb: 'got the gig', icon: Hand, tone: 'bg-info/12 text-info' },
-  submitted: { verb: 'submitted proof', icon: Send, tone: 'bg-primary/12 text-primary' },
+  submitted: { verb: 'submitted the link', icon: Send, tone: 'bg-primary/12 text-primary' },
   resubmitted: { verb: 'resubmitted proof', icon: RotateCcw, tone: 'bg-primary/12 text-primary' },
   changes_requested: {
     verb: 'requested changes',
@@ -23,9 +23,10 @@ const ACTIONS: Record<string, { verb: string; icon: LucideIcon; tone: string }> 
     tone: 'bg-warning/20 text-warning-foreground dark:text-warning',
   },
   moved_to_live_check: { verb: 'passed review, live check started', icon: ShieldCheck, tone: 'bg-info/12 text-info' },
+  insights_submitted: { verb: 'uploaded the insights screenshot', icon: ShieldCheck, tone: 'bg-primary/12 text-primary' },
   approved: { verb: 'approved the work', icon: CheckCircle2, tone: 'bg-success/12 text-success' },
   rejected: { verb: 'did not approve the work', icon: XCircle, tone: 'bg-destructive/10 text-destructive' },
-  expired: { verb: 'the deadline passed, claim expired', icon: Clock, tone: 'bg-muted text-muted-foreground' },
+  expired: { verb: 'the deadline passed', icon: Clock, tone: 'bg-muted text-muted-foreground' },
   withdrawn: { verb: 'withdrew from the gig', icon: Undo2, tone: 'bg-muted text-muted-foreground' },
   comment: { verb: 'commented', icon: MessageSquare, tone: 'bg-muted text-muted-foreground' },
 }
@@ -63,8 +64,12 @@ export function SubmissionTimeline({
         const actor = actorLabel(e, viewerRole)
         const verb =
           e.actorRole === 'system' && e.action === 'expired'
-            ? 'The deadline passed and the claim expired'
-            : `${actor} ${meta.verb}`
+            ? 'The deadline passed without a submission'
+            : e.action === 'claimed' && e.actorRole === 'admin'
+              ? viewerRole === 'worker'
+                ? 'You were selected'
+                : `${actor} selected this account`
+              : `${actor} ${meta.verb}`
         return (
           <li key={e.id} className="relative flex gap-3">
             <span

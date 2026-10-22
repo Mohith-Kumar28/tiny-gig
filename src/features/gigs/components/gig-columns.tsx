@@ -53,7 +53,15 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
     id: 'payout',
     header: 'Payout',
     meta: { sortKey: 'payout', label: 'Payout', className: 'text-right', headerClassName: 'text-right' },
-    cell: ({ row }) => <Money paise={row.original.payoutAmount} />,
+    cell: ({ row }) =>
+      row.original.payMode === 'levels' ? (
+        <span className="whitespace-nowrap">
+          <span className="text-xs text-muted-foreground">up to </span>
+          <Money paise={row.original.payoutAmount} />
+        </span>
+      ) : (
+        <Money paise={row.original.payoutAmount} />
+      ),
   },
   {
     id: 'claimed',

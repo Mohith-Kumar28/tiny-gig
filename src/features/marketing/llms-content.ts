@@ -1,5 +1,5 @@
 import { SITE } from '@/lib/site'
-import { EXAMPLE_GIGS, formatInr } from './example-gigs'
+import { EXAMPLE_GIGS, formatGigPay } from './example-gigs'
 import { FAQ } from './faq-data'
 import { absoluteUrl } from './seo'
 import { STEPS } from './steps-data'
@@ -8,7 +8,7 @@ import { STEPS } from './steps-data'
 export const PUBLIC_PAGES = [
   { path: '/', title: 'Home', description: 'Overview of TinyGig, example gigs, requirements and payouts.', priority: '1.0', changefreq: 'weekly' },
   { path: '/how-it-works', title: 'How it works', description: 'The four steps from applying to getting paid by UPI.', priority: '0.8', changefreq: 'monthly' },
-  { path: '/faq', title: 'FAQ', description: 'Answers about eligibility, claiming, proof, the live hold, payouts and referrals.', priority: '0.8', changefreq: 'monthly' },
+  { path: '/faq', title: 'FAQ', description: 'Answers about eligibility, selection, proof, the live hold, payouts and referrals.', priority: '0.8', changefreq: 'monthly' },
   { path: '/privacy', title: 'Privacy policy', description: 'What data TinyGig collects and why.', priority: '0.3', changefreq: 'yearly' },
   { path: '/terms', title: 'Terms of service', description: 'Rules for workers using TinyGig.', priority: '0.3', changefreq: 'yearly' },
 ] as const
@@ -26,7 +26,7 @@ const PAYOUTS = `- A reviewer approves the submission, requests changes with com
 - Many gigs require the post to stay live for a hold period (for example 24 hours) before final approval.
 - Approved earnings are added to the worker's TinyGig balance.
 - Payouts are sent manually by the TinyGig team to the worker's UPI ID. The worker receives an email with the UTR reference.
-- There is no guaranteed income; each gig shows its payout in rupees before it is claimed.`
+- There is no guaranteed income; each gig shows its pay in rupees; Reddit posts and comments pay more from older accounts, and the rate is fixed once an account is selected.`
 
 const REFERRALS = `Every worker gets a personal referral link and can earn bonus rewards when referred friends sign up, get approved and complete gigs. The reward rules are set by the TinyGig team and change over time; current rules are shown in the worker dashboard.`
 
@@ -89,7 +89,7 @@ ${STEPS.map((s, i) => `### ${i + 1}. ${s.title}\n\n${s.summary}\n\n${s.details.m
 
 ## Example gigs (illustrative only, real gigs and rates vary)
 
-${EXAMPLE_GIGS.map((g) => `- ${g.task} (${g.where}): ${formatInr(g.payout)}${g.requirement ? `, requires ${g.requirement}` : ''}`).join('\n')}
+${EXAMPLE_GIGS.map((g) => `- ${g.task} (${g.where}): ${formatGigPay(g)}${g.payoutMax ? ' depending on account age' : ''}${g.requirement ? `, requires ${g.requirement}` : ''}`).join('\n')}
 
 ## Requirements
 

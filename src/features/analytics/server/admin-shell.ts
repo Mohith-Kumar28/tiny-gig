@@ -12,7 +12,7 @@ export const getAdminBadges = createServerFn({ method: 'GET' })
     const { db } = context
     const [[subs], [apps], [rewards], [toSelect]] = await Promise.all([
       db
-        .select({ n: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted') or (${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${Date.now()}) then 1 else 0 end)` })
+        .select({ n: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted','in_review') or (${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${Date.now()}) then 1 else 0 end)` })
         .from(submission),
       db.select({ n: sql<number>`sum(case when ${workerProfile.status} = 'pending' then 1 else 0 end)` }).from(workerProfile),
       db.select({ n: sql<number>`sum(case when ${referralReward.status} = 'pending_review' then 1 else 0 end)` }).from(referralReward),

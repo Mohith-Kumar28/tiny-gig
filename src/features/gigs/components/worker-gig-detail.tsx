@@ -15,7 +15,6 @@ import {
 import { type ReactNode, useState } from 'react'
 import { CopyButton } from '@/components/shared/copy-button'
 import { Countdown } from '@/components/shared/countdown'
-import { Money } from '@/components/shared/money'
 import { PlatformLabel } from '@/components/shared/platform-icon'
 import { StatusBadge } from '@/components/shared/status-badge'
 import {
@@ -33,9 +32,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import { Spinner } from '@/components/ui/spinner'
 import { useAction } from '@/hooks/use-action'
+import { formatMoney } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { expressInterest, withdrawInterest } from '@/features/opportunities/server/interest'
 import type { getGigForWorker } from '../server/worker-gigs'
+import { NextLevelLine, PayAmount, payCaption } from './pay'
 import { formatHours, slotsLeft, TASK_TYPE_LABELS } from './worker-gig-meta'
 
 type GigDetailData = Awaited<ReturnType<typeof getGigForWorker>>
@@ -72,7 +73,7 @@ function Requirement({ ok, children }: { ok: boolean | null; children: ReactNode
 }
 
 export function WorkerGigDetail({ data }: { data: GigDetailData }) {
-  const { gig, mySubmission, ineligible, interest, myAccounts } = data
+  const { gig, mySubmission, ineligible, interest, myAccounts, pay } = data
   const [confirmOpen, setConfirmOpen] = useState(false)
   const eligibleAccounts = myAccounts.filter((a) => a.ok)
   const [offered, setOffered] = useState<string[]>([])
@@ -146,9 +147,9 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
             </div>
             <h1 className="font-display text-2xl font-semibold tracking-tight text-balance sm:text-3xl">{gig.title}</h1>
             <div className="flex items-baseline gap-2 lg:hidden">
-              <Money paise={gig.payoutAmount} className="font-display text-3xl font-semibold text-primary" />
+              <PayAmount pay={pay} className="font-display text-3xl font-semibold text-primary" />
               <span className="text-sm text-muted-foreground">
-                · {left} of {gig.totalSlots} slots left
+                {payCaption(pay)} · {left} of {gig.totalSlots} slots left
               </span>
             </div>
           </header>
@@ -229,6 +230,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                   <Requirement key={a.id} ok={a.ok}>
                     <span className="font-medium">{a.label}</span>
                     {a.level ? <span className="text-muted-foreground"> · {a.level === 'warmup' ? 'warm-up' : a.level}</span> : null}
+                    {a.ok && a.rate ? <span className="text-muted-foreground"> · {formatMoney(a.rate)}</span> : null}
                     {a.reason ? <span className="block text-xs text-muted-foreground">{a.reason}</span> : null}
                   </Requirement>
                 ))}
@@ -271,7 +273,6 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                   : []),
                 <>Once approved, the pay goes to your TinyGig balance. Balances are paid to your UPI every week.</>,
               ].map((step, i) => (
-                // biome-ignore lint/suspicious/noArrayIndexKey: static list
                 <li key={i} className="flex gap-3">
                   <span className="flex size-6 shrink-0 items-center justify-center rounded-full bg-primary/12 text-xs font-semibold text-primary">{i + 1}</span>
                   <span>{step}</span>
@@ -285,7 +286,9 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
           <div className="space-y-4 rounded-xl border bg-card p-5">
             <div>
               <p className="text-xs font-medium text-muted-foreground">You earn</p>
-              <Money paise={gig.payoutAmount} className="font-display text-4xl font-semibold text-primary" />
+              <PayAmount pay={pay} className="font-display text-4xl font-semibold text-primary" />
+              <p className="text-xs text-muted-foreground">{payCaption(pay)}</p>
+              <NextLevelLine pay={pay} className="mt-1" />
             </div>
             <div className="space-y-1.5">
               <div className="flex justify-between text-sm">
@@ -366,6 +369,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
                         <label htmlFor={`offer-${a.id}`} className="text-foreground">
                           {a.label}
                           {a.level ? <span className="text-muted-foreground"> · {a.level}</span> : null}
+                          {a.rate ? <span className="text-muted-foreground"> · {formatMoney(a.rate)}</span> : null}
                         </label>
                       </div>
                     ))}

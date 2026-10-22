@@ -134,6 +134,26 @@ const ALERT_OPTIONS = [
   { value: 'off', label: 'Off', hint: '' },
 ] as const
 
+const LEVEL_AGES = { L1: '2 wk – 3 mo', L2: '3 – 6 mo', L3: '6 – 12 mo', L4: '12 mo +' } as const
+
+/** Stored in paise, typed in rupees. */
+function RupeeInput({ value, onChange, label }: { value: number; onChange: (paise: number) => void; label: string }) {
+  return (
+    <div className="relative">
+      <span className="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+      <Input
+        type="number"
+        inputMode="decimal"
+        min={0}
+        aria-label={label}
+        className="h-8 w-24 pl-6 tabular"
+        value={Number.isFinite(value) ? value / 100 : ''}
+        onChange={(e) => onChange(Math.round(Number(e.target.value || 0) * 100))}
+      />
+    </div>
+  )
+}
+
 type NumKey = { [K in keyof AppSettings]: AppSettings[K] extends number ? K : never }[keyof AppSettings]
 
 export function SettingsForm({ initial }: { initial: AppSettings }) {
@@ -244,6 +264,67 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             {num('maxOpenAssignments', 'Open assignments', 'Per person, not yet finished.', 'at once')}
             {num('afterRejectionDays', 'Pause after a rejection', 'Per person.', 'days')}
           </div>
+        </Group>
+        <Group
+          title="Pay by account level"
+          description="Reddit posts and comments on level-priced gigs pay by the age of the account that does the work. A gig can override these. Rates lock at selection."
+        >
+          <div className="overflow-hidden rounded-lg border">
+            <table className="w-full text-sm">
+              <thead className="bg-muted/40 text-xs text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium" />
+                  {(['L1', 'L2', 'L3', 'L4'] as const).map((l) => (
+                    <th key={l} className="px-2 py-2 text-left font-medium">
+                      {l}
+                      <span className="block font-normal">{LEVEL_AGES[l]}</span>
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {(['post', 'comment'] as const).map((kind) => (
+                  <tr key={kind}>
+                    <td className="px-3 py-2 font-medium capitalize">{kind}</td>
+                    {(['L1', 'L2', 'L3', 'L4'] as const).map((l) => (
+                      <td key={l} className="px-2 py-2">
+                        <FormField
+                          control={form.control}
+                          name={`levelRates.${kind}.${l}`}
+                          render={({ field }) => <RupeeInput value={field.value as number} onChange={field.onChange} label={`${kind} ${l}`} />}
+                        />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="grid items-start gap-5 sm:grid-cols-2">
+            <FormField
+              control={form.control}
+              name="upvoteRate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Upvote</FormLabel>
+                  <RupeeInput value={field.value as number} onChange={field.onChange} label="Upvote rate" />
+                  <FormDescription>Same at every level. Warm-up accounts (under 2 weeks) do no paid work.</FormDescription>
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="weeklyPayouts"
+            render={({ field }) => (
+              <SwitchRow
+                label="Weekly payout run"
+                description="Every Monday morning, lock each worker's balance into a pending payout and email the team."
+                checked={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
         </Group>
         <Group title="Opportunities">
           {num('interestWindowMinutes', 'Interest window', 'How long workers have to say they’re interested before you pick.', 'minutes')}

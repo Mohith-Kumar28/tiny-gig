@@ -37,7 +37,9 @@ import { formatHours } from '@/features/gigs/components/worker-gig-meta'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
 import { type getMySubmission, withdrawClaim } from '../server/worker-submissions'
-import { canWithdraw } from '../state'
+import { AccountLossNotice } from '@/features/consent/components/account-loss-notice'
+import { canWithdraw, isTwoStep } from '../state'
+import { InsightsForm } from './insights-form'
 import { ProofForm } from './proof-form'
 import { StatusStepper } from './status-stepper'
 import { SubmissionTimeline } from './submission-timeline'
@@ -109,7 +111,9 @@ function Callout({
 }
 
 export function WorkerTaskDetail({ data }: { data: TaskData }) {
-  const { submission: sub, gig, events } = data
+  const { submission: sub, gig, events, account } = data
+  const twoStep = isTwoStep(sub)
+  const holdOver = sub.status === 'on_hold' && (!sub.liveCheckAt || new Date(sub.liveCheckAt).getTime() <= Date.now())
   const router = useRouter()
   const [briefOpen, setBriefOpen] = useState(sub.status === 'claimed')
   const status = sub.status
@@ -151,11 +155,48 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
       </header>
 
       <Card>
-        <StatusStepper status={status} liveHold={gig.liveHoldHours > 0} hasSubmitted={hasSubmitted} />
+        <StatusStepper status={status} liveHold={gig.liveHoldHours > 0} hasSubmitted={hasSubmitted} twoStep={twoStep} holdOver={holdOver} />
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="min-w-0 space-y-4">
+          {account && (status === 'claimed' || status === 'changes_requested') ? (
+            <div className="space-y-2 rounded-xl border border-primary/30 bg-primary/[0.05] p-4">
+              <p className="text-sm">
+                Post from <strong>{account.label}</strong>. Proof must come from this account.
+              </p>
+              <AccountLossNotice compact />
+            </div>
+          ) : null}
+
+          {status === 'on_hold' && !holdOver && sub.liveCheckAt ? (
+            <Callout tone="info" icon={ShieldCheck} title="Link received. Keep your post live.">
+              <p className="text-sm leading-relaxed">
+                Don’t delete or edit it, and reply to comments. Once it has been live until{' '}
+                <strong>{formatDateTime(sub.liveCheckAt)}</strong>, upload a screenshot of its insights here.
+              </p>
+              <Countdown to={sub.liveCheckAt} prefix="Insights due" className="text-sm text-info" />
+            </Callout>
+          ) : null}
+
+          {status === 'on_hold' && holdOver ? (
+            <Card title="Upload your insights screenshot">
+              <p className="mb-4 text-sm text-muted-foreground">
+                Your post has been live for the full hold. Last step: a screenshot of its insights, so we can see it survived and got real
+                views.
+              </p>
+              <InsightsForm submissionId={sub.id} accountLabel={account?.label} />
+            </Card>
+          ) : null}
+
+          {status === 'in_review' ? (
+            <Callout tone="info" icon={Hourglass} title="Insights received. Waiting for review.">
+              <p className="text-sm text-muted-foreground">
+                Once approved, <Money paise={sub.payoutAmount} /> goes to your TinyGig balance. You’ll get a notification.
+              </p>
+            </Callout>
+          ) : null}
+
           {status === 'changes_requested' ? (
             <Callout tone="warning" icon={AlertTriangle} title="The reviewer asked for changes">
               {lastAdmin?.comment ? <p className="text-sm leading-relaxed whitespace-pre-wrap">{lastAdmin.comment}</p> : null}
@@ -226,7 +267,7 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
               <p className="text-sm text-muted-foreground">
                 {sub.payoutId
                   ? 'This was included in a payout.'
-                  : 'It has been added to your balance and will be paid in the next UPI payout.'}{' '}
+                  : 'It’s in your TinyGig balance. Balances are paid to your UPI every week.'}{' '}
                 <Link to="/w/payments" className="font-medium text-foreground underline underline-offset-2">
                   See payments
                 </Link>
@@ -236,13 +277,13 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
 
           {status === 'expired' ? (
             <Callout tone="danger" icon={Clock} title="The deadline passed">
-              <p className="text-sm text-muted-foreground">This claim expired because proof wasn't submitted in time.</p>
+              <p className="text-sm text-muted-foreground">This task expired because proof wasn’t submitted in time.</p>
             </Callout>
           ) : null}
 
           {needsProof ? (
             <Card
-              title={status === 'changes_requested' ? 'Resubmit your proof' : 'Submit your proof'}
+              title={twoStep ? (status === 'changes_requested' ? 'Resubmit your link' : 'Submit your link') : status === 'changes_requested' ? 'Resubmit your proof' : 'Submit your proof'}
               action={!overdue ? <Countdown to={sub.dueAt} prefix="Due" /> : null}
             >
               {overdue ? (
@@ -260,6 +301,7 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                     submissionId={sub.id}
                     platform={gig.platform}
                     resubmit={status === 'changes_requested'}
+                    twoStep={twoStep}
                     defaults={{ proofUrl: sub.proofUrl, screenshotKeys: sub.screenshotKeys, workerNote: sub.workerNote }}
                   />
                 </>
@@ -305,6 +347,18 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                   </div>
                 ) : null}
                 {sub.workerNote ? <p className="text-sm whitespace-pre-wrap text-muted-foreground">“{sub.workerNote}”</p> : null}
+                {sub.insightsKeys.length ? (
+                  <div className="space-y-1.5">
+                    <p className="text-xs font-medium text-muted-foreground">Insights</p>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
+                      {sub.insightsKeys.map((k, i) => (
+                        <a key={k} href={`/api/uploads/${k}`} target="_blank" rel="noreferrer" className="aspect-square overflow-hidden rounded-lg border bg-muted">
+                          <img src={`/api/uploads/${k}`} alt={`Insights ${i + 1}`} className="size-full object-cover" loading="lazy" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </Card>
           ) : null}
@@ -366,7 +420,7 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
           <Card title="Details">
             <dl className="space-y-2.5 text-sm">
               <div className="flex justify-between gap-3">
-                <dt className="text-muted-foreground">Claimed</dt>
+                <dt className="text-muted-foreground">{twoStep ? 'Selected' : 'Claimed'}</dt>
                 <dd className="text-right">{formatDateTime(sub.claimedAt)}</dd>
               </div>
               {needsProof ? (

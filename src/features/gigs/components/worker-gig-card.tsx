@@ -1,12 +1,12 @@
 import { Link } from '@tanstack/react-router'
 import { Check, Hand, Lock, ShieldCheck, Timer } from 'lucide-react'
 import { Countdown } from '@/components/shared/countdown'
-import { Money } from '@/components/shared/money'
 import { PlatformLabel } from '@/components/shared/platform-icon'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
 import type { listAvailableGigs } from '../server/worker-gigs'
+import { PayAmount, payCaption } from './pay'
 import { formatHours, slotsLeft, TASK_TYPE_LABELS } from './worker-gig-meta'
 
 export type AvailableGig = Awaited<ReturnType<typeof listAvailableGigs>>[number]
@@ -37,8 +37,8 @@ export function WorkerGigCard({ gig }: { gig: AvailableGig }) {
           </h3>
         </div>
         <div className={cn('shrink-0 text-right', ineligible && 'opacity-60')}>
-          <Money paise={gig.payoutAmount} className="font-display text-2xl font-semibold text-primary" />
-          <p className="text-[11px] text-muted-foreground">per task</p>
+          <PayAmount pay={gig.pay} className="font-display text-2xl font-semibold text-primary" />
+          <p className="text-[11px] text-muted-foreground">{payCaption(gig.pay)}</p>
         </div>
       </div>
 

@@ -68,7 +68,7 @@ function WorkerDetailPage() {
   })
 
   const decided = p.completedCount + p.rejectedCount
-  const open = ['claimed', 'submitted', 'resubmitted', 'changes_requested', 'live_check'].reduce((n, s) => n + (data.statusCounts[s] ?? 0), 0)
+  const open = ['claimed', 'submitted', 'resubmitted', 'changes_requested', 'live_check', 'on_hold', 'in_review'].reduce((n, s) => n + (data.statusCounts[s] ?? 0), 0)
 
   return (
     <div className="space-y-6">

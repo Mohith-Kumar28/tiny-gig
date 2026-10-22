@@ -19,6 +19,8 @@ const STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
   resubmitted: { label: 'Resubmitted', tone: 'primary' },
   changes_requested: { label: 'Changes requested', tone: 'warning' },
   live_check: { label: 'Live check', tone: 'info' },
+  on_hold: { label: 'On hold', tone: 'info' },
+  in_review: { label: 'In review', tone: 'primary' },
   approved: { label: 'Approved', tone: 'success' },
   rejected: { label: 'Rejected', tone: 'danger' },
   expired: { label: 'Expired', tone: 'muted' },

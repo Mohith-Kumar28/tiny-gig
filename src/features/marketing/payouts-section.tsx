@@ -5,9 +5,9 @@ import { SectionHeading } from './section-heading'
 const FLOW = [
   { Icon: Send, title: 'You submit', body: 'Link to your live post, plus screenshots if you like.' },
   { Icon: MessageSquareText, title: 'We review', body: 'Approved, changes requested with comments, or rejected.' },
-  { Icon: Clock, title: 'Live hold', body: 'Many gigs need the post to stay up for a set time, often 24 hours.' },
+  { Icon: Clock, title: 'Live hold', body: 'The post stays up for a set time, usually 24 hours. Then you upload its insights.' },
   { Icon: BadgeCheck, title: 'Approved', body: 'The payout is added to your TinyGig balance.' },
-  { Icon: IndianRupee, title: 'Paid to UPI', body: 'Sent to your UPI ID. You get an email with the UTR reference.' },
+  { Icon: IndianRupee, title: 'Paid to UPI', body: 'Paid weekly to your UPI ID. You get an email with the UTR reference.' },
 ]
 
 export function PayoutsSection() {

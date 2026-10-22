@@ -28,8 +28,8 @@ export const STEPS: Step[] = [
     summary: 'Do the task from your own account, following the brief, then submit the link to your work.',
     details: [
       'Write the post, comment or reply the brief asks for, in the community it names, following that community’s rules.',
-      'Submit a link to the live post and optional screenshots.',
-      'A reviewer approves it, asks for changes with comments, or rejects it. Many gigs need the post to stay live for a hold period, such as 24 hours, before final approval.',
+      'Submit the link to your post. Reply to comments on it: that is part of the task.',
+      'Keep it live for the hold period, usually 24 hours, then upload a screenshot of the post’s insights. A reviewer approves it, asks for changes, or rejects it.',
     ],
   },
   {
@@ -37,8 +37,8 @@ export const STEPS: Step[] = [
     title: 'Get paid by UPI',
     summary: 'Approved earnings land in your balance and are paid to your UPI ID, with a UTR reference by email.',
     details: [
-      'Once a gig is approved, the payout is added to your TinyGig balance.',
-      'Our team sends payouts to the UPI ID on your profile.',
+      'Once a gig is approved, the pay is added to your TinyGig balance. Reddit posts and comments pay more from older accounts.',
+      'Balances are paid to the UPI ID on your profile every week, with no minimum.',
       'You get an email with the UTR reference for every payout.',
     ],
   },

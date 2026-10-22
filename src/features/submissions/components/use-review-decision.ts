@@ -9,6 +9,7 @@ export type DecisionVars = {
   comment?: string
   checklist?: string[]
   skipLiveCheck?: boolean
+  markRemoved?: boolean
 }
 
 const VERB: Record<ReviewDecision, string> = {

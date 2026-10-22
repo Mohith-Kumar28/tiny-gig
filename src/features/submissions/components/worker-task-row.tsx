@@ -36,6 +36,15 @@ export function TaskWhen({ task }: { task: WorkerTask }) {
       ) : (
         <span className="text-xs text-info">Final check soon</span>
       )
+    case 'on_hold':
+      if (!task.liveCheckAt) return null
+      return new Date(task.liveCheckAt).getTime() > Date.now() ? (
+        <Countdown to={task.liveCheckAt} prefix="Live hold" className="text-info" />
+      ) : (
+        <span className="text-xs font-medium text-primary">Upload insights now</span>
+      )
+    case 'in_review':
+      return <span className="text-xs text-muted-foreground">Insights in review</span>
     case 'submitted':
     case 'resubmitted':
       return (
@@ -55,7 +64,8 @@ export function TaskWhen({ task }: { task: WorkerTask }) {
 }
 
 export function WorkerTaskRow({ task }: { task: WorkerTask }) {
-  const urgent = task.status === 'changes_requested'
+  const urgent =
+    task.status === 'changes_requested' || (task.status === 'on_hold' && !!task.liveCheckAt && new Date(task.liveCheckAt).getTime() <= Date.now())
   return (
     <Link
       to="/w/work/$submissionId"

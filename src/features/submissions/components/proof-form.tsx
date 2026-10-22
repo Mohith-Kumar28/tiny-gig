@@ -2,6 +2,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Send } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -26,10 +27,12 @@ export function ProofForm({
   resubmit,
   defaults,
   disabled,
+  twoStep = false,
 }: {
   submissionId: string
   platform: string
   resubmit: boolean
+  twoStep?: boolean
   defaults: { proofUrl?: string | null; screenshotKeys?: string[]; workerNote?: string | null }
   disabled?: boolean
 }) {
@@ -44,7 +47,11 @@ export function ProofForm({
     },
   })
   const submit = useAction((data: ProofInput) => submitProof({ data }), {
-    success: resubmit ? 'Resubmitted! We will review your changes soon.' : 'Proof submitted! We will review it soon.',
+    success: (r) => {
+      if (r.warning) toast.warning(r.warning)
+      if (r.status === 'on_hold') return 'Link submitted. Keep the post live, then upload the insights screenshot.'
+      return resubmit ? 'Resubmitted! We will review your changes soon.' : 'Proof submitted! We will review it soon.'
+    },
     invalidate: [['w']],
   })
 
@@ -110,7 +117,7 @@ export function ProofForm({
         />
         <Button type="submit" size="lg" className="w-full sm:w-auto" disabled={disabled || uploading || submit.isPending}>
           {submit.isPending ? <Spinner /> : <Send />}
-          {uploading ? 'Waiting for uploads…' : resubmit ? 'Resubmit for review' : 'Submit for review'}
+          {uploading ? 'Waiting for uploads…' : twoStep ? (resubmit ? 'Resubmit link' : 'Submit link') : resubmit ? 'Resubmit for review' : 'Submit for review'}
         </Button>
       </form>
     </Form>

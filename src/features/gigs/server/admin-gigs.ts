@@ -5,14 +5,17 @@ import type { Db } from '@/db/client'
 import { clientTag, gig, gigInterest, submission, workerProfile } from '@/db/schema'
 import { GIG_STATUSES, PLATFORMS, SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
 import { queueBulkEmail } from '@/emails/send-email'
-import { rupeesToPaise } from '@/lib/format'
+import { formatMoney, rupeesToPaise } from '@/lib/format'
 import { audit, notify } from '@/lib/server/activity'
 import { workerBlockReason } from '@/features/accounts/cooldowns'
 import { evaluateWorker, gigFacts, loadEligibility, logBlocks } from '@/features/accounts/server/eligibility'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { slugify } from '@/lib/slug'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
-import { gigFormSchema, type GigFormValues } from '../schemas'
+import { gigFormSchemaRefined, type GigFormValues, PAID_LEVEL_KEYS } from '../schemas'
+import { rateRange } from '@/features/opportunities/server/rates'
+import { loadSettings } from '@/features/settings/server/settings-store'
+import type { AppSettings } from '@/features/settings/schemas'
 
 
 export const gigsSearchSchema = tableSearchSchema.extend({
@@ -63,6 +66,7 @@ export const listGigs = createServerFn({ method: 'GET' })
           community: gig.community,
           status: gig.status,
           payoutAmount: gig.payoutAmount,
+          payMode: gig.payMode,
           totalSlots: gig.totalSlots,
           claimedSlots: gig.claimedSlots,
           liveHoldHours: gig.liveHoldHours,
@@ -97,12 +101,28 @@ export const getGigAdmin = createServerFn({ method: 'GET' })
       .select({ n: count() })
       .from(gigInterest)
       .where(and(eq(gigInterest.gigId, data.id), eq(gigInterest.status, 'interested')))
+    const [money] = await context.db
+      .select({
+        spent: sql<number>`coalesce(sum(case when ${submission.status} = 'approved' then ${submission.payoutAmount} else 0 end), 0)`,
+        committed: sql<number>`coalesce(sum(case when ${submission.status} not in ('rejected','expired','withdrawn') then ${submission.payoutAmount} else 0 end), 0)`,
+      })
+      .from(submission)
+      .where(eq(submission.gigId, data.id))
+    const range = rateRange(row, await loadSettings(context.db))
     const client = row.clientTagId
       ? await context.db.select({ name: clientTag.name, color: clientTag.color }).from(clientTag).where(eq(clientTag.id, row.clientTagId)).get()
       : null
     return {
       gig: row,
       interested: interest?.n ?? 0,
+      money: {
+        spent: Number(money?.spent ?? 0),
+        committed: Number(money?.committed ?? 0),
+        min: range.min,
+        max: range.max,
+        // Total spend is no longer a fixed multiplication (R30): worst case = top rate × open slots + what's already locked in.
+        maxExposure: Number(money?.committed ?? 0) + range.max * Math.max(0, row.totalSlots - row.claimedSlots),
+      },
       client: client ?? null,
       counts: Object.fromEntries(counts.map((c) => [c.status, c.n])) as Partial<
         Record<(typeof SUBMISSION_STATUSES)[number], number>
@@ -113,7 +133,14 @@ export const getGigAdmin = createServerFn({ method: 'GET' })
 /** The interest window starts the moment a gig first goes live (R12). */
 const windowEnd = (minutes: number) => new Date(Date.now() + minutes * 60_000)
 
-function toRow(v: GigFormValues) {
+function toRow(v: GigFormValues, settings: AppSettings) {
+  const overrides = Object.fromEntries(
+    PAID_LEVEL_KEYS.flatMap((l) => (v.levelOverrides[l].trim() ? [[l, rupeesToPaise(Number(v.levelOverrides[l]))]] : [])),
+  ) as Partial<Record<(typeof PAID_LEVEL_KEYS)[number], number>>
+  const levelPriced = v.payMode === 'levels'
+  const shape = { payMode: v.payMode, levelRateOverrides: Object.keys(overrides).length ? overrides : null, taskType: v.taskType, platform: v.platform }
+  // Level-priced gigs store their top rate as payoutAmount so sorting and emails show "up to".
+  const payoutAmount = levelPriced ? rateRange({ ...shape, payoutAmount: 0 }, settings).max : rupeesToPaise(v.payoutRupees)
   return {
     title: v.title,
     platform: v.platform,
@@ -125,7 +152,9 @@ function toRow(v: GigFormValues) {
     contentGuidelines: v.contentGuidelines || null,
     sampleContent: v.sampleContent || null,
     reviewChecklist: v.reviewChecklist,
-    payoutAmount: rupeesToPaise(v.payoutRupees),
+    payoutAmount,
+    payMode: v.payMode,
+    levelRateOverrides: levelPriced && Object.keys(overrides).length ? overrides : null,
     totalSlots: v.totalSlots,
     claimWindowHours: v.claimWindowHours,
     interestWindowMinutes: v.interestWindowMinutes,
@@ -138,6 +167,11 @@ function toRow(v: GigFormValues) {
     priority: v.priority,
     status: v.status,
   }
+}
+
+function payLabel(g: typeof gig.$inferSelect, settings: AppSettings) {
+  const r = rateRange(g, settings)
+  return r.min === r.max ? formatMoney(r.min) : `${formatMoney(r.min)}–${formatMoney(r.max)} depending on your account`
 }
 
 /**
@@ -175,18 +209,18 @@ async function announceGig(db: Db, g: typeof gig.$inferSelect) {
   queueBulkEmail({
     to: eligible.filter((w) => w.emailPrefs?.newGigs !== false).map((w) => w.email),
     template: 'newGig',
-    data: { title: g.title, platform: g.platform, payout: g.payoutAmount, gigId: g.id },
+    data: { title: g.title, platform: g.platform, payout: g.payoutAmount, gigId: g.id, windowMinutes: g.interestWindowMinutes, payLabel: payLabel(g, ctx.settings) },
   })
   return eligible.length
 }
 
 export const saveGig = createServerFn({ method: 'POST' })
   .middleware([adminMiddleware])
-  .validator(gigFormSchema.extend({ id: z.string().optional() }))
+  .validator(gigFormSchemaRefined.and(z.object({ id: z.string().optional() })))
   .handler(async ({ data, context }) => {
     const { db, user } = context
     const { id, notifyWorkers, ...form } = data
-    const values = toRow({ ...form, notifyWorkers })
+    const values = toRow({ ...form, notifyWorkers }, await loadSettings(db))
     let saved: typeof gig.$inferSelect | undefined
     let wasLive = false
 

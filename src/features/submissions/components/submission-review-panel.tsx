@@ -56,6 +56,7 @@ export function SubmissionReviewPanel({
   const [dialog, setDialog] = useState<'changes' | 'reject' | null>(null)
   const [issues, setIssues] = useState<string[]>([])
   const [note, setNote] = useState('')
+  const [removed, setRemoved] = useState(false)
   const decide = useReviewDecision({
     onDone: (v) => {
       setDialog(null)
@@ -72,6 +73,9 @@ export function SubmissionReviewPanel({
   const sub = data?.submission
   const canDecide = !!sub && REVIEWABLE.includes(sub.status)
   const isLiveCheck = sub?.status === 'live_check'
+  const onHold = sub?.status === 'on_hold'
+  const twoStepReview = sub?.status === 'in_review'
+  const holdOver = onHold && sub?.liveCheckAt ? new Date(sub.liveCheckAt) <= new Date() : false
   const liveDue = isLiveCheck && sub?.liveCheckAt ? new Date(sub.liveCheckAt) <= new Date() : false
 
   const approve = (skipLiveCheck = false) => {
@@ -81,7 +85,7 @@ export function SubmissionReviewPanel({
 
   useHotkeys(
     {
-      a: () => approve(),
+      a: () => !onHold && approve(),
       c: () => canDecide && !isLiveCheck && setDialog('changes'),
       r: () => canDecide && setDialog('reject'),
       o: () => sub?.proofUrl && window.open(sub.proofUrl, '_blank', 'noopener'),
@@ -165,9 +169,31 @@ export function SubmissionReviewPanel({
           </div>
         ) : null}
 
+        {onHold && sub.liveCheckAt ? (
+          <div className={cn('flex gap-3 rounded-xl border p-3.5 text-sm', holdOver ? 'border-warning/40 bg-warning/10' : 'border-border bg-muted/40')}>
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-info" />
+            <div className="space-y-1">
+              <p className="font-medium">{holdOver ? 'Hold over: waiting for the insights screenshot' : 'On hold: the post must stay live'}</p>
+              <p className="text-muted-foreground">
+                Live until {formatDateTime(sub.liveCheckAt)}.{' '}
+                {!holdOver ? <Countdown to={sub.liveCheckAt} prefix="Hold ends" className="align-middle" /> : 'The worker has been reminded.'}
+              </p>
+            </div>
+          </div>
+        ) : null}
+
         <Section title="Proof">
           <ReviewProofCard url={sub.proofUrl} targetUrl={gig.targetUrl} />
           <ReviewScreenshots keys={sub.screenshotKeys} />
+          {sub.insightsKeys.length ? (
+            <div className="space-y-1.5">
+              <p className="text-xs font-medium text-muted-foreground">
+                Insights (uploaded {sub.insightsSubmittedAt ? formatDateTime(sub.insightsSubmittedAt) : ''}): check the post survived and the worker replied to comments
+              </p>
+              <ReviewScreenshots keys={sub.insightsKeys} />
+            </div>
+          ) : null}
+          {sub.onBehalfBy ? <p className="text-xs text-muted-foreground">Added by staff on the worker’s behalf.</p> : null}
           {sub.workerNote ? (
             <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm whitespace-pre-wrap">
               <span className="text-muted-foreground">Worker note: </span>
@@ -244,7 +270,7 @@ export function SubmissionReviewPanel({
             disabled={decide.isPending}
             className="flex-1 sm:flex-none"
           >
-            <X /> {isLiveCheck ? 'Removed: reject' : 'Reject'} <Kbd className="ml-1 hidden sm:inline-flex">R</Kbd>
+            <X /> {isLiveCheck || onHold ? 'Removed: reject' : 'Reject'} <Kbd className="ml-1 hidden sm:inline-flex">R</Kbd>
           </Button>
           {!isLiveCheck ? (
             <Button
@@ -257,12 +283,20 @@ export function SubmissionReviewPanel({
             </Button>
           ) : null}
           <ButtonGroup className="ml-auto w-full sm:w-auto">
-            <Button onClick={() => approve()} disabled={decide.isPending} className="flex-1 sm:flex-none">
+            <Button onClick={() => approve()} disabled={decide.isPending || onHold} className="flex-1 sm:flex-none">
               <Check />
-              {isLiveCheck ? 'Still live: approve' : gig.liveHoldHours > 0 ? 'Approve → live check' : 'Approve'}
+              {onHold
+                ? 'Waiting for insights'
+                : twoStepReview
+                  ? 'Approve & credit balance'
+                  : isLiveCheck
+                    ? 'Still live: approve'
+                    : gig.liveHoldHours > 0
+                      ? 'Approve → live check'
+                      : 'Approve'}
               <Kbd className="ml-1 hidden bg-primary-foreground/20 text-primary-foreground sm:inline-flex">A</Kbd>
             </Button>
-            {!isLiveCheck && gig.liveHoldHours > 0 ? (
+            {!isLiveCheck && !onHold && !twoStepReview && gig.liveHoldHours > 0 ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button size="icon" disabled={decide.isPending} aria-label="More approve options">
@@ -320,13 +354,24 @@ export function SubmissionReviewPanel({
       <DecisionDialog
         open={dialog === 'reject'}
         onOpenChange={(o) => !o && setDialog(null)}
-        title={isLiveCheck ? 'Reject: post was removed?' : 'Reject submission'}
+        title={isLiveCheck || onHold ? 'Reject: post was removed?' : 'Reject submission'}
         description="This is final. The slot is released and the worker is told why."
         confirmLabel="Reject"
         templateKind="reject"
         destructive
         pending={decide.isPending}
-        onConfirm={(c) => decide.mutate({ ids: [id], decision: 'reject', comment: c })}
+        extra={
+          data.account ? (
+            <div className="flex items-start gap-2 rounded-lg border p-3 text-sm">
+              <Checkbox id={`removed-${id}`} checked={removed} onCheckedChange={(v) => setRemoved(v === true)} className="mt-0.5" />
+              <label htmlFor={`removed-${id}`}>
+                The post was removed (by the worker, a moderator or Reddit).{' '}
+                <span className="text-muted-foreground">Marks {accountLabel(data.account.platform, data.account.handle)} as warned.</span>
+              </label>
+            </div>
+          ) : null
+        }
+        onConfirm={(c) => decide.mutate({ ids: [id], decision: 'reject', comment: c, markRemoved: removed })}
       />
     </div>
   )

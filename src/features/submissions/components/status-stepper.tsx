@@ -11,8 +11,60 @@ const FAIL_LABELS: Partial<Record<SubmissionStatus, string>> = {
   withdrawn: 'Withdrawn',
 }
 
-/** Claimed → Submitted → In review → (Live check) → Approved. */
-export function buildSteps(status: SubmissionStatus, opts: { liveHold: boolean; hasSubmitted: boolean }): Step[] {
+/** Two-step proof (R35): Selected → Posted → Live hold → Insights → Approved. */
+function twoStepSteps(status: SubmissionStatus, opts: { hasSubmitted: boolean; holdOver: boolean }): Step[] {
+  const base = [
+    { key: 'selected', label: 'Selected' },
+    { key: 'posted', label: 'Post & submit link' },
+    { key: 'hold', label: 'Live hold' },
+    { key: 'insights', label: 'Upload insights' },
+    { key: 'approved', label: 'Approved' },
+  ]
+  let current = 1
+  let state: StepState = 'current'
+  let label: string | undefined
+  switch (status) {
+    case 'claimed':
+      current = 1
+      break
+    case 'changes_requested':
+      current = 1
+      state = 'warning'
+      label = 'Fix & resubmit'
+      break
+    case 'on_hold':
+      current = opts.holdOver ? 3 : 2
+      break
+    case 'in_review':
+      current = 4
+      label = 'In review'
+      break
+    case 'approved':
+      current = base.length
+      break
+    case 'rejected':
+      current = 4
+      state = 'failed'
+      label = FAIL_LABELS.rejected
+      break
+    default:
+      current = opts.hasSubmitted ? 2 : 1
+      state = 'failed'
+      label = FAIL_LABELS[status]
+  }
+  return base.map((s, i) => ({
+    key: s.key,
+    label: i === current && label ? label : s.label,
+    state: i < current ? 'done' : i === current ? state : 'upcoming',
+  }))
+}
+
+/** Legacy: Claimed → Submitted → In review → (Live check) → Approved. Two-step work uses twoStepSteps. */
+export function buildSteps(
+  status: SubmissionStatus,
+  opts: { liveHold: boolean; hasSubmitted: boolean; twoStep?: boolean; holdOver?: boolean },
+): Step[] {
+  if (opts.twoStep) return twoStepSteps(status, { hasSubmitted: opts.hasSubmitted, holdOver: !!opts.holdOver })
   const base = [
     { key: 'claimed', label: 'Claimed' },
     { key: 'submitted', label: 'Submitted' },
@@ -64,14 +116,18 @@ export function StatusStepper({
   status,
   liveHold,
   hasSubmitted = false,
+  twoStep = false,
+  holdOver = false,
   className,
 }: {
   status: SubmissionStatus
   liveHold: boolean
   hasSubmitted?: boolean
+  twoStep?: boolean
+  holdOver?: boolean
   className?: string
 }) {
-  const steps = buildSteps(status, { liveHold, hasSubmitted })
+  const steps = buildSteps(status, { liveHold, hasSubmitted, twoStep, holdOver })
   const stopped = steps.some((s) => s.state === 'failed')
   return (
     <ol className={cn('flex w-full items-start', className)} aria-label="Task progress">

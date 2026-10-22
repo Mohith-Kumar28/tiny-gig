@@ -143,7 +143,11 @@ function GigDetailPage() {
         <Kpi label="Slots" value={<SlotsBar claimed={g.claimedSlots} total={g.totalSlots} className="w-full max-w-28 [&>div:first-child]:text-base" />} />
         <Kpi label="To review" value={formatNumber(waiting)} tone={waiting ? 'attention' : undefined} />
         <Kpi label="Approved" value={formatNumber(approved)} />
-        <Kpi label="Spent" value={<Money paise={approved * g.payoutAmount} />} hint={`of ${formatMoney(g.totalSlots * g.payoutAmount)}`} />
+        <Kpi
+          label="Spent"
+          value={<Money paise={data.money.spent} />}
+          hint={`max exposure ${formatMoney(data.money.maxExposure)}${data.money.min !== data.money.max ? ` · ${formatMoney(data.money.min)}–${formatMoney(data.money.max)}/task` : ''}`}
+        />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">

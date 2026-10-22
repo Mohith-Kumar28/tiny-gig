@@ -1,5 +1,5 @@
 import { Container } from './container'
-import { EXAMPLE_GIGS, formatInr } from './example-gigs'
+import { EXAMPLE_GIGS, formatGigPay } from './example-gigs'
 import { PLATFORM_LABEL, PlatformMark } from './platform-mark'
 import { SectionHeading } from './section-heading'
 
@@ -31,7 +31,7 @@ export function ExampleGigsSection() {
                   {gig.requirement && <span className="text-foreground/70">, {gig.requirement}</span>}
                 </p>
               </div>
-              <p className="font-mono text-xl font-semibold tracking-tight tabular sm:text-2xl">{formatInr(gig.payout)}</p>
+              <p className="font-mono text-xl font-semibold tracking-tight tabular sm:text-2xl">{formatGigPay(gig)}</p>
             </li>
           ))}
         </ul>

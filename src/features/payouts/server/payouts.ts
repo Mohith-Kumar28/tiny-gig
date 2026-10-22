@@ -1,50 +1,16 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, inArray, isNull, like, or, type SQL, sql } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import type { Db } from '@/db/client'
 import { payout, submission, referralReward, workerProfile, gig, referralProgram } from '@/db/schema'
 import { PAYOUT_STATUSES } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
 import { audit, notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware, workerMiddleware } from '@/lib/server/middleware'
+import { lockBalancesIntoPayouts, unpaidByWorker } from './payout-service'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 
 
 /** Unpaid, approved money per worker: gig earnings + approved referral rewards. */
-async function unpaidByWorker(db: Db, workerIds?: string[]) {
-  const subFilter = and(
-    eq(submission.status, 'approved'),
-    isNull(submission.payoutId),
-    workerIds ? inArray(submission.workerId, workerIds) : undefined,
-  )
-  const rewardFilter = and(
-    eq(referralReward.status, 'approved'),
-    isNull(referralReward.payoutId),
-    workerIds ? inArray(referralReward.workerId, workerIds) : undefined,
-  )
-  const [subs, rewards] = await Promise.all([
-    db
-      .select({ workerId: submission.workerId, amount: sql<number>`sum(${submission.payoutAmount})`, n: count() })
-      .from(submission)
-      .where(subFilter)
-      .groupBy(submission.workerId),
-    db
-      .select({ workerId: referralReward.workerId, amount: sql<number>`sum(${referralReward.amount})`, n: count() })
-      .from(referralReward)
-      .where(rewardFilter)
-      .groupBy(referralReward.workerId),
-  ])
-  const map = new Map<string, { gigAmount: number; gigCount: number; rewardAmount: number; rewardCount: number }>()
-  for (const s of subs) map.set(s.workerId, { gigAmount: Number(s.amount), gigCount: s.n, rewardAmount: 0, rewardCount: 0 })
-  for (const r of rewards) {
-    const cur = map.get(r.workerId) ?? { gigAmount: 0, gigCount: 0, rewardAmount: 0, rewardCount: 0 }
-    cur.rewardAmount = Number(r.amount)
-    cur.rewardCount = r.n
-    map.set(r.workerId, cur)
-  }
-  return map
-}
-
 export const getPayableBalances = createServerFn({ method: 'GET' })
   .middleware([adminMiddleware])
   .handler(async ({ context }) => {
@@ -74,35 +40,8 @@ export const createPayouts = createServerFn({ method: 'POST' })
   .middleware([adminMiddleware])
   .validator(z.object({ workerIds: z.array(z.string()).min(1).max(500), note: z.string().max(500).optional() }))
   .handler(async ({ data, context }) => {
-    const { db, user } = context
-    const balances = await unpaidByWorker(db, data.workerIds)
-    const profiles = await db.query.workerProfile.findMany({ where: inArray(workerProfile.userId, [...balances.keys()]) })
-    let created = 0
-    for (const p of profiles) {
-      const b = balances.get(p.userId)
-      const amount = (b?.gigAmount ?? 0) + (b?.rewardAmount ?? 0)
-      if (!b || amount <= 0) continue
-      const [row] = await db
-        .insert(payout)
-        .values({ workerId: p.userId, amount, status: 'pending', upiId: p.upiId, note: data.note ?? null, createdBy: user.id })
-        .returning({ id: payout.id })
-      if (!row) continue
-      await db.batch([
-        db
-          .update(submission)
-          .set({ payoutId: row.id })
-          .where(and(eq(submission.workerId, p.userId), eq(submission.status, 'approved'), isNull(submission.payoutId))),
-        db
-          .update(referralReward)
-          .set({ payoutId: row.id })
-          .where(
-            and(eq(referralReward.workerId, p.userId), eq(referralReward.status, 'approved'), isNull(referralReward.payoutId)),
-          ),
-      ])
-      await audit(db, { actorId: user.id, action: 'payout.create', entityType: 'payout', entityId: row.id, meta: { amount } })
-      created++
-    }
-    return { created }
+    const r = await lockBalancesIntoPayouts(context.db, { workerIds: data.workerIds, actorId: context.user.id, note: data.note })
+    return { created: r.created }
   })
 
 export const payoutsSearchSchema = tableSearchSchema.extend({ status: facet(PAYOUT_STATUSES) })
