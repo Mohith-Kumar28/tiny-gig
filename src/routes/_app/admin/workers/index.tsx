@@ -1,9 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Ban, Download, RotateCcw, Users } from 'lucide-react'
+import { Ban, Download, RotateCcw } from 'lucide-react'
 import { useState } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
+import { DataTableToggleFilter } from '@/components/data-table/data-table-toggle-filter'
 import { useTableSearch } from '@/components/data-table/use-table-search'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
@@ -65,6 +66,7 @@ function WorkersPage() {
     <div className="space-y-6">
       <PageHeader
         title="Workers"
+        description="Everyone approved to work, and anyone suspended. Applicants have their own page."
         actions={
           <Button variant="outline" size="sm" onClick={() => exportWorkersCsv(data?.rows ?? [])} disabled={!data?.rows.length}>
             <Download /> Export page
@@ -98,17 +100,29 @@ function WorkersPage() {
               value={search.state}
               onChange={(v) => onSearchChange({ state: v })}
             />
-            <Button
-              variant={search.flagged ? 'secondary' : 'outline'}
-              size="sm"
-              className="h-8 border-dashed"
-              onClick={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
+            <DataTableToggleFilter
+              active={!!search.flagged}
+              onToggle={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
             >
               Flagged referrals
-            </Button>
+            </DataTableToggleFilter>
           </>
         }
-        empty={<EmptyState icon={Users} title="No workers match" description="Try clearing a filter or the search." className="border-0 bg-transparent" />}
+        empty={
+          search.status || search.state || search.q || search.flagged ? (
+            <EmptyState
+              title="No workers match"
+              description="Nothing fits these filters. Press Reset to see approved and suspended workers."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="No workers yet"
+              description="Approve someone on the Applicants page and they appear here, ready to claim gigs."
+              className="border-0 bg-transparent"
+            />
+          )
+        }
         bulkActions={(rows, clear) => (
           <>
             <Button size="sm" variant="outline" onClick={() => exportWorkersCsv(rows)}>

@@ -93,8 +93,8 @@ function ProgramsPage() {
 
       {isPending ? (
         <div className="grid gap-4 lg:grid-cols-2">
-          <Skeleton className="h-64 rounded-xl" />
-          <Skeleton className="h-64 rounded-xl" />
+          <Skeleton className="h-64 rounded-lg" />
+          <Skeleton className="h-64 rounded-lg" />
         </div>
       ) : programs?.length ? (
         <div className="grid gap-4 lg:grid-cols-2">

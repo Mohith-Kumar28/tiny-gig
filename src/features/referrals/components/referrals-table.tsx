@@ -1,11 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Users } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
+import { DataTableToggleFilter } from '@/components/data-table/data-table-toggle-filter'
 import type { OnSearchChange } from '@/components/data-table/types'
 import { EmptyState } from '@/components/shared/empty-state'
-import { Button } from '@/components/ui/button'
 import { useAction } from '@/hooks/use-action'
 import { referralsQuery } from '../queries'
 import { type ReferralsSearch, setReferralFlag } from '../server/referrals'
@@ -64,20 +63,17 @@ export function ReferralsTable({
         filters={
           <>
             <DataTableFacetedFilter title="Stage" options={STAGE_OPTIONS} value={search.stage} onChange={(v) => onSearchChange({ stage: v })} />
-            <Button
-              variant={search.flagged ? 'secondary' : 'outline'}
-              size="sm"
-              className="h-8 border-dashed"
-              onClick={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
+            <DataTableToggleFilter
+              active={!!search.flagged}
+              onToggle={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
             >
               Flagged only
-            </Button>
+            </DataTableToggleFilter>
           </>
         }
         empty={
           <EmptyState
-            icon={Users}
-            title="No referrals yet"
+            title={hasActiveFilters ? 'No referrals match' : 'No referrals yet'}
             description="When someone applies through a worker's /r/ link, the referral shows up here."
             className="border-0 bg-transparent"
           />

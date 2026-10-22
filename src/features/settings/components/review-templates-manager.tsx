@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { MessageSquareText, Pencil, Plus, Sparkles, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Sparkles, Trash2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Button } from '@/components/ui/button'
@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { useAction } from '@/hooks/use-action'
 import { reviewTemplatesQuery } from '../queries'
 import { deleteReviewTemplate, saveReviewTemplate } from '../server/settings'
+import { SettingsSection } from './settings-section'
 
 type Kind = 'changes' | 'reject' | 'approve' | 'applicant_reject'
 type Template = { id?: string; label: string; body: string; kind: Kind }
@@ -130,28 +131,25 @@ export function ReviewTemplatesManager() {
   )
 
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="font-display text-lg font-semibold">Review templates</h2>
-          <p className="text-sm text-muted-foreground">Canned messages for faster, consistent reviews.</p>
-        </div>
-        <Button size="sm" onClick={() => setEditing({ label: '', body: '', kind: 'changes' })}>
+    <SettingsSection
+      title="Review templates"
+      description="Saved replies for faster, consistent reviews. They show as one-click chips when you reject, request changes or decline an applicant."
+      actions={
+        <Button size="sm" variant="outline" onClick={() => setEditing({ label: '', body: '', kind: 'changes' })}>
           <Plus /> New template
         </Button>
-      </div>
-
+      }
+    >
       {isLoading ? (
         <div className="grid gap-4 md:grid-cols-2">
           {[0, 1, 2, 3].map((i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+            <Skeleton key={i} className="h-40 rounded-lg" />
           ))}
         </div>
       ) : !templates?.length ? (
         <EmptyState
-          icon={MessageSquareText}
           title="No templates yet"
-          description="Saved comments for faster reviews."
+          description="Load the starter set (wrong subreddit, missing screenshot, low karma and more), then edit them to sound like you."
           action={
             <Button onClick={() => seed.mutate(undefined)} disabled={seed.isPending}>
               {seed.isPending ? <Spinner /> : <Sparkles />}
@@ -164,12 +162,13 @@ export function ReviewTemplatesManager() {
           {KINDS.map((k) => {
             const list = templates.filter((t) => t.kind === k.kind)
             return (
-              <div key={k.kind} className="rounded-xl border bg-card">
+              <div key={k.kind} className="rounded-lg border bg-card">
                 <div className="flex items-start justify-between gap-2 border-b px-4 py-3">
                   <div>
                     <h3 className="text-sm font-semibold">
                       {k.title} <span className="font-normal text-muted-foreground tabular">· {list.length}</span>
                     </h3>
+                    <p className="text-xs text-muted-foreground">{k.description}</p>
                   </div>
                   <Button size="icon" variant="ghost" className="size-7" onClick={() => setEditing({ label: '', body: '', kind: k.kind })} aria-label={`Add ${k.title} template`}>
                     <Plus />
@@ -179,7 +178,11 @@ export function ReviewTemplatesManager() {
                   <ul className="divide-y">
                     {list.map((t) => (
                       <li key={t.id} className="group flex items-start gap-2 px-4 py-2.5">
-                        <button type="button" className="min-w-0 flex-1 text-left" onClick={() => setEditing(t)}>
+                        <button
+                          type="button"
+                          className="min-w-0 flex-1 rounded-sm text-left focus-visible:outline-2 focus-visible:outline-ring"
+                          onClick={() => setEditing(t)}
+                        >
                           <div className="text-sm font-medium">{t.label}</div>
                           <div className="line-clamp-2 text-xs text-muted-foreground">{t.body}</div>
                         </button>
@@ -202,7 +205,7 @@ export function ReviewTemplatesManager() {
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-4 py-4 text-sm text-muted-foreground">None yet.</p>
+                  <p className="px-4 py-4 text-sm text-muted-foreground">None yet. Use + to add one.</p>
                 )}
               </div>
             )
@@ -210,6 +213,6 @@ export function ReviewTemplatesManager() {
         </div>
       )}
       <TemplateDialog value={editing} onOpenChange={(o) => !o && setEditing(null)} />
-    </section>
+    </SettingsSection>
   )
 }

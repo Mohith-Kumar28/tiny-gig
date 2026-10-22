@@ -29,8 +29,8 @@ function Chip({ active, onClick, children }: { active: boolean; onClick: () => v
       aria-pressed={active}
       onClick={onClick}
       className={cn(
-        'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
-        active ? 'border-primary bg-primary/10 text-primary' : 'bg-background text-muted-foreground hover:bg-accent hover:text-foreground',
+        'inline-flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium transition-colors outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50',
+        active ? 'border-ink bg-ink/8 text-ink' : 'bg-card text-muted-foreground hover:bg-accent hover:text-foreground',
       )}
     >
       {children}
@@ -92,7 +92,7 @@ export function WorkerGigFilters({
         </div>
       </div>
 
-      <div className="-mx-3 flex gap-2 overflow-x-auto px-3 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
+      <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0">
         {PLATFORMS.filter((p) => p !== 'other').map((p: Platform) => (
           <Chip key={p} active={Boolean(search.platform?.includes(p))} onClick={() => onChange({ platform: toggle(search.platform, p) })}>
             <PlatformIcon platform={p} className="size-3.5" />
@@ -109,7 +109,7 @@ export function WorkerGigFilters({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 shrink-0 rounded-full"
+            className="h-8 shrink-0 rounded-md"
             onClick={() => {
               setQ('')
               onChange({ platform: undefined, taskType: undefined, q: undefined, eligibleOnly: undefined })

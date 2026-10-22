@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { AlertTriangle, Clock, Settings2, UserPlus, Wallet } from 'lucide-react'
+import { Settings2 } from 'lucide-react'
 import { z } from 'zod'
 import { useTableSearch } from '@/components/data-table/use-table-search'
 import { Money } from '@/components/shared/money'
 import { PageHeader } from '@/components/shared/page-header'
-import { StatCard } from '@/components/shared/stat-card'
-import { Badge } from '@/components/ui/badge'
+import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ReferralLeaderboard } from '@/features/referrals/components/referral-leaderboard'
@@ -81,8 +80,9 @@ function ReferralsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Referrals"
+        description="Workers bring in workers. Check rewards before they reach a balance, and watch for flagged sign-ups."
         actions={
-          <Button asChild>
+          <Button asChild variant="outline">
             <Link to="/admin/referrals/programs">
               <Settings2 /> Programs
             </Link>
@@ -90,33 +90,29 @@ function ReferralsPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Referrals" icon={UserPlus} value={formatNumber(stats?.total ?? 0)} hint={`${conversion}% did a gig`} />
+      <StatGrid className="grid-cols-2 md:grid-cols-4">
+        <StatCard label="Referrals" value={formatNumber(stats?.total ?? 0)} hint={`${conversion}% did a gig`} />
         <StatCard
           label="Rewards to check"
-          icon={Clock}
           tone={stats?.pendingReview ? 'attention' : 'default'}
           value={formatNumber(stats?.pendingReview ?? 0)}
         />
-        <StatCard label="Rewards owed" icon={Wallet} value={<Money paise={stats?.owed ?? 0} className="font-semibold" />} />
+        <StatCard label="Rewards owed" value={<Money paise={stats?.owed ?? 0} className="font-bold" />} />
         <StatCard
           label="Flagged"
-          icon={AlertTriangle}
           tone={stats?.flagged ? 'attention' : 'default'}
           value={formatNumber(stats?.flagged ?? 0)}
           to="/admin/referrals"
           search={{ tab: 'referrals', flagged: true }}
         />
-      </div>
+      </StatGrid>
 
       <Tabs value={tab} onValueChange={setTab}>
         <TabsList>
           <TabsTrigger value="rewards">
             Rewards queue
             {stats?.pendingReview ? (
-              <Badge variant="secondary" className="ml-1 h-4.5 min-w-4.5 px-1 tabular">
-                {stats.pendingReview}
-              </Badge>
+              <span className="ml-1 rounded-[3px] bg-primary/10 px-1 text-xs font-medium text-primary tabular">{stats.pendingReview}</span>
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="referrals">Referrals</TabsTrigger>

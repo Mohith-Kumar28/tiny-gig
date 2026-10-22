@@ -3,10 +3,10 @@ import { AlertTriangle, Ban, Check, MoreHorizontal } from 'lucide-react'
 import { Money } from '@/components/shared/money'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { cn } from '@/lib/utils'
 import type { listRewards } from '../server/referrals'
 
 export type RewardRow = Awaited<ReturnType<typeof listRewards>>['rows'][number]
@@ -47,9 +47,14 @@ export function rewardColumns(actions: {
       header: () => 'Role',
       meta: { label: 'Role' },
       cell: ({ row }) => (
-        <Badge variant={row.original.role === 'referrer' ? 'secondary' : 'outline'} className="capitalize">
+        <span
+          className={cn(
+            'inline-flex h-5.5 items-center rounded-[3px] border px-1.5 text-xs capitalize',
+            row.original.role === 'referrer' ? 'bg-muted/60' : 'border-dashed text-muted-foreground',
+          )}
+        >
           {row.original.role}
-        </Badge>
+        </span>
       ),
     },
     {
@@ -62,7 +67,12 @@ export function rewardColumns(actions: {
       id: 'amount',
       header: 'Amount',
       meta: { sortKey: 'amount', label: 'Amount', className: 'text-right', headerClassName: 'text-right' },
-      cell: ({ row }) => <Money paise={row.original.amount} />,
+      cell: ({ row }) => (
+        <Money
+          paise={row.original.amount}
+          className={cn('font-display font-bold', row.original.status === 'void' && 'ledger-struck text-muted-foreground')}
+        />
+      ),
     },
     {
       id: 'status',

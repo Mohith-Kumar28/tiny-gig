@@ -8,6 +8,7 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Spinner } from '@/components/ui/spinner'
 import { accountAgeDays, formatAge } from '@/features/accounts/rules'
 import { useAction } from '@/hooks/use-action'
 import { formatNumber } from '@/lib/format'
@@ -17,8 +18,8 @@ import { DecisionDialog } from './decision-dialog'
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid grid-cols-[120px_1fr] items-center gap-3 py-2 text-sm">
-      <dt className="text-muted-foreground">{label}</dt>
+    <div className="grid grid-cols-[110px_1fr] items-baseline gap-3 py-2.5 text-sm">
+      <dt className="ledger-label">{label}</dt>
       <dd className="min-w-0">{children}</dd>
     </div>
   )
@@ -67,25 +68,29 @@ export function ApplicantSheet({
           ) : (
             <>
               {data?.referredBy?.referral.flagged ? (
-                <div className="mb-3 flex gap-2 rounded-lg border border-warning/40 bg-warning/10 p-3 text-sm">
-                  <AlertTriangle className="size-4 shrink-0 text-warning-foreground dark:text-warning" />
-                  <span>{data.referredBy.referral.flagReason}</span>
+                <div className="mb-3 flex gap-2 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm">
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground dark:text-warning" />
+                  <span>
+                    <span className="font-medium">Flagged referral.</span> {data.referredBy.referral.flagReason}
+                  </span>
                 </div>
               ) : null}
               <a
                 href={p.redditUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mb-3 flex items-center justify-between rounded-lg border bg-muted/40 px-3 py-2.5 text-sm hover:bg-accent"
+                className="mb-1 flex items-center justify-between rounded-md border bg-card px-3 py-2.5 text-sm transition-colors duration-150 hover:border-ink/40 hover:bg-ink/[0.04] focus-visible:outline-2 focus-visible:outline-ring"
               >
-                <span>
-                  <span className="text-muted-foreground">Reddit</span> <span className="font-medium">u/{p.redditUsername}</span>
+                <span className="flex items-baseline gap-2">
+                  <span className="ledger-label">Reddit</span> <span className="font-medium">u/{p.redditUsername}</span>
                 </span>
-                <ExternalLink className="size-4" />
+                <span className="inline-flex items-center gap-1 text-xs text-ink">
+                  Check profile <ExternalLink className="size-3.5" />
+                </span>
               </a>
               <dl className="divide-y">
                 <Row label="Karma">
-                  <span className="tabular font-medium">{formatNumber(p.karma)}</span>
+                  <span className="font-display font-bold tabular">{formatNumber(p.karma)}</span>
                 </Row>
                 <Row label="Created on">
                   {(() => {
@@ -131,22 +136,27 @@ export function ApplicantSheet({
                 <Row label="Applied">{formatDateTime(p.appliedAt)}</Row>
                 {p.reviewNote ? <Row label="Review note">{p.reviewNote}</Row> : null}
               </dl>
-              <Button asChild variant="link" className="mt-2 px-0">
+              <Button asChild variant="link" className="mt-2 px-0 text-ink">
                 <Link to="/admin/workers/$userId" params={{ userId: p.userId }}>
-                  Open full profile →
+                  Open full profile
                 </Link>
               </Button>
             </>
           )}
         </div>
         {p && p.status !== 'approved' ? (
-          <SheetFooter className="flex-row border-t">
-            <Button variant="outline" className="flex-1" onClick={() => setRejecting(true)} disabled={decide.isPending}>
-              <X /> Reject
-            </Button>
-            <Button className="flex-1" onClick={() => decide.mutate({ decision: 'approve' })} disabled={decide.isPending}>
-              <Check /> Approve
-            </Button>
+          <SheetFooter className="gap-2.5 border-t">
+            <p className="text-xs text-muted-foreground">
+              Approve emails them and confirms the Reddit creation date. Reject asks you for a reason to send them.
+            </p>
+            <div className="flex gap-2">
+              <Button variant="outline" className="flex-1" onClick={() => setRejecting(true)} disabled={decide.isPending}>
+                <X /> Reject
+              </Button>
+              <Button className="flex-1" onClick={() => decide.mutate({ decision: 'approve' })} disabled={decide.isPending}>
+                {decide.isPending ? <Spinner /> : <Check />} Approve
+              </Button>
+            </div>
           </SheetFooter>
         ) : null}
         <DecisionDialog

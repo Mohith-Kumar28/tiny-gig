@@ -32,14 +32,14 @@ export function TaskWhen({ task }: { task: WorkerTask }) {
     case 'live_check':
       if (!task.liveCheckAt) return null
       return new Date(task.liveCheckAt).getTime() > Date.now() ? (
-        <Countdown to={task.liveCheckAt} prefix="Final check" className="text-info" />
+        <Countdown to={task.liveCheckAt} prefix="Final check" className="text-ink" />
       ) : (
-        <span className="text-xs text-info">Final check soon</span>
+        <span className="text-xs text-ink">Final check soon</span>
       )
     case 'on_hold':
       if (!task.liveCheckAt) return null
       return new Date(task.liveCheckAt).getTime() > Date.now() ? (
-        <Countdown to={task.liveCheckAt} prefix="Live hold" className="text-info" />
+        <Countdown to={task.liveCheckAt} prefix="Live hold" className="text-ink" />
       ) : (
         <span className="text-xs font-medium text-primary">Upload insights now</span>
       )
@@ -65,21 +65,20 @@ export function TaskWhen({ task }: { task: WorkerTask }) {
 
 export function WorkerTaskRow({ task }: { task: WorkerTask }) {
   const urgent =
-    task.status === 'changes_requested' || (task.status === 'on_hold' && !!task.liveCheckAt && new Date(task.liveCheckAt).getTime() <= Date.now())
+    task.status === 'changes_requested' ||
+    (task.status === 'on_hold' && !!task.liveCheckAt && new Date(task.liveCheckAt).getTime() <= Date.now())
   return (
     <Link
       to="/w/work/$submissionId"
       params={{ submissionId: task.id }}
       className={cn(
-        'flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none',
+        'flex items-center gap-3 px-4 py-3.5 transition-colors duration-150 hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none',
         urgent && 'bg-warning/6',
       )}
     >
-      <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-muted">
-        <PlatformIcon platform={task.platform} className="size-4.5" />
-      </span>
-      <div className="min-w-0 flex-1 space-y-1">
-        <p className="truncate text-sm font-medium">{task.title}</p>
+      <PlatformIcon platform={task.platform} className="mt-0.5 size-4.5 shrink-0 self-start" />
+      <div className="min-w-0 flex-1 space-y-1.5">
+        <p className="line-clamp-2 text-sm leading-snug font-medium">{task.title}</p>
         <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
           <StatusBadge status={task.status} />
           <TaskWhen task={task} />
@@ -90,8 +89,15 @@ export function WorkerTaskRow({ task }: { task: WorkerTask }) {
           ) : null}
         </div>
       </div>
-      <Money paise={task.payoutAmount} className={cn('shrink-0 text-sm', task.status === 'approved' && 'text-success')} />
-      <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
+      <Money
+        paise={task.payoutAmount}
+        className={cn(
+          'shrink-0 self-start font-display text-base font-bold',
+          (task.status === 'rejected' || task.status === 'expired' || task.status === 'withdrawn') &&
+            'ledger-struck text-muted-foreground',
+        )}
+      />
+      <ChevronRight className="mt-0.5 size-4 shrink-0 self-start text-muted-foreground" />
     </Link>
   )
 }
@@ -99,7 +105,7 @@ export function WorkerTaskRow({ task }: { task: WorkerTask }) {
 export function WorkerTaskRowSkeleton() {
   return (
     <div className="flex items-center gap-3 px-4 py-3.5">
-      <Skeleton className="size-9 rounded-lg" />
+      <Skeleton className="size-4.5 rounded-md" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-4 w-3/5" />
         <Skeleton className="h-4 w-32" />

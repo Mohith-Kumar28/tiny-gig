@@ -1,6 +1,5 @@
-import { Gift, Link2, Users } from 'lucide-react'
+import { Check, Circle } from 'lucide-react'
 import { CopyButton } from '@/components/shared/copy-button'
-import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
 import { PageHeader } from '@/components/shared/page-header'
 import { formatDate } from '@/components/shared/relative-time'
@@ -19,12 +18,41 @@ const REWARD_LABELS: Record<string, string> = { pending_review: 'Verifying', app
 function Milestone({ done, children }: { done: boolean; children: React.ReactNode }) {
   return (
     <span
-      className={cn(
-        'inline-flex h-5 items-center rounded-full px-2 text-[11px] font-medium',
-        done ? 'bg-success/12 text-success' : 'bg-muted text-muted-foreground',
-      )}
+      className={cn('inline-flex items-center gap-1 text-xs', done ? 'font-medium text-foreground' : 'text-muted-foreground')}
     >
+      {done ? (
+        <Check className="size-3.5 text-success" aria-label="Done" />
+      ) : (
+        <Circle className="size-3 opacity-50" aria-label="Not yet" />
+      )}
       {children}
+    </span>
+  )
+}
+
+function PanelHead({ title, children }: { title: string; children?: React.ReactNode }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3 border-b px-4 py-2.5">
+      <h2 className="font-display text-base font-bold">{title}</h2>
+      {children}
+    </div>
+  )
+}
+
+/** Progress as tally marks, the way a ledger keeps count. */
+function Tally({ current, target, done }: { current: number; target: number; done: boolean }) {
+  if (target > 24) return null
+  return (
+    <span aria-hidden className="flex gap-[3px]">
+      {Array.from({ length: target }, (_, i) => (
+        <span
+          key={i}
+          className={cn(
+            'h-3.5 w-[3px] rounded-[1px]',
+            i < current ? (done ? 'bg-success' : 'bg-foreground/70') : 'bg-foreground/12',
+          )}
+        />
+      ))}
     </span>
   )
 }
@@ -35,108 +63,124 @@ export function WorkerReferrals({ data }: { data: Data }) {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Referrals" />
+      <PageHeader
+        title="Referrals"
+        description="Share your link. When people you invite get approved and finish gigs, you earn the rewards below."
+      />
 
-      <section className="overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-card to-card p-5 sm:p-6">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-          <div className="min-w-0 flex-1 space-y-3">
-            <div className="flex items-center gap-2 text-sm font-medium text-primary">
-              <Link2 className="size-4" /> Your referral link
-            </div>
-            <div className="flex items-center gap-2 rounded-xl border bg-background p-2 pl-3">
-              <span className="min-w-0 flex-1 truncate font-mono text-sm sm:text-base">{data.link}</span>
-              <CopyButton value={data.link} label="Copy" variant="default" size="sm" />
-            </div>
-            <p className="text-sm text-muted-foreground">
-              Or share your code: <span className="font-mono font-semibold text-foreground">{data.code}</span>{' '}
-              <CopyButton value={data.code} className="size-6 align-middle" />
-            </p>
+      <section className="overflow-hidden rounded-lg border bg-card">
+        <div className="space-y-3 p-4 sm:p-5">
+          <h2 className="font-display text-base font-bold">Your referral link</h2>
+          <div className="flex items-center gap-2 rounded-md border bg-background py-1.5 pr-1.5 pl-3">
+            <span className="min-w-0 flex-1 truncate font-mono text-sm">{data.link}</span>
+            <CopyButton value={data.link} label="Copy" variant="default" size="sm" />
           </div>
+          <p className="flex flex-wrap items-center gap-x-1.5 text-sm text-muted-foreground">
+            Or share your code: <span className="font-mono font-semibold text-foreground">{data.code}</span>
+            <CopyButton value={data.code} className="size-7" />
+          </p>
           <ShareButtons link={data.link} message={message} />
         </div>
-        <div className="mt-5 grid grid-cols-2 gap-3 border-t border-primary/15 pt-4 sm:max-w-md">
-          <div>
-            <p className="text-xs text-muted-foreground">People joined</p>
-            <p className="font-display text-2xl font-semibold tabular">{data.referees.length}</p>
+        <dl className="grid grid-cols-2 divide-x border-t">
+          <div className="px-4 py-3 sm:px-5">
+            <dt className="ledger-label">People joined</dt>
+            <dd className="mt-0.5 font-display text-2xl font-bold tabular">{data.referees.length}</dd>
           </div>
-          <div>
-            <p className="text-xs text-muted-foreground">Rewards earned</p>
-            <p className="font-display text-2xl font-semibold tabular">{formatMoney(earned)}</p>
+          <div className="px-4 py-3 sm:px-5">
+            <dt className="ledger-label">Rewards earned</dt>
+            <dd className="mt-0.5 font-display text-2xl font-bold tabular">{formatMoney(earned)}</dd>
           </div>
-        </div>
+        </dl>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="font-display text-lg font-semibold">Rewards you can earn</h2>
+      <section className="overflow-hidden rounded-lg border bg-card">
+        <PanelHead title="Rewards you can earn" />
         {data.programs.length ? (
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <ul className="divide-y">
             {data.programs.map((p) => {
               const tracksReferrer = p.referrerReward > 0
               const pct = p.progress.target ? (p.progress.current / p.progress.target) * 100 : 0
               return (
-                <article key={p.id} className="space-y-3 rounded-xl border bg-card p-4">
+                <li key={p.id} className="space-y-2.5 px-4 py-4 sm:px-5">
                   <div className="flex items-start justify-between gap-3">
-                    <h3 className="font-display font-semibold">{p.name}</h3>
+                    <h3 className="font-semibold">{p.name}</h3>
                     <Money
                       paise={tracksReferrer ? p.referrerReward : p.refereeReward}
-                      className="shrink-0 font-display text-lg font-semibold text-primary"
+                      className="shrink-0 font-display text-lg leading-none font-extrabold"
                     />
                   </div>
                   <p className="text-sm text-muted-foreground">{describeProgram(p)}</p>
                   {p.endsAt ? <p className="text-xs text-muted-foreground">Ends {formatDate(p.endsAt)}</p> : null}
                   {tracksReferrer ? (
-                    <div className="space-y-1.5">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-muted-foreground">
-                          {p.progress.done ? 'Done' : p.progress.earned > 0 ? `Earned ${p.progress.earned} · next reward` : 'Next reward'}
+                    <div className="flex items-center justify-between gap-3 text-xs">
+                      <span className="text-muted-foreground">
+                        {p.progress.done
+                          ? 'Done'
+                          : p.progress.earned > 0
+                            ? `Earned ${p.progress.earned} · next reward`
+                            : 'Next reward'}
+                      </span>
+                      <span className="flex items-center gap-2">
+                        {p.progress.target > 24 ? (
+                          <Progress value={pct} className={cn('h-1.5 w-24', p.progress.done && '[&>*]:bg-success')} />
+                        ) : (
+                          <Tally current={p.progress.current} target={p.progress.target} done={p.progress.done} />
+                        )}
+                        <span className="font-semibold tabular">
+                          {p.progress.current} of {p.progress.target}
                         </span>
-                        <span className="font-medium tabular">
-                          {p.progress.current} / {p.progress.target}
-                        </span>
-                      </div>
-                      <Progress value={pct} className={cn('h-2', p.progress.done && '[&>*]:bg-success')} />
+                      </span>
                     </div>
                   ) : (
-                    <p className="text-xs font-medium text-muted-foreground">Bonus for your friends</p>
+                    <p className="ledger-label">Bonus for your friends</p>
                   )}
-                </article>
+                </li>
               )
             })}
-          </div>
+          </ul>
         ) : (
-          <EmptyState icon={Gift} title="No referral programs right now" description="You can still share your link." />
+          <p className="px-4 py-5 text-sm text-muted-foreground">
+            No reward programs are running right now. Your link still works, so keep sharing it.
+          </p>
         )}
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <section className="space-y-3">
-          <h2 className="font-display text-lg font-semibold">People you referred</h2>
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <section className="overflow-hidden rounded-lg border bg-card">
+          <PanelHead title="People you referred" />
           {data.referees.length ? (
-            <ul className="divide-y rounded-xl border bg-card">
+            <ul className="divide-y">
               {data.referees.map((r) => (
                 <li key={r.id} className="space-y-1.5 px-4 py-3">
                   <div className="flex items-center justify-between gap-2">
-                    <span className="font-medium">{r.name}</span>
+                    <span className="min-w-0 truncate font-medium">{r.name}</span>
                     <StatusBadge status={r.status} />
                   </div>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="mr-1 text-xs text-muted-foreground">Joined {formatDate(r.attributedAt)}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <span className="text-xs text-muted-foreground tabular">Joined {formatDate(r.attributedAt)}</span>
                     <Milestone done={Boolean(r.approvedAt)}>Approved</Milestone>
                     <Milestone done={Boolean(r.firstGigApprovedAt)}>First gig</Milestone>
-                    {r.gigsApproved > 0 ? <Milestone done>{r.gigsApproved} gigs</Milestone> : null}
+                    {r.gigsApproved > 0 ? (
+                      <span className="text-xs font-medium tabular">
+                        {r.gigsApproved} gig{r.gigsApproved === 1 ? '' : 's'} approved
+                      </span>
+                    ) : null}
                   </div>
                 </li>
               ))}
             </ul>
           ) : (
-            <EmptyState icon={Users} title="No one yet"  />
+            <p className="px-4 py-5 text-sm text-muted-foreground">
+              No one yet. Send your link on WhatsApp to friends who are active on Reddit. They show up here as soon as they sign
+              up.
+            </p>
           )}
         </section>
 
-        <section className="space-y-3">
-          <h2 className="font-display text-lg font-semibold">Reward history</h2>
+        <section className="overflow-hidden rounded-lg border bg-card">
+          <PanelHead title="Reward history" />
           {data.rewards.length ? (
-            <ul className="divide-y rounded-xl border bg-card">
+            <ul className="divide-y">
               {data.rewards.map((r) => (
                 <li key={r.id} className="flex items-center gap-3 px-4 py-3">
                   <div className="min-w-0 flex-1">
@@ -146,12 +190,24 @@ export function WorkerReferrals({ data }: { data: Data }) {
                     </p>
                   </div>
                   <StatusBadge status={r.status} label={REWARD_LABELS[r.status]} />
-                  <Money paise={r.amount} className={cn('w-16 shrink-0 text-right text-sm', r.status === 'void' && 'text-muted-foreground line-through')} />
+                  <span className="w-16 shrink-0 text-right font-display font-bold tabular">
+                    <span
+                      className={cn(
+                        r.status === 'paid' && 'ledger-total',
+                        r.status === 'void' && 'ledger-struck text-muted-foreground',
+                      )}
+                    >
+                      {formatMoney(r.amount)}
+                    </span>
+                  </span>
                 </li>
               ))}
             </ul>
           ) : (
-            <EmptyState icon={Gift} title="No rewards yet"  />
+            <p className="px-4 py-5 text-sm text-muted-foreground">
+              No rewards yet. Rewards appear here once someone you invited meets a program’s goal, and are paid with your weekly
+              payout.
+            </p>
           )}
         </section>
       </div>

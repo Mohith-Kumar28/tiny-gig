@@ -1,13 +1,19 @@
 import { Link, type LinkProps } from '@tanstack/react-router'
-import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
+
+/**
+ * Figures set side by side like the columns of one ledger row: hairline gutters, no floating cards.
+ * Put StatCards inside; give it the column count via className (e.g. "grid-cols-2 lg:grid-cols-4").
+ */
+export function StatGrid({ className, children }: { className?: string; children: ReactNode }) {
+  return <div className={cn('grid gap-px overflow-hidden rounded-md border bg-border', className)}>{children}</div>
+}
 
 export function StatCard({
   label,
   value,
   hint,
-  icon: Icon,
   tone = 'default',
   to,
   search,
@@ -16,7 +22,7 @@ export function StatCard({
   label: string
   value: ReactNode
   hint?: ReactNode
-  icon?: LucideIcon
+  /** attention = something is waiting on you; success = settled money. */
   tone?: 'default' | 'attention' | 'success'
   to?: LinkProps['to']
   search?: LinkProps['search']
@@ -24,26 +30,21 @@ export function StatCard({
 }) {
   const body = (
     <>
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">{label}</span>
-        {Icon ? (
-          <Icon
-            className={cn(
-              'size-4 text-muted-foreground',
-              tone === 'attention' && 'text-primary',
-              tone === 'success' && 'text-success',
-            )}
-          />
-        ) : null}
+      <span className={cn('ledger-label', tone === 'attention' && 'text-primary')}>{label}</span>
+      <div
+        className={cn(
+          'mt-1.5 font-display text-[1.65rem] leading-tight font-bold tabular',
+          tone === 'attention' && 'text-primary',
+        )}
+      >
+        {value}
       </div>
-      <div className="mt-2 font-display text-2xl font-semibold tracking-tight tabular">{value}</div>
-      {hint ? <div className="mt-1 text-xs text-muted-foreground">{hint}</div> : null}
+      {hint ? <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div> : null}
     </>
   )
   const cls = cn(
-    'rounded-xl border bg-card p-4 transition-colors',
-    tone === 'attention' && 'border-primary/30 bg-primary/[0.04]',
-    to && 'hover:border-foreground/20 hover:bg-accent/40',
+    'group relative block bg-card px-4 py-3.5 transition-colors',
+    to && 'hover:bg-accent/60 focus-visible:z-10 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring',
     className,
   )
   if (to) {

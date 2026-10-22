@@ -1,5 +1,4 @@
 import { Check, PlusCircle } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -35,33 +34,39 @@ export function DataTableFacetedFilter({
     else next.add(v)
     onChange(next.size ? [...next] : undefined)
   }
+  const chip = 'rounded-[3px] bg-ink/10 px-1 text-xs font-medium text-ink'
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm" className="h-8 border-dashed">
-          <PlusCircle />
+        <Button
+          variant="outline"
+          size="sm"
+          className={cn(
+            'h-8',
+            selected.size > 0
+              ? 'border-ink/40 bg-ink/[0.04] text-foreground hover:bg-ink/[0.07]'
+              : 'text-muted-foreground hover:text-foreground',
+          )}
+        >
+          <PlusCircle className={cn(selected.size > 0 && 'text-ink')} />
           {title}
           {selected.size > 0 ? (
             <>
-              <Separator orientation="vertical" className="mx-1 h-4" />
-              <Badge variant="secondary" className="rounded-sm px-1 font-normal lg:hidden">
-                {selected.size}
-              </Badge>
-              <div className="hidden gap-1 lg:flex">
+              <Separator orientation="vertical" className="mx-0.5 h-4 bg-ink/25" />
+              <span className={cn(chip, 'tabular lg:hidden')}>{selected.size}</span>
+              <span className="hidden gap-1 lg:flex">
                 {selected.size > 2 ? (
-                  <Badge variant="secondary" className="rounded-sm px-1 font-normal">
-                    {selected.size} selected
-                  </Badge>
+                  <span className={cn(chip, 'tabular')}>{selected.size} selected</span>
                 ) : (
                   options
                     .filter((o) => selected.has(o.value))
                     .map((o) => (
-                      <Badge variant="secondary" key={o.value} className="rounded-sm px-1 font-normal">
+                      <span key={o.value} className={chip}>
                         {o.label}
-                      </Badge>
+                      </span>
                     ))
                 )}
-              </div>
+              </span>
             </>
           ) : null}
         </Button>
@@ -78,16 +83,16 @@ export function DataTableFacetedFilter({
                   <CommandItem key={o.value} onSelect={() => toggle(o.value)}>
                     <div
                       className={cn(
-                        'flex size-4 items-center justify-center rounded-[4px] border',
-                        isSelected ? 'border-primary bg-primary text-primary-foreground' : 'border-input [&_svg]:invisible',
+                        'flex size-4 items-center justify-center rounded-[3px] border transition-colors duration-150',
+                        isSelected ? 'border-ink bg-ink text-ink-foreground' : 'border-input [&_svg]:invisible',
                       )}
                     >
-                      <Check className="size-3.5 text-primary-foreground" />
+                      <Check className="size-3.5 text-ink-foreground" />
                     </div>
                     {o.icon ? <o.icon className="size-4 text-muted-foreground" /> : null}
                     <span className="truncate">{o.label}</span>
                     {counts?.[o.value] != null ? (
-                      <span className="ml-auto font-mono text-xs text-muted-foreground">{counts[o.value]}</span>
+                      <span className="ml-auto text-xs text-muted-foreground tabular">{counts[o.value]}</span>
                     ) : null}
                   </CommandItem>
                 )

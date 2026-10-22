@@ -1,6 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty'
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyTitle } from '@/components/ui/empty'
 import { cn } from '@/lib/utils'
 
 export function EmptyState({
@@ -17,14 +17,10 @@ export function EmptyState({
   className?: string
 }) {
   return (
-    <Empty className={cn('border border-dashed bg-card/50 py-10', className)}>
+    <Empty className={cn('rounded-lg border border-dashed bg-card/50 py-10', className)}>
       <EmptyHeader>
-        {Icon ? (
-          <EmptyMedia variant="icon">
-            <Icon />
-          </EmptyMedia>
-        ) : null}
-        <EmptyTitle>{title}</EmptyTitle>
+        {Icon ? <Icon className="size-5 text-muted-foreground" aria-hidden /> : null}
+        <EmptyTitle className="font-display font-bold">{title}</EmptyTitle>
         {description ? <EmptyDescription>{description}</EmptyDescription> : null}
       </EmptyHeader>
       {action ? <EmptyContent>{action}</EmptyContent> : null}

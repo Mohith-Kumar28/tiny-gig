@@ -10,7 +10,8 @@ export type EmailRow = Awaited<ReturnType<typeof listEmailLog>>['rows'][number]
 /** "applicationApproved" → "Application approved" */
 export function templateLabel(t: string) {
   const s = t.replace(/[_-]+/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase()
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  const label = s.charAt(0).toUpperCase() + s.slice(1)
+  return label.replace(/\botp\b/gi, 'OTP')
 }
 
 export const emailColumns: ColumnDef<EmailRow, unknown>[] = [
@@ -36,7 +37,7 @@ export const emailColumns: ColumnDef<EmailRow, unknown>[] = [
     header: () => 'Template',
     meta: { label: 'Template' },
     cell: ({ row }) => (
-      <span className="inline-flex h-5.5 items-center rounded-md bg-muted px-1.5 text-xs whitespace-nowrap text-muted-foreground">
+      <span className="inline-flex h-5.5 items-center rounded-[3px] border bg-muted/50 px-1.5 text-xs whitespace-nowrap text-muted-foreground">
         {templateLabel(row.original.template)}
       </span>
     ),

@@ -13,23 +13,21 @@ function host(url: string) {
 
 export function ReviewProofCard({ url, targetUrl }: { url: string | null; targetUrl?: string | null }) {
   if (!url) {
-    return <div className="rounded-xl border border-dashed p-4 text-sm text-muted-foreground">No proof link submitted yet.</div>
+    return <div className="rounded-lg border border-dashed p-4 text-sm text-muted-foreground">No proof link submitted yet.</div>
   }
   const h = host(url)
   return (
     <div className="space-y-2">
-      <div className="flex items-stretch overflow-hidden rounded-xl border bg-card">
+      <div className="flex items-stretch overflow-hidden rounded-lg border bg-card">
         <a
           href={url}
           target="_blank"
           rel="noreferrer noopener"
-          className="group flex min-w-0 flex-1 items-center gap-3 px-3.5 py-3 hover:bg-accent/50"
+          className="group flex min-w-0 flex-1 items-center gap-3 px-3.5 py-2.5 transition-colors hover:bg-accent/50 focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
         >
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-            <Link2 className="size-4" />
-          </span>
+          <Link2 className="size-4 shrink-0 text-ink" />
           <span className="min-w-0">
-            <span className="block text-sm font-medium">{h.host}</span>
+            <span className="block text-sm font-medium text-ink group-hover:underline">{h.host}</span>
             <span className="block truncate font-mono text-xs text-muted-foreground">{h.path}</span>
           </span>
           <span className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">

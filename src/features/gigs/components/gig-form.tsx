@@ -69,14 +69,15 @@ export function gigToFormInput(g: AdminGig): GigFormInput {
   }
 }
 
+/** One page of the form. Fields sit on a 4-column grid: numbers take 1, names 2, prose 4. */
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="rounded-xl border bg-card p-4 sm:p-5">
-      <div className="mb-4 space-y-0.5">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+    <section className="overflow-hidden rounded-lg border bg-card">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-0.5 border-b px-4 py-3 sm:px-5">
+        <h2 className="font-display text-[1.02rem] font-bold">{title}</h2>
+        {description ? <p className="text-xs text-muted-foreground">{description}</p> : null}
       </div>
-      <div className="grid items-start gap-4 sm:grid-cols-2">{children}</div>
+      <div className="grid items-start gap-x-4 gap-y-5 p-4 sm:grid-cols-4 sm:p-5">{children}</div>
     </section>
   )
 }
@@ -145,15 +146,15 @@ export function GigForm({
           submit()()
         }}
         noValidate
-        className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]"
+        className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]"
       >
         <div className="min-w-0 space-y-4">
-          <Section title="Task">
+          <Section title="Task" description="What to post, and where.">
             <FormField
               control={form.control}
               name="title"
               render={({ field }) => (
-                <FormItem className="sm:col-span-2">
+                <FormItem className="sm:col-span-4">
                   <FormLabel>Title</FormLabel>
                   <FormControl>
                     <Input autoFocus={!gigId} placeholder="Post about our budgeting app in r/personalfinanceindia" {...field} />
@@ -214,7 +215,7 @@ export function GigForm({
               control={form.control}
               name="community"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>{hint.label}</FormLabel>
                   <FormControl>
                     <Input placeholder={hint.placeholder} {...field} value={field.value ?? ''} />
@@ -227,7 +228,7 @@ export function GigForm({
               control={form.control}
               name="clientTagId"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Client</FormLabel>
                   <Select value={field.value || 'none'} onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}>
                     <FormControl>
@@ -256,7 +257,7 @@ export function GigForm({
               control={form.control}
               name="targetUrl"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Target URL</FormLabel>
                   <FormControl>
                     <Input inputMode="url" placeholder="https://… (optional)" {...field} value={field.value ?? ''} />
@@ -267,12 +268,12 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Brief">
+          <Section title="Brief" description="Workers read this before they raise a hand.">
             <FormField
               control={form.control}
               name="brief"
               render={({ field }) => (
-                <FormItem className="sm:col-span-2">
+                <FormItem className="sm:col-span-4">
                   <FormLabel>Brief</FormLabel>
                   <FormControl>
                     <Textarea rows={5} placeholder="Explain the goal, the angle, and what a good result looks like." {...field} />
@@ -285,10 +286,15 @@ export function GigForm({
               control={form.control}
               name="contentGuidelines"
               render={({ field }) => (
-                <FormItem className="sm:col-span-2">
+                <FormItem className="sm:col-span-4">
                   <FormLabel>Content guidelines</FormLabel>
                   <FormControl>
-                    <Textarea rows={4} placeholder="Do's and don'ts: tone, length, no links, mention X once…" {...field} value={field.value ?? ''} />
+                    <Textarea
+                      rows={4}
+                      placeholder="Do's and don'ts: tone, length, no links, mention X once…"
+                      {...field}
+                      value={field.value ?? ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -298,10 +304,15 @@ export function GigForm({
               control={form.control}
               name="sampleContent"
               render={({ field }) => (
-                <FormItem className="sm:col-span-2">
+                <FormItem className="sm:col-span-4">
                   <FormLabel>Sample content</FormLabel>
                   <FormControl>
-                    <Textarea rows={4} placeholder="An example post or comment workers can adapt (not copy)." {...field} value={field.value ?? ''} />
+                    <Textarea
+                      rows={4}
+                      placeholder="An example post or comment workers can adapt (not copy)."
+                      {...field}
+                      value={field.value ?? ''}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -309,12 +320,12 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Reviewer checklist">
+          <Section title="Reviewer checklist" description="Shown to staff in the review inbox. Alt + ↑ / ↓ to reorder.">
             <FormField
               control={form.control}
               name="reviewChecklist"
               render={({ field }) => (
-                <FormItem className="sm:col-span-2">
+                <FormItem className="sm:col-span-4">
                   <ChecklistEditor value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -322,12 +333,12 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Payout & slots">
+          <Section title="Payout & slots" description="What each approved task pays, and how many to fill.">
             <FormField
               control={form.control}
               name="payMode"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Pay</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
@@ -350,8 +361,10 @@ export function GigForm({
               )}
             />
             {payMode === 'levels' && levelsApply ? (
-              <div className="space-y-2 sm:col-span-2">
-                <p className="text-sm font-medium">Rate by level{taskType === 'upvote' ? ' (upvotes pay the same at every level)' : ''}</p>
+              <div className="space-y-2 sm:col-span-4">
+                <p className="text-sm font-medium">
+                  Rate by level{taskType === 'upvote' ? ' (upvotes pay the same at every level)' : ''}
+                </p>
                 {taskType === 'upvote' ? (
                   <p className="text-sm text-muted-foreground">
                     {settings ? formatMoney(settings.upvoteRate) : '—'} per upvote, from Settings.
@@ -367,14 +380,20 @@ export function GigForm({
                           <FormItem>
                             <FormLabel className="text-xs text-muted-foreground">{l}</FormLabel>
                             <div className="relative">
-                              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                              <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
+                                ₹
+                              </span>
                               <FormControl>
                                 <Input
                                   type="number"
                                   inputMode="decimal"
                                   min={1}
                                   className="pl-7 tabular"
-                                  placeholder={settings ? String(settings.levelRates[taskType === 'comment' ? 'comment' : 'post'][l] / 100) : ''}
+                                  placeholder={
+                                    settings
+                                      ? String(settings.levelRates[taskType === 'comment' ? 'comment' : 'post'][l] / 100)
+                                      : ''
+                                  }
                                   {...field}
                                 />
                               </FormControl>
@@ -386,19 +405,31 @@ export function GigForm({
                     ))}
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground">Empty = the rate table in Settings. The rate locks when an account is selected.</p>
+                <p className="text-xs text-muted-foreground">
+                  Empty = the rate table in Settings. The rate locks when an account is selected.
+                </p>
               </div>
             ) : (
               <FormField
                 control={form.control}
                 name="payoutRupees"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2">
                     <FormLabel>Payout per task</FormLabel>
                     <div className="relative">
-                      <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">₹</span>
+                      <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 text-sm text-muted-foreground">
+                        ₹
+                      </span>
                       <FormControl>
-                        <Input type="number" inputMode="decimal" min={1} step="any" className="pl-7 tabular" {...field} value={field.value as never} />
+                        <Input
+                          type="number"
+                          inputMode="decimal"
+                          min={1}
+                          step="any"
+                          className="pl-7 tabular"
+                          {...field}
+                          value={field.value as never}
+                        />
                       </FormControl>
                     </div>
                     <FormMessage />
@@ -413,7 +444,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Slots</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={Math.max(1, claimedSlots)} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={Math.max(1, claimedSlots)}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   {claimedSlots ? <FormDescription>{claimedSlots} already assigned</FormDescription> : null}
                   <FormMessage />
@@ -427,7 +465,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Time to submit (hours)</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={1} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormDescription>Counted from selection.</FormDescription>
                   <FormMessage />
@@ -441,7 +486,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Interest window (minutes)</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={1} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormDescription>How long workers get to raise their hand once it’s live.</FormDescription>
                   <FormMessage />
@@ -455,7 +507,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Keep live for (hours)</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormDescription>0 = no live check</FormDescription>
                   <FormMessage />
@@ -464,7 +523,7 @@ export function GigForm({
             />
           </Section>
 
-          <Section title="Requirements">
+          <Section title="Requirements" description="Who can raise a hand.">
             <FormField
               control={form.control}
               name="minKarma"
@@ -472,7 +531,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Min karma</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -485,7 +551,14 @@ export function GigForm({
                 <FormItem>
                   <FormLabel>Min account age (months)</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={0} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -511,7 +584,7 @@ export function GigForm({
               control={form.control}
               name="startsAt"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Starts (optional)</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} value={field.value ?? ''} />
@@ -524,7 +597,7 @@ export function GigForm({
               control={form.control}
               name="endsAt"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="sm:col-span-2">
                   <FormLabel>Ends (optional)</FormLabel>
                   <FormControl>
                     <Input type="datetime-local" {...field} value={field.value ?? ''} />
@@ -538,9 +611,17 @@ export function GigForm({
               name="priority"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Priority (0–10, higher first)</FormLabel>
+                  <FormLabel>Priority (0 to 10, higher first)</FormLabel>
                   <FormControl>
-                    <Input type="number" inputMode="numeric" min={0} max={10} className="tabular" {...field} value={field.value as never} />
+                    <Input
+                      type="number"
+                      inputMode="numeric"
+                      min={0}
+                      max={10}
+                      className="tabular"
+                      {...field}
+                      value={field.value as never}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -550,7 +631,7 @@ export function GigForm({
               control={form.control}
               name="notifyWorkers"
               render={({ field }) => (
-                <FormItem className="flex items-start justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
+                <FormItem className="flex items-start justify-between gap-4 rounded-md border p-3 sm:col-span-3">
                   <div className="space-y-0.5">
                     <FormLabel>Email eligible workers on publish</FormLabel>
                     {publishedAt ? <FormDescription>Already announced</FormDescription> : null}
@@ -563,7 +644,7 @@ export function GigForm({
             />
           </Section>
 
-          <div className="sticky bottom-0 z-20 -mx-1 flex items-center justify-end gap-2 border-t bg-background/95 px-1 py-3 backdrop-blur">
+          <div className="sticky bottom-0 z-20 -mx-1 flex items-center justify-end gap-2 border-t bg-background px-1 py-3">
             <span className="mr-auto text-xs text-muted-foreground">
               {form.formState.isDirty ? 'Unsaved changes' : gigId ? 'No changes' : ''}
             </span>
@@ -590,8 +671,8 @@ export function GigForm({
           </div>
         </div>
 
-        <aside className="hidden lg:block">
-          <div className="sticky top-20">
+        <aside className="hidden md:block">
+          <div className="max-w-md xl:sticky xl:top-20 xl:max-w-none">
             <GigSummaryCard control={form.control} />
           </div>
         </aside>
@@ -613,12 +694,19 @@ function SummaryRow({ icon: Icon, children }: { icon: typeof Clock; children: Re
 function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFormInput, unknown, GigFormValues>>['control'] }) {
   const v = useWatch({ control }) as GigFormInput
   const { data: settings } = useQuery(settingsQuery())
-  const levelPriced = v.payMode === 'levels' && v.platform === 'reddit' && (v.taskType === 'post' || v.taskType === 'comment' || v.taskType === 'upvote')
+  const levelPriced =
+    v.payMode === 'levels' &&
+    v.platform === 'reddit' &&
+    (v.taskType === 'post' || v.taskType === 'comment' || v.taskType === 'upvote')
   const rates =
     levelPriced && settings
       ? v.taskType === 'upvote'
         ? [settings.upvoteRate]
-        : PAID_LEVEL_KEYS.map((l) => (v.levelOverrides?.[l] ? rupeesToPaise(Number(v.levelOverrides[l])) : settings.levelRates[v.taskType === 'comment' ? 'comment' : 'post'][l]))
+        : PAID_LEVEL_KEYS.map((l) =>
+            v.levelOverrides?.[l]
+              ? rupeesToPaise(Number(v.levelOverrides[l]))
+              : settings.levelRates[v.taskType === 'comment' ? 'comment' : 'post'][l],
+          )
       : null
   const flat = rupeesToPaise(Number(v.payoutRupees) || 0)
   const minRate = rates ? Math.min(...rates) : flat
@@ -633,8 +721,8 @@ function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFor
   const endsAt = v.endsAt ? new Date(v.endsAt) : null
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">Worker preview</p>
-      <div className="overflow-hidden rounded-xl border bg-card shadow-xs">
+      <p className="ledger-label">Worker preview</p>
+      <div className="overflow-hidden rounded-lg border bg-card">
         <div className="space-y-3 p-4">
           <div className="flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
@@ -643,21 +731,25 @@ function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFor
             </span>
             <StatusBadge status={v.status ?? 'draft'} />
           </div>
-          <h3 className={cn('font-display text-lg leading-snug font-semibold text-balance', !v.title && 'text-muted-foreground')}>
+          <h3 className={cn('font-display text-lg leading-snug font-bold text-balance', !v.title && 'text-muted-foreground')}>
             {v.title || 'Untitled gig'}
           </h3>
           <div className="flex items-baseline gap-2">
-            <span className="font-display text-2xl font-semibold tabular">
-              {minRate === maxRate ? formatMoney(maxRate) : `${formatMoney(minRate)}–${formatMoney(maxRate)}`}
+            <span className="font-display text-2xl font-bold tabular">
+              {minRate === maxRate ? formatMoney(maxRate) : `${formatMoney(minRate)}-${formatMoney(maxRate)}`}
             </span>
-            <span className="text-xs text-muted-foreground">{minRate === maxRate ? 'per approved task' : 'depending on the account'}</span>
+            <span className="text-xs text-muted-foreground">
+              {minRate === maxRate ? 'per approved task' : 'depending on the account'}
+            </span>
           </div>
         </div>
         <div className="space-y-2 border-t bg-muted/30 p-4">
           <SummaryRow icon={Users}>
             <span className="tabular">{formatNumber(slots)}</span> slot{slots === 1 ? '' : 's'}
           </SummaryRow>
-          <SummaryRow icon={Clock}>{claim ? `${formatHours(claim)} to submit after selection` : 'Set a time to submit'}</SummaryRow>
+          <SummaryRow icon={Clock}>
+            {claim ? `${formatHours(claim)} to submit after selection` : 'Set a time to submit'}
+          </SummaryRow>
           <SummaryRow icon={CalendarClock}>
             {endsAt && !Number.isNaN(endsAt.getTime()) ? `Ends ${formatDateTime(endsAt)}` : 'No end date'}
           </SummaryRow>
@@ -672,11 +764,45 @@ function GigSummaryCard({ control }: { control: ReturnType<typeof useForm<GigFor
           </div>
         </div>
       </div>
-      <div className="rounded-xl border p-4 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">{minRate === maxRate ? 'Total budget ' : 'Maximum exposure '}</span>
-        <span className="tabular">{formatMoney(maxRate * slots)}</span>
-        {minRate === maxRate ? ' if every slot is approved.' : ' if every slot goes to a top-level account.'}
-        {checklist.length ? <span className="mt-1 block">{checklist.length} reviewer checks.</span> : null}
+      <p className="ledger-label pt-2">Budget</p>
+      <div className="overflow-hidden rounded-lg border bg-card text-sm">
+        <table className="w-full tabular">
+          <tbody>
+            {rates && rates.length > 1 ? (
+              PAID_LEVEL_KEYS.map((l, i) => (
+                <tr key={l}>
+                  <th scope="row" className={cn('px-4 text-left font-normal text-muted-foreground', i === 0 ? 'pt-3' : 'pt-1.5')}>
+                    {l} rate
+                  </th>
+                  <td className={cn('px-4 text-right font-medium', i === 0 ? 'pt-3' : 'pt-1.5')}>{formatMoney(rates[i] ?? 0)}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <th scope="row" className="px-4 pt-3 text-left font-normal text-muted-foreground">
+                  Rate per task
+                </th>
+                <td className="px-4 pt-3 text-right font-medium">{formatMoney(maxRate)}</td>
+              </tr>
+            )}
+            <tr>
+              <th scope="row" className="px-4 pt-2 pb-3 text-left font-normal text-muted-foreground">
+                Slots
+              </th>
+              <td className="px-4 pt-2 pb-3 text-right font-medium">× {formatNumber(slots)}</td>
+            </tr>
+            <tr className="border-t">
+              <th scope="row" className="px-4 py-3 text-left font-medium">
+                {minRate === maxRate ? 'Total budget' : 'At most'}
+              </th>
+              <td className="px-4 py-3 text-right font-display text-lg font-bold">{formatMoney(maxRate * slots)}</td>
+            </tr>
+          </tbody>
+        </table>
+        <p className="border-t bg-muted/30 px-4 py-2 text-xs text-muted-foreground">
+          {minRate === maxRate ? 'If every slot is approved.' : 'If every slot goes to the top-level rate.'}
+          {checklist.length ? ` ${checklist.length} reviewer ${checklist.length === 1 ? 'check' : 'checks'}.` : ''}
+        </p>
       </div>
     </div>
   )

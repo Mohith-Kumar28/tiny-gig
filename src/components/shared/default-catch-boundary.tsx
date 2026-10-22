@@ -5,7 +5,7 @@ export function DefaultCatchBoundary({ error }: ErrorComponentProps) {
   const router = useRouter()
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4 p-6 text-center">
-      <p className="font-display text-2xl font-semibold">Something went wrong</p>
+      <p className="font-display text-3xl font-extrabold">Something went wrong</p>
       <p className="max-w-md text-sm text-muted-foreground">{error instanceof Error ? error.message : "Unexpected error"}</p>
       <div className="flex gap-2">
         <Button variant="outline" onClick={() => router.invalidate()}>

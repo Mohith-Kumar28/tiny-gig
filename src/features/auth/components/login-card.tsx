@@ -5,9 +5,9 @@ import { PasswordLogin } from './password-login'
 
 export function LoginCard({ google, devEmails, redirectTo }: { google: boolean; devEmails: boolean; redirectTo?: string }) {
   return (
-    <div className="w-full max-w-sm space-y-6">
+    <div className="w-full max-w-sm space-y-5">
       <div className="space-y-1.5">
-        <h1 className="font-display text-3xl font-semibold tracking-tight">Sign in to TinyGig</h1>
+        <h1 className="font-display text-[1.6rem] leading-tight font-bold">Sign in to TinyGig</h1>
         <p className="text-sm text-muted-foreground">New here? Create your account, then apply to start doing paid gigs.</p>
       </div>
       {google ? (

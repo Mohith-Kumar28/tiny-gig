@@ -1,6 +1,7 @@
 import { Check, Pencil } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { formatDate } from '@/components/shared/relative-time'
+import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
@@ -18,14 +19,6 @@ export const STANDING_LABELS: Record<AccountStanding, string> = {
   banned: 'Banned',
   lost: 'Lost',
   retired: 'Retired',
-}
-
-const STANDING_DOT: Record<AccountStanding, string> = {
-  active: 'bg-success',
-  warned: 'bg-warning',
-  banned: 'bg-destructive',
-  lost: 'bg-destructive',
-  retired: 'bg-muted-foreground',
 }
 
 function useUpdateAccount(success: string) {
@@ -58,14 +51,19 @@ export function StandingSelect({ id, value, className }: { id: string; value: Ac
         onValueChange={(v) => update.mutate({ id, standing: v as AccountStanding })}
         disabled={update.isPending}
       >
-        <SelectTrigger size="sm" className={cn('h-7 w-[7.5rem] gap-1.5 px-2 text-xs', className)} aria-label="Standing">
-          <SelectValue />
+        <SelectTrigger
+          size="sm"
+          className={cn('h-7 w-auto gap-1 border-transparent bg-transparent px-1 text-xs hover:border-input hover:bg-card', className)}
+          aria-label="Standing"
+        >
+          <SelectValue>
+            <StatusBadge status={value} />
+          </SelectValue>
         </SelectTrigger>
         <SelectContent>
           {ACCOUNT_STANDINGS.map((s) => (
             <SelectItem key={s} value={s} className="text-xs">
-              <span className={cn('size-1.5 rounded-full', STANDING_DOT[s])} />
-              {STANDING_LABELS[s]}
+              <StatusBadge status={s} />
             </SelectItem>
           ))}
         </SelectContent>
@@ -92,7 +90,7 @@ function EditPopover({
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>{trigger}</PopoverTrigger>
         <PopoverContent align="start" className="w-64 space-y-2 p-3">
-          <div className="text-xs font-medium text-muted-foreground">{title}</div>
+          <div className="text-xs font-medium text-foreground">{title}</div>
           {children}
         </PopoverContent>
       </Popover>
@@ -129,12 +127,18 @@ export function KarmaEditor({
       }}
       title="Current karma (today's date is recorded)"
       trigger={
-        <button type="button" className={cn('group inline-flex flex-col items-end text-right', stale && 'opacity-50')}>
-          <span className="inline-flex items-center gap-1 font-medium tabular">
-            <Pencil className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
+        <button
+          type="button"
+          title={stale ? 'Karma figure is stale: check the profile and re-enter it' : 'Edit karma'}
+          className="group -my-1 -mr-1.5 inline-flex flex-col items-end rounded-md px-1.5 py-1 text-right transition-colors duration-150 hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+        >
+          <span className={cn('inline-flex items-center gap-1 font-semibold tabular', stale && 'font-normal text-muted-foreground/70')}>
+            <Pencil className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
             {karma == null ? '—' : formatNumber(karma)}
           </span>
-          <span className="text-[11px] text-muted-foreground tabular">{updatedAt ? formatDate(updatedAt) : 'never checked'}</span>
+          <span className={cn('text-[11px] text-muted-foreground tabular', stale && 'text-muted-foreground/70')}>
+            {updatedAt ? `${stale ? 'stale · ' : ''}${formatDate(updatedAt)}` : 'never checked'}
+          </span>
         </button>
       }
     >
@@ -191,9 +195,13 @@ export function CreatedOnEditor({
       }}
       title="Account created on (check the profile's cake day)"
       trigger={
-        <button type="button" className="group inline-flex items-center gap-1 text-left">
+        <button
+          type="button"
+          title="Edit creation date"
+          className="group -my-1 -ml-1 inline-flex items-center gap-1 rounded-md px-1 py-1 text-left transition-colors duration-150 hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+        >
           {children}
-          <Pencil className="size-3 opacity-0 transition-opacity group-hover:opacity-60" />
+          <Pencil className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
         </button>
       }
     >

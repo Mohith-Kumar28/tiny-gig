@@ -83,7 +83,7 @@ export const balanceColumns: ColumnDef<BalanceRow, unknown>[] = [
     id: 'total',
     header: 'Total',
     meta: { sortKey: 'total', className: 'text-right', headerClassName: 'text-right' },
-    cell: ({ row }) => <Money paise={row.original.total} className="text-base" />,
+    cell: ({ row }) => <Money paise={row.original.total} className="font-display text-[0.95rem] font-bold" />,
   },
 ]
 
@@ -98,7 +98,14 @@ export const payoutColumns: ColumnDef<PayoutRow, unknown>[] = [
     id: 'amount',
     header: 'Amount',
     meta: { sortKey: 'amount', className: 'text-right', headerClassName: 'text-right' },
-    cell: ({ row }) => <Money paise={row.original.amount} />,
+    cell: ({ row }) => (
+      <Money
+        paise={row.original.amount}
+        className={
+          row.original.status === 'failed' ? 'ledger-struck font-display font-bold text-muted-foreground' : 'font-display font-bold'
+        }
+      />
+    ),
   },
   { id: 'status', header: () => 'Status', cell: ({ row }) => <StatusBadge status={row.original.status} /> },
   { id: 'upi', header: () => 'UPI', meta: { label: 'UPI' }, cell: ({ row }) => <UpiCell upi={row.original.upiId} /> },
@@ -112,7 +119,14 @@ export const payoutColumns: ColumnDef<PayoutRow, unknown>[] = [
     id: 'utr',
     header: () => 'UTR',
     meta: { label: 'UTR', className: 'font-mono text-xs' },
-    cell: ({ row }) => row.original.utrReference ?? <span className="text-muted-foreground">—</span>,
+    cell: ({ row }) =>
+      row.original.utrReference ? (
+        <span className="tracking-wide">{row.original.utrReference}</span>
+      ) : row.original.status === 'paid' ? (
+        <span className="font-sans text-muted-foreground">not recorded</span>
+      ) : (
+        <span className="text-muted-foreground">—</span>
+      ),
   },
   {
     id: 'createdAt',

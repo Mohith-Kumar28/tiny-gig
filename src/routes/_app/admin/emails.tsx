@@ -1,6 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Mail } from 'lucide-react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
 import { useTableSearch } from '@/components/data-table/use-table-search'
@@ -33,7 +32,10 @@ function EmailLogPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Email log" />
+      <PageHeader
+        title="Email log"
+        description="Every email TinyGig sent, newest first. Hover the mark next to a failed one to see the error."
+      />
       <DataTable<EmailRow>
         columns={emailColumns}
         data={data}
@@ -55,7 +57,21 @@ function EmailLogPage() {
             />
           </>
         }
-        empty={<EmptyState icon={Mail} title="No emails" description="Nothing matches these filters." className="border-0 bg-transparent" />}
+        empty={
+          search.status || search.template || search.q ? (
+            <EmptyState
+              title="No emails match"
+              description="Nothing fits these filters. Press Reset to see the whole log."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="No emails yet"
+              description="Sign-in codes, approvals and payment notices are logged here as they go out."
+              className="border-0 bg-transparent"
+            />
+          )
+        }
       />
     </div>
   )

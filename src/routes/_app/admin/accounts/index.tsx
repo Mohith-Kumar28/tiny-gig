@@ -1,15 +1,16 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { AtSign, Download, Plus, ShieldOff } from 'lucide-react'
+import { Download, Plus, ShieldOff } from 'lucide-react'
 import { useState } from 'react'
 import { downloadCsv } from '@/components/data-table/csv'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
+import { DataTableToggleFilter } from '@/components/data-table/data-table-toggle-filter'
 import { useTableSearch } from '@/components/data-table/use-table-search'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { formatDate } from '@/components/shared/relative-time'
-import { StatCard } from '@/components/shared/stat-card'
+import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { Button } from '@/components/ui/button'
 import { ACCOUNT_PLATFORMS } from '@/db/schema/enums'
 import { accountColumns } from '@/features/accounts/components/account-columns'
@@ -21,7 +22,6 @@ import { rosterQuery } from '@/features/accounts/queries'
 import { accountLabel, communityLabel, LEVEL_LABELS, LEVELS } from '@/features/accounts/rules'
 import { adminAddAccount, type RosterRow, rosterSearchSchema } from '@/features/accounts/server/roster'
 import { useAction } from '@/hooks/use-action'
-import { cn } from '@/lib/utils'
 
 const STANDING_OPTIONS = [
   ...Object.entries(STANDING_LABELS).map(([value, label]) => ({ value, label })),
@@ -93,6 +93,17 @@ function AccountsPage() {
     },
   )
   const s = data?.summary
+  const filtered = Boolean(
+    search.standing ||
+      search.level ||
+      search.platform ||
+      search.client ||
+      search.inUse ||
+      search.free ||
+      search.unconfirmed ||
+      search.q ||
+      search.workerId,
+  )
   const only = (patch: Record<string, unknown>) => ({ platform: search.platform, ...patch })
 
   return (
@@ -117,36 +128,30 @@ function AccountsPage() {
         }
       />
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+      <StatGrid className="grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Total accounts" value={s?.total ?? '—'} to="/admin/accounts" search={only({})} />
-        <StatCard
-          label="Active"
-          value={s?.active ?? '—'}
-          to="/admin/accounts"
-          search={only({ standing: ['active'] })}
-          tone="success"
-        />
+        <StatCard label="Active" value={s?.active ?? '—'} to="/admin/accounts" search={only({ standing: ['active'] })} />
         <StatCard
           label="Cooling down"
           value={s?.cooling ?? '—'}
           to="/admin/accounts"
           search={only({ standing: ['cooling_down'] })}
         />
+        <StatCard label="In use now" value={s?.inUse ?? '—'} to="/admin/accounts" search={only({ inUse: true })} />
         <StatCard
-          label="In use now"
-          value={s?.inUse ?? '—'}
+          label="Warned"
+          value={s?.warned ?? '—'}
           to="/admin/accounts"
-          search={only({ inUse: true })}
-          tone="attention"
+          search={only({ standing: ['warned'] })}
+          tone={s?.warned ? 'attention' : 'default'}
         />
-        <StatCard label="Warned" value={s?.warned ?? '—'} to="/admin/accounts" search={only({ standing: ['warned'] })} />
         <StatCard
           label="Banned / lost"
           value={s?.lost ?? '—'}
           to="/admin/accounts"
           search={only({ standing: ['banned', 'lost'] })}
         />
-      </div>
+      </StatGrid>
 
       <DataTable<RosterRow>
         columns={accountColumns}
@@ -158,29 +163,18 @@ function AccountsPage() {
         searchPlaceholder="Search handle, owner or phone…"
         onRowClick={(r) => setOpen(r.id)}
         activeRowId={open ?? undefined}
-        hasActiveFilters={Boolean(
-          search.standing ||
-            search.level ||
-            search.platform ||
-            search.client ||
-            search.inUse ||
-            search.free ||
-            search.unconfirmed ||
-            search.q ||
-            search.workerId,
-        )}
+        hasActiveFilters={filtered}
         onResetFilters={() => navigate({ search: {} })}
         initialHidden={{ communities: false }}
         filters={
           <>
-            <Button
-              variant={search.free ? 'default' : 'outline'}
-              size="sm"
-              className={cn('h-8', !search.free && 'border-dashed')}
-              onClick={() => onSearchChange({ free: search.free ? undefined : true })}
+            <DataTableToggleFilter
+              active={!!search.free}
+              count={s?.free}
+              onToggle={() => onSearchChange({ free: search.free ? undefined : true })}
             >
-              Free right now{s ? <span className="tabular opacity-70">{s.free}</span> : null}
-            </Button>
+              Free right now
+            </DataTableToggleFilter>
             <DataTableFacetedFilter
               title="Standing"
               options={STANDING_OPTIONS}
@@ -206,24 +200,35 @@ function AccountsPage() {
               onChange={(v) => onSearchChange({ platform: v })}
             />
             {s?.unconfirmed ? (
-              <Button
-                variant={search.unconfirmed ? 'secondary' : 'outline'}
-                size="sm"
-                className="h-8 border-dashed"
-                onClick={() => onSearchChange({ unconfirmed: search.unconfirmed ? undefined : true })}
+              <DataTableToggleFilter
+                active={!!search.unconfirmed}
+                count={s.unconfirmed}
+                onToggle={() => onSearchChange({ unconfirmed: search.unconfirmed ? undefined : true })}
               >
-                Unconfirmed dates <span className="tabular opacity-70">{s.unconfirmed}</span>
-              </Button>
+                Unconfirmed dates
+              </DataTableToggleFilter>
             ) : null}
           </>
         }
         empty={
-          <EmptyState
-            icon={AtSign}
-            title="No accounts match"
-            description="Try clearing a filter or the search."
-            className="border-0 bg-transparent"
-          />
+          filtered ? (
+            <EmptyState
+              title="No accounts match"
+              description="Nothing in the register fits these filters. Press Reset to see every account."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="The register is empty"
+              description="Accounts appear here when workers add them, or when you use Add account."
+              action={
+                <Button size="sm" onClick={() => setAdding(true)}>
+                  <Plus /> Add account
+                </Button>
+              }
+              className="border-0 bg-transparent"
+            />
+          )
         }
       />
       <AccountSheet accountId={open} onOpenChange={(o) => !o && setOpen(null)} />

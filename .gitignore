@@ -23,3 +23,7 @@ dist
 
 # Local knowledge-graph cache (regenerate with `graphify update .`)
 graphify-out/
+
+# impeccable scratch (captures, caches)
+.impeccable/review/
+.impeccable/hook.cache.json

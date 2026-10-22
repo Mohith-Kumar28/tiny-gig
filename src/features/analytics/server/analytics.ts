@@ -1,5 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, asc, count, eq, gte, inArray, lte, sql } from 'drizzle-orm'
+import { and, asc, count, eq, gte, inArray, sql } from 'drizzle-orm'
 import { submission, workerProfile, gig, payout, referralReward } from '@/db/schema'
 import { adminMiddleware, workerMiddleware } from '@/lib/server/middleware'
 
@@ -150,7 +150,7 @@ export const getWorkerOverview = createServerFn({ method: 'GET' })
         })
         .from(submission)
         .innerJoin(gig, eq(gig.id, submission.gigId))
-        .where(and(eq(submission.workerId, user.id), inArray(submission.status, ['claimed', 'changes_requested', 'submitted', 'resubmitted', 'live_check'])))
+        .where(and(eq(submission.workerId, user.id), inArray(submission.status, ['claimed', 'changes_requested', 'submitted', 'resubmitted', 'live_check', 'on_hold', 'in_review'])))
         .orderBy(asc(submission.dueAt))
         .limit(20),
       db
@@ -170,7 +170,13 @@ export const getWorkerOverview = createServerFn({ method: 'GET' })
       db
         .select({ n: count() })
         .from(gig)
-        .where(and(eq(gig.status, 'live'), lte(gig.minKarma, profile.karma), sql`${gig.claimedSlots} < ${gig.totalSlots}`)),
+        .where(
+          and(
+            eq(gig.status, 'live'),
+            sql`${gig.claimedSlots} < ${gig.totalSlots}`,
+            sql`${gig.id} not in (select ${submission.gigId} from ${submission} where ${submission.workerId} = ${user.id})`,
+          ),
+        ),
     ])
     const approved = Number(counts?.approved ?? 0)
     const rejected = Number(counts?.rejected ?? 0)

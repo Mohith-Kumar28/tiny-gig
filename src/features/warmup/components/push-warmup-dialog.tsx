@@ -86,7 +86,7 @@ export function PushWarmupDialog({ open, onOpenChange }: { open: boolean; onOpen
                   ['all', 'Everyone'],
                 ] as const
               ).map(([v, label]) => (
-                <label key={v} className="flex cursor-pointer items-center gap-2 rounded-lg border p-2.5 text-sm has-[[data-state=checked]]:border-primary/50">
+                <label key={v} className="flex cursor-pointer items-center gap-2 rounded-md border p-2.5 text-sm transition-colors duration-150 has-[[data-state=checked]]:border-ink/50 has-[[data-state=checked]]:bg-ink/[0.04]">
                   <RadioGroupItem value={v} /> {label}
                 </label>
               ))}

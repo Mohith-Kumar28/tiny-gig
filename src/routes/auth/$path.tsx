@@ -18,10 +18,12 @@ export const Route = createFileRoute('/auth/$path')({
 function AuthPage() {
   const { path } = Route.useParams()
   return (
-    <div className="flex min-h-dvh flex-col px-6 py-8">
-      <Logo />
-      <main className="flex flex-1 items-center justify-center py-10">
-        <AuthView pathname={`/auth/${path}`} redirectTo="/app" classNames={{ base: 'w-full max-w-sm' }} />
+    <div className="flex min-h-dvh flex-col">
+      <header className="bg-cloth px-5 py-3.5 text-cloth-foreground sm:px-10">
+        <Logo inverse />
+      </header>
+      <main className="ledger-paper flex flex-1 items-start justify-center px-4 py-10 [--line:2.25rem] [--margin:0.85rem] sm:items-center sm:[--margin:1.6rem]">
+        <AuthView pathname={`/auth/${path}`} redirectTo="/app" classNames={{ base: 'w-full max-w-sm shadow-none' }} />
       </main>
     </div>
   )

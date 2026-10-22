@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { Archive, ArchiveRestore, Pencil, Plus, Tags } from 'lucide-react'
+import { Archive, ArchiveRestore, Pencil, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
+import { SettingsSection } from '@/features/settings/components/settings-section'
 import { ClientChip, TAG_COLORS, type TagColor, tagDot } from '@/features/accounts/components/client-chip'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
@@ -55,7 +56,7 @@ function ClientDialog({ value, onOpenChange }: { value: Draft | null; onOpenChan
                   type="button"
                   aria-label={c}
                   onClick={() => setDraft({ ...draft, color: c })}
-                  className={cn('size-7 rounded-full ring-offset-2 ring-offset-background', tagDot(c), draft.color === c && 'ring-2 ring-foreground')}
+                  className={cn('size-7 rounded-full ring-offset-2 ring-offset-background transition-shadow duration-150 focus-visible:outline-2 focus-visible:outline-ring', tagDot(c), draft.color === c && 'ring-2 ring-foreground')}
                 />
               ))}
             </div>
@@ -84,37 +85,36 @@ export function ClientsManager() {
     invalidate: [['admin', 'clients']],
   })
   return (
-    <section className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
-          <h2 className="font-display text-lg font-semibold">Clients</h2>
-          <p className="text-sm text-muted-foreground">Tag work with the client it was for. Drives same-client cooldowns and the roster’s “last client”.</p>
-        </div>
-        <Button size="sm" onClick={() => setEditing({ name: '', color: 'blue' })}>
+    <SettingsSection
+      title="Clients"
+      description="Tag work with the client it was for. Drives the same-client cooldowns and the roster’s Last client column. Workers never see client names."
+      actions={
+        <Button size="sm" variant="outline" onClick={() => setEditing({ name: '', color: 'blue' })}>
           <Plus /> New client
         </Button>
-      </div>
+      }
+    >
       {isLoading ? (
-        <Skeleton className="h-32 rounded-xl" />
+        <Skeleton className="h-32 rounded-lg" />
       ) : !data?.length ? (
-        <EmptyState icon={Tags} title="No clients yet" description="Add the clients you post for, then pick one on each gig." />
+        <EmptyState title="No clients yet" description="Add the clients you post for with New client, then pick one on each gig." />
       ) : (
-        <div className="overflow-hidden rounded-xl border bg-card">
+        <div className="overflow-hidden rounded-lg border bg-card">
           <table className="w-full text-sm">
-            <thead className="bg-muted/40 text-xs text-muted-foreground">
+            <thead className="border-b bg-muted/45">
               <tr>
-                <th className="px-4 py-2 text-left font-medium">Client</th>
-                <th className="px-3 py-2 text-right font-medium">Posts 7d</th>
-                <th className="px-3 py-2 text-right font-medium">Posts 30d</th>
-                <th className="px-3 py-2 text-right font-medium">Accounts 30d</th>
-                <th className="px-3 py-2 text-right font-medium">Approved</th>
-                <th className="px-3 py-2 text-right font-medium">Spend</th>
+                <th className="ledger-label px-4 py-2 text-left">Client</th>
+                <th className="ledger-label px-3 py-2 text-right">Posts 7d</th>
+                <th className="ledger-label px-3 py-2 text-right">Posts 30d</th>
+                <th className="ledger-label px-3 py-2 text-right">Accounts 30d</th>
+                <th className="ledger-label px-3 py-2 text-right">Approved</th>
+                <th className="ledger-label px-3 py-2 text-right">Spend</th>
                 <th className="w-20" />
               </tr>
             </thead>
             <tbody className="divide-y">
               {data.map((c) => (
-                <tr key={c.id} className={cn('group', c.archivedAt && 'opacity-50')}>
+                <tr key={c.id} className={cn('group transition-colors duration-150 hover:bg-muted/45', c.archivedAt && 'text-muted-foreground')}>
                   <td className="px-4 py-2.5">
                     <ClientChip name={c.name} color={c.color} />
                     {c.archivedAt ? <span className="ml-2 text-xs text-muted-foreground">archived</span> : null}
@@ -124,7 +124,7 @@ export function ClientsManager() {
                   <td className="px-3 py-2.5 text-right tabular">{c.accounts30}</td>
                   <td className="px-3 py-2.5 text-right tabular">{c.approved}</td>
                   <td className="px-3 py-2.5 text-right">
-                    <Money paise={c.spend} />
+                    <Money paise={c.spend} className="font-display font-bold" />
                   </td>
                   <td className="px-2 py-2.5 text-right">
                     <div className="flex justify-end gap-0.5 opacity-60 group-hover:opacity-100">
@@ -149,6 +149,6 @@ export function ClientsManager() {
         </div>
       )}
       <ClientDialog value={editing} onOpenChange={(o) => !o && setEditing(null)} />
-    </section>
+    </SettingsSection>
   )
 }

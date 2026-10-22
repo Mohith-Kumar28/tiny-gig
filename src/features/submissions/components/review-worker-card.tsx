@@ -20,7 +20,7 @@ export function ReviewWorkerCard({ worker, history }: { worker: Worker; history:
   const decided = approved + rejected
   const rate = decided ? Math.round((approved / decided) * 100) : null
   return (
-    <div className="rounded-xl border bg-card p-3.5">
+    <div>
       <div className="flex items-center gap-3">
         <Avatar className="size-9">
           {worker.image ? <AvatarImage src={worker.image} alt="" /> : null}
@@ -44,16 +44,16 @@ export function ReviewWorkerCard({ worker, history }: { worker: Worker; history:
           </a>
         </div>
       </div>
-      <dl className="mt-3 grid grid-cols-4 gap-2 text-center">
+      <dl className="mt-2.5 grid grid-cols-4 gap-px overflow-hidden rounded-md border bg-border">
         {[
           { label: 'Karma', value: formatNumber(worker.karma) },
           { label: 'Age', value: `${worker.accountAgeMonths}mo` },
           { label: 'Approved', value: formatNumber(approved) },
-          { label: 'Rate', value: rate == null ? '—' : `${rate}%`, warn: rate != null && rate < 70 },
+          { label: 'Approval', value: rate == null ? '—' : `${rate}%`, warn: rate != null && rate < 70 },
         ].map((s) => (
-          <div key={s.label} className="rounded-lg bg-muted/50 px-1 py-1.5">
-            <dd className={`text-sm font-semibold tabular ${s.warn ? 'text-destructive' : ''}`}>{s.value}</dd>
-            <dt className="text-[11px] text-muted-foreground">{s.label}</dt>
+          <div key={s.label} className="bg-card px-2.5 py-1.5">
+            <dt className="ledger-label">{s.label}</dt>
+            <dd className={`font-display text-sm font-bold tabular ${s.warn ? 'text-destructive' : ''}`}>{s.value}</dd>
           </div>
         ))}
       </dl>

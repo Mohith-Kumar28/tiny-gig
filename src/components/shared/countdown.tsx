@@ -20,9 +20,10 @@ export function Countdown({ to, className, prefix = 'Due' }: { to: Date | string
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 text-xs font-medium tabular',
-        overdue || mins < 60 ? 'text-destructive' : mins < 360 ? 'text-warning-foreground dark:text-warning' : 'text-muted-foreground',
+        'inline-flex items-center gap-1 text-xs font-medium tabular text-muted-foreground',
         className,
+        // Urgency wins over any caller colour so a near deadline always reads as one.
+        overdue || mins < 60 ? 'text-destructive' : mins < 360 ? 'text-warning-foreground dark:text-warning' : null,
       )}
     >
       <Clock className="size-3.5" />

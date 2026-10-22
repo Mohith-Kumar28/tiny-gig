@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { Ban, Check, Download, Gift } from 'lucide-react'
+import { Ban, Check, Download } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { downloadCsv } from '@/components/data-table/csv'
 import { DataTable } from '@/components/data-table/data-table'
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { REWARD_ROLES, REWARD_STATUSES } from '@/db/schema/enums'
 import { useAction } from '@/hooks/use-action'
 import { formatMoney } from '@/lib/format'
+import { cn } from '@/lib/utils'
 import { programsQuery, rewardsQuery } from '../queries'
 import { decideRewards, type RewardsSearch } from '../server/referrals'
 import { NoteDialog } from './note-dialog'
@@ -88,7 +89,13 @@ export function RewardsTable({
             <DataTableFacetedFilter title="Status" options={STATUS_OPTIONS} value={search.status} onChange={(v) => onSearchChange({ status: v })} />
             <DataTableFacetedFilter title="Role" options={ROLE_OPTIONS} value={search.role} onChange={(v) => onSearchChange({ role: v })} />
             <Select value={search.programId ?? ALL} onValueChange={(v) => onSearchChange({ programId: v === ALL ? undefined : v })}>
-              <SelectTrigger size="sm" className="h-8 w-auto min-w-36 border-dashed">
+              <SelectTrigger
+                size="sm"
+                className={cn(
+                  'h-8 w-auto min-w-36',
+                  search.programId ? 'border-ink/40 bg-ink/[0.04]' : 'border-dashed text-muted-foreground',
+                )}
+              >
                 <SelectValue placeholder="Program" />
               </SelectTrigger>
               <SelectContent>
@@ -109,9 +116,8 @@ export function RewardsTable({
         }
         empty={
           <EmptyState
-            icon={Gift}
             title={search.status?.length === 1 && search.status[0] === 'pending_review' ? 'Nothing to review' : 'No rewards match'}
-            description="Rewards appear here when referred workers hit a program milestone."
+            description="Rewards appear here when a referred worker hits a program milestone. Programs set to manual review wait here for your approval."
             className="border-0 bg-transparent"
           />
         }

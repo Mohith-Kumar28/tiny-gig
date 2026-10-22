@@ -25,12 +25,15 @@ export type BaseEmailProps = {
   appUrl: string
 }
 
+/** The app's khata palette, flattened to hex for email clients. */
 const colors = {
-  ink: '#211c16',
-  muted: '#6f675d',
-  line: '#ebe5dc',
-  paper: '#faf8f3',
-  primary: '#e2561f',
+  ink: '#12161f',
+  muted: '#555b66',
+  line: '#d8dde3',
+  paper: '#f3f6f9',
+  primary: '#b71824',
+  cloth: '#6f181e',
+  clothInk: '#ffeee8',
 }
 
 export function BaseEmail({
@@ -50,14 +53,15 @@ export function BaseEmail({
       <Preview>{preview}</Preview>
       <Body style={{ backgroundColor: colors.paper, fontFamily: 'Helvetica, Arial, sans-serif', margin: 0 }}>
         <Container style={{ maxWidth: 520, margin: '0 auto', padding: '32px 20px' }}>
-          <Text style={{ fontSize: 18, fontWeight: 700, color: colors.ink, margin: '0 0 24px' }}>
-            <span style={{ color: colors.primary }}>●</span> {appName}
-          </Text>
+          <Section style={{ backgroundColor: colors.cloth, borderRadius: '6px 6px 0 0', padding: '14px 24px' }}>
+            <Text style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.01em', color: colors.clothInk, margin: 0 }}>{appName}</Text>
+          </Section>
           <Section
             style={{
               backgroundColor: '#ffffff',
               border: `1px solid ${colors.line}`,
-              borderRadius: 12,
+              borderTop: 'none',
+              borderRadius: '0 0 6px 6px',
               padding: '28px 24px',
             }}
           >
@@ -76,7 +80,8 @@ export function BaseEmail({
                   lineHeight: '22px',
                   color: colors.ink,
                   backgroundColor: colors.paper,
-                  borderLeft: `3px solid ${colors.primary}`,
+                  border: `1px solid ${colors.line}`,
+                  borderRadius: 4,
                   padding: '10px 14px',
                   margin: '16px 0',
                   whiteSpace: 'pre-wrap',
@@ -88,8 +93,9 @@ export function BaseEmail({
             {details?.length ? (
               <Section style={{ margin: '16px 0' }}>
                 {details.map((d) => (
-                  <Text key={d.label} style={{ fontSize: 14, margin: '0 0 6px', color: colors.ink }}>
-                    <span style={{ color: colors.muted }}>{d.label}:</span> <strong>{d.value}</strong>
+                  <Text key={d.label} style={{ fontSize: 14, margin: 0, padding: '7px 0', color: colors.ink, borderBottom: `1px dashed ${colors.line}` }}>
+                    <span style={{ color: colors.muted }}>{d.label}</span>
+                    <strong style={{ float: 'right' }}>{d.value}</strong>
                   </Text>
                 ))}
               </Section>
@@ -100,7 +106,7 @@ export function BaseEmail({
                 style={{
                   backgroundColor: colors.primary,
                   color: '#ffffff',
-                  borderRadius: 8,
+                  borderRadius: 6,
                   padding: '12px 20px',
                   fontSize: 15,
                   fontWeight: 600,

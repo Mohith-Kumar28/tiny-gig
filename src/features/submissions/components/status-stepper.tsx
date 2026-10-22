@@ -112,6 +112,10 @@ export function buildSteps(
   }))
 }
 
+/**
+ * Progress as a ruled strip, like the columns of a ledger row: each step is a heavy rule with its
+ * number and name under it. Done steps are inked in, the current one is ink-blue, the rest stay faint.
+ */
 export function StatusStepper({
   status,
   liveHold,
@@ -129,54 +133,66 @@ export function StatusStepper({
 }) {
   const steps = buildSteps(status, { liveHold, hasSubmitted, twoStep, holdOver })
   const stopped = steps.some((s) => s.state === 'failed')
+  const allDone = steps.every((s) => s.state === 'done')
   return (
-    <ol className={cn('flex w-full items-start', className)} aria-label="Task progress">
+    <ol
+      className={cn('grid w-full gap-1.5', className)}
+      style={{ gridTemplateColumns: `repeat(${steps.length}, minmax(0, 1fr))` }}
+      aria-label="Task progress"
+    >
       {steps.map((s, i) => (
         <li
           key={s.key}
-          className="relative flex flex-1 flex-col items-center gap-1.5 text-center"
-          aria-current={s.state === 'current' ? 'step' : undefined}
+          className={cn('min-w-0', stopped && s.state === 'upcoming' && 'opacity-45')}
+          aria-current={s.state === 'current' || s.state === 'warning' ? 'step' : undefined}
         >
-          {i > 0 ? (
-            <span
-              aria-hidden
-              className={cn(
-                'absolute top-3.5 right-1/2 h-0.5 w-full -translate-y-1/2',
-                s.state === 'upcoming' ? 'bg-border' : s.state === 'failed' ? 'bg-destructive/40' : 'bg-success',
+          <span
+            aria-hidden
+            className={cn(
+              'block h-[3px] rounded-[1px] transition-colors duration-200',
+              s.state === 'done' && (allDone ? 'bg-success' : 'bg-foreground/70'),
+              s.state === 'current' && 'bg-ink',
+              s.state === 'warning' && 'bg-warning',
+              s.state === 'failed' && 'bg-destructive',
+              s.state === 'upcoming' && 'bg-border',
+            )}
+          />
+          <span className="mt-1.5 flex flex-col items-start gap-0.5">
+            <span className="flex h-4 items-center">
+              {s.state === 'done' ? (
+                <Check
+                  className={cn('size-3 shrink-0', allDone ? 'text-success' : 'text-foreground/70')}
+                  strokeWidth={3}
+                  aria-hidden
+                />
+              ) : s.state === 'failed' ? (
+                <X className="size-3 shrink-0 text-destructive" strokeWidth={3} aria-hidden />
+              ) : s.state === 'warning' ? (
+                <AlertTriangle className="size-3 shrink-0 text-warning-foreground dark:text-warning" aria-hidden />
+              ) : (
+                <span
+                  className={cn(
+                    'font-display text-[11px] leading-tight font-bold tabular sm:text-xs',
+                    s.state === 'current' ? 'text-ink' : 'text-muted-foreground',
+                  )}
+                >
+                  {i + 1}
+                </span>
               )}
-            />
-          ) : null}
-          <span
-            className={cn(
-              'relative z-10 flex size-7 items-center justify-center rounded-full border-2 bg-background text-xs font-semibold tabular',
-              s.state === 'done' && 'border-success bg-success text-success-foreground',
-              s.state === 'current' && 'border-primary text-primary ring-4 ring-primary/15',
-              s.state === 'warning' && 'border-warning bg-warning text-warning-foreground ring-4 ring-warning/20',
-              s.state === 'failed' && 'border-destructive bg-destructive text-white',
-              s.state === 'upcoming' && 'border-border text-muted-foreground',
-              stopped && s.state === 'upcoming' && 'opacity-50',
-            )}
-          >
-            {s.state === 'done' ? (
-              <Check className="size-3.5" strokeWidth={3} />
-            ) : s.state === 'failed' ? (
-              <X className="size-3.5" strokeWidth={3} />
-            ) : s.state === 'warning' ? (
-              <AlertTriangle className="size-3.5" />
-            ) : (
-              i + 1
-            )}
-          </span>
-          <span
-            className={cn(
-              'px-0.5 text-[11px] leading-tight font-medium sm:text-xs',
-              s.state === 'upcoming' ? 'text-muted-foreground' : 'text-foreground',
-              s.state === 'failed' && 'text-destructive',
-              s.state === 'warning' && 'text-warning-foreground dark:text-warning',
-              stopped && s.state === 'upcoming' && 'opacity-50',
-            )}
-          >
-            {s.label}
+            </span>
+            <span className="sr-only">{s.state === 'done' ? 'Done: ' : s.state === 'upcoming' ? 'Next: ' : 'Now: '}</span>
+            <span
+              className={cn(
+                'min-w-0 text-[11px] leading-tight text-pretty sm:text-xs',
+                s.state === 'upcoming' && 'text-muted-foreground',
+                s.state === 'done' && 'text-foreground/80',
+                s.state === 'current' && 'font-semibold text-ink',
+                s.state === 'warning' && 'font-semibold text-warning-foreground dark:text-warning',
+                s.state === 'failed' && 'font-semibold text-destructive',
+              )}
+            >
+              {s.label}
+            </span>
           </span>
         </li>
       ))}

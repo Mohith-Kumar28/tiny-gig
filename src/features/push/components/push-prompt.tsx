@@ -24,13 +24,17 @@ export function PushPrompt() {
     setSnoozed(true)
   }
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-primary/30 bg-primary/[0.05] p-4 sm:flex-row sm:items-center">
-      <BellRing className="size-5 shrink-0 text-primary" />
-      <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">Don’t miss new gigs</p>
-        <p className="text-xs text-muted-foreground">Gigs take interest for only a few minutes. Turn on alerts and we’ll ping you the moment one goes live.</p>
+    <div className="flex flex-col gap-3 rounded-lg border bg-card p-4 sm:flex-row sm:items-center">
+      <div className="flex min-w-0 flex-1 gap-3">
+        <BellRing className="mt-0.5 size-5 shrink-0 text-primary" />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold">Don’t miss new gigs</p>
+          <p className="text-xs text-muted-foreground">
+            Gigs take interest for only a few minutes. Turn on alerts and we’ll ping you the moment one goes live.
+          </p>
+        </div>
       </div>
-      <div className="flex gap-2">
+      <div className="flex gap-2 sm:shrink-0">
         <Button
           size="sm"
           disabled={busy}

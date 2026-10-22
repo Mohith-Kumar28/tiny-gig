@@ -1,7 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { PushPrompt } from '@/features/push/components/push-prompt'
 import { createFileRoute } from '@tanstack/react-router'
-import { SearchX } from 'lucide-react'
 import { useCallback } from 'react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
@@ -56,9 +55,8 @@ function FindGigsPage() {
         </div>
       ) : (
         <EmptyState
-          icon={SearchX}
           title="No gigs match right now"
-          description="Try clearing filters, or check back later."
+          description="Try clearing filters. New gigs open for interest for only a few minutes, so turn on alerts to hear about them first."
           action={
             <Button variant="outline" onClick={() => navigate({ search: {} })}>
               Clear filters

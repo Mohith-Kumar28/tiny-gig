@@ -68,7 +68,7 @@ export function DecisionDialog({
                   setComment((c) => (c ? `${c}\n${t.body}` : t.body))
                   textareaRef.current?.focus()
                 }}
-                className="rounded-full border bg-muted/50 px-2.5 py-1 text-xs hover:bg-accent"
+                className="rounded-md border bg-muted/50 px-2 py-1 text-xs transition-colors duration-150 hover:border-ink/40 hover:bg-ink/[0.04] focus-visible:outline-2 focus-visible:outline-ring"
               >
                 {t.label}
               </button>
@@ -87,7 +87,9 @@ export function DecisionDialog({
             onChange={(e) => setComment(e.target.value)}
             placeholder="Be specific so they can fix it quickly…"
           />
-          <p className="text-xs text-muted-foreground">⌘/Ctrl + Enter to submit</p>
+          <p className="text-xs text-muted-foreground">
+            {list.length ? 'Tap a saved reply to add it, then edit. ' : ''}⌘/Ctrl + Enter to submit
+          </p>
         </div>
         <DialogFooter>
           <Button variant="outline" onClick={() => onOpenChange(false)}>

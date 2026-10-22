@@ -68,7 +68,7 @@ export const applicantColumns: ColumnDef<WorkerRow, unknown>[] = [
   {
     id: 'phone',
     header: () => 'Phone',
-    meta: { label: 'Phone', className: 'tabular text-muted-foreground' },
+    meta: { label: 'Phone', className: 'text-muted-foreground' },
     cell: ({ row }) => row.original.phone,
   },
   {
@@ -112,7 +112,7 @@ export const workerColumns: ColumnDef<WorkerRow, unknown>[] = [
     id: 'earned',
     header: 'Earned',
     meta: { sortKey: 'earned', label: 'Earned', className: 'text-right', headerClassName: 'text-right' },
-    cell: ({ row }) => <Money paise={row.original.earnedTotal} />,
+    cell: ({ row }) => <Money paise={row.original.earnedTotal} className="font-display font-bold" />,
   },
   {
     id: 'lastActive',

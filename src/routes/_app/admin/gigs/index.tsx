@@ -69,9 +69,24 @@ function GigsPage() {
         initialHidden={{ liveHold: false, createdAt: false }}
         filters={
           <>
-            <DataTableFacetedFilter title="Status" options={STATUS_OPTIONS} value={search.status} onChange={(v) => onSearchChange({ status: v })} />
-            <DataTableFacetedFilter title="Platform" options={PLATFORM_OPTIONS} value={search.platform} onChange={(v) => onSearchChange({ platform: v })} />
-            <DataTableFacetedFilter title="Task" options={TASK_OPTIONS} value={search.taskType} onChange={(v) => onSearchChange({ taskType: v })} />
+            <DataTableFacetedFilter
+              title="Status"
+              options={STATUS_OPTIONS}
+              value={search.status}
+              onChange={(v) => onSearchChange({ status: v })}
+            />
+            <DataTableFacetedFilter
+              title="Platform"
+              options={PLATFORM_OPTIONS}
+              value={search.platform}
+              onChange={(v) => onSearchChange({ platform: v })}
+            />
+            <DataTableFacetedFilter
+              title="Task"
+              options={TASK_OPTIONS}
+              value={search.taskType}
+              onChange={(v) => onSearchChange({ taskType: v })}
+            />
           </>
         }
         empty={

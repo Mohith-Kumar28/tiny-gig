@@ -60,10 +60,10 @@ export const emailTemplates = {
 
   applicationReceived: (d: { name: string }, ctx: Ctx): Content => ({
     subject: 'We received your TinyGig application',
-    preview: "Thanks for applying — we'll review it shortly.",
+    preview: "Thanks for applying. We'll review it shortly.",
     heading: `Thanks for applying, ${d.name.split(' ')[0]}!`,
     paragraphs: [
-      "Our team reviews every application by hand. You'll get an email as soon as there's a decision — usually within 24–48 hours.",
+      "Our team reviews every application by hand. You'll get an email as soon as there's a decision, usually within 24 to 48 hours.",
       'You can check your status anytime from your dashboard.',
     ],
     cta: { label: 'View status', href: url(ctx, '/pending') },
@@ -222,7 +222,7 @@ export const emailTemplates = {
     preview: 'Your submission passed review.',
     heading: 'Submission passed review',
     paragraphs: [
-      `Your submission for “${d.title}” looks good. Keep the post live for at least ${d.hours} hours — we'll do a final check and then approve the payment.`,
+      `Your submission for “${d.title}” looks good. Keep the post live for at least ${d.hours} hours. We'll do a final check and then approve the payment.`,
       "Don't delete or edit the post during this time.",
     ],
     cta: { label: 'View status', href: url(ctx, `/w/work/${d.submissionId}`) },

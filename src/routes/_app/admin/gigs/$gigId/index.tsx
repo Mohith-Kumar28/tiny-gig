@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ArrowLeft, Copy, ExternalLink, Hand, Inbox, ListChecks, Pencil } from 'lucide-react'
+import { ArrowLeft, Copy, ExternalLink, Hand, Inbox, Pencil } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
 import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon'
 import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
+import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
@@ -34,23 +35,21 @@ export const Route = createFileRoute('/_app/admin/gigs/$gigId/')({
   component: GigDetailPage,
 })
 
-function Kpi({ label, value, hint, tone, to }: { label: string; value: ReactNode; hint?: ReactNode; tone?: 'attention'; to?: ReactNode }) {
+function Panel({ title, children, className, flush }: { title: string; children: ReactNode; className?: string; flush?: boolean }) {
   return (
-    <div className={cn('min-w-0 px-4 py-3', tone === 'attention' && 'bg-primary/[0.05]')}>
-      <div className="text-xs text-muted-foreground">{label}</div>
-      <div className={cn('mt-1 font-display text-xl font-semibold tabular', tone === 'attention' && 'text-primary')}>{value}</div>
-      {hint ? <div className="mt-0.5 text-xs text-muted-foreground">{hint}</div> : null}
-      {to}
-    </div>
+    <section className={cn('min-w-0 overflow-hidden rounded-lg border bg-card', className)}>
+      <h2 className="border-b px-4 py-2.5 font-display text-sm font-bold">{title}</h2>
+      <div className={cn('text-sm', !flush && 'px-4 py-3')}>{children}</div>
+    </section>
   )
 }
 
-function Panel({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
+function Term({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section className={cn('rounded-xl border bg-card p-4', className)}>
-      <h2 className="mb-2 text-sm font-semibold">{title}</h2>
-      <div className="text-sm">{children}</div>
-    </section>
+    <div className="flex items-baseline justify-between gap-4 bg-card px-4 py-2">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="text-right tabular">{children}</dd>
+    </div>
   )
 }
 
@@ -79,7 +78,7 @@ function GigDetailPage() {
             <ArrowLeft /> Gigs
           </Link>
         </Button>
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="space-y-3">
           <div className="min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
@@ -90,7 +89,7 @@ function GigDetailPage() {
               <StatusBadge status={g.status} />
               {data.client ? <ClientChip name={data.client.name} color={data.client.color} /> : null}
             </div>
-            <h1 className="font-display text-2xl font-semibold tracking-tight text-balance sm:text-[1.65rem]">{g.title}</h1>
+            <h1 className="max-w-4xl font-display text-2xl leading-tight font-bold text-balance sm:text-[1.75rem]">{g.title}</h1>
             <p className="text-sm text-muted-foreground">
               Created <RelativeTime date={g.createdAt} />
               {g.publishedAt ? (
@@ -101,7 +100,7 @@ function GigDetailPage() {
               {g.endsAt ? <> · ends {formatDateTime(g.endsAt)}</> : null}
             </p>
           </div>
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 border-y py-2.5">
             {g.status === 'live' && g.claimedSlots < g.totalSlots ? (
               <Button asChild size="sm" variant={data.interested ? 'default' : 'outline'}>
                 <Link to="/admin/gigs/$gigId/select" params={{ gigId }}>
@@ -116,6 +115,7 @@ function GigDetailPage() {
                 </Link>
               </Button>
             ) : null}
+            <span aria-hidden className="hidden flex-1 sm:block" />
             <Button asChild size="sm" variant="outline">
               <Link to="/admin/gigs/$gigId/edit" params={{ gigId }}>
                 <Pencil /> Edit
@@ -139,23 +139,49 @@ function GigDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 divide-x divide-y overflow-hidden rounded-xl border bg-card sm:grid-cols-4 sm:divide-y-0 [&>*]:border-border">
-        <Kpi label="Slots" value={<SlotsBar claimed={g.claimedSlots} total={g.totalSlots} className="w-full max-w-28 [&>div:first-child]:text-base" />} />
-        <Kpi label="To review" value={formatNumber(waiting)} tone={waiting ? 'attention' : undefined} />
-        <Kpi label="Approved" value={formatNumber(approved)} />
-        <Kpi
-          label="Spent"
-          value={<Money paise={data.money.spent} />}
-          hint={`max exposure ${formatMoney(data.money.maxExposure)}${data.money.min !== data.money.max ? ` · ${formatMoney(data.money.min)}–${formatMoney(data.money.max)}/task` : ''}`}
+      <StatGrid className="grid-cols-2 md:grid-cols-5">
+        <StatCard
+          label="Slots filled"
+          value={
+            <>
+              {formatNumber(g.claimedSlots)}
+              <span className="text-base font-semibold text-muted-foreground"> / {formatNumber(g.totalSlots)}</span>
+            </>
+          }
+          hint={<SlotsBar claimed={g.claimedSlots} total={g.totalSlots} className="mt-1 w-full max-w-36 [&>div:first-child]:hidden" />}
         />
-      </div>
+        <StatCard
+          label="To review"
+          value={formatNumber(waiting)}
+          tone={waiting ? 'attention' : 'default'}
+          to={waiting ? '/admin/review' : undefined}
+          search={waiting ? { gigId } : undefined}
+          hint={waiting ? 'Open in the review inbox' : 'Nothing waiting'}
+        />
+        <StatCard label="Approved" value={formatNumber(approved)} />
+        <StatCard
+          label="Spent"
+          value={<Money paise={data.money.spent} className={cn('font-bold', data.money.spent > 0 && 'ledger-total')} />}
+          hint="Approved work on this gig"
+        />
+        <StatCard
+          className="col-span-2 md:col-span-1"
+          label="Max exposure"
+          value={<Money paise={data.money.maxExposure} className="font-bold" />}
+          hint={
+            data.money.min !== data.money.max
+              ? `${formatMoney(data.money.min)}-${formatMoney(data.money.max)} per task`
+              : `${formatMoney(data.money.max)} per task`
+          }
+        />
+      </StatGrid>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-4">
           <Panel title="Brief">
             <p className="whitespace-pre-wrap text-pretty">{g.brief}</p>
             {g.targetUrl ? (
-              <a href={g.targetUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex max-w-full items-center gap-1.5 text-primary hover:underline">
+              <a href={g.targetUrl} target="_blank" rel="noreferrer" className="mt-3 inline-flex max-w-full items-center gap-1.5 text-ink underline-offset-4 hover:underline">
                 <ExternalLink className="size-3.5 shrink-0" />
                 <span className="truncate">{g.targetUrl}</span>
               </a>
@@ -175,48 +201,39 @@ function GigDetailPage() {
               ) : null}
             </div>
           ) : null}
+          <Panel title="Requirements & timing" flush>
+            <dl className="grid gap-px bg-border sm:grid-cols-2">
+              <Term label="Min karma">{g.minKarma ? formatNumber(g.minKarma) : 'Any'}</Term>
+              <Term label="Account age">{g.minAccountAgeMonths ? `${g.minAccountAgeMonths}+ months` : 'Any'}</Term>
+              <Term label="States">{g.allowedStates.length ? g.allowedStates.join(', ') : 'All of India'}</Term>
+              <Term label="Time to submit">{formatHours(g.claimWindowHours)}</Term>
+              <Term label="Live hold">{g.liveHoldHours ? formatHours(g.liveHoldHours) : 'Approve immediately'}</Term>
+              <Term label="Starts">{g.startsAt ? formatDateTime(g.startsAt) : 'On publish'}</Term>
+              <Term label="Ends">{g.endsAt ? formatDateTime(g.endsAt) : 'No end date'}</Term>
+              <Term label="Priority">{g.priority}</Term>
+            </dl>
+          </Panel>
         </div>
         <div className="space-y-4">
-          <Panel title="Reviewer checklist">
+          <Panel title="Reviewer checklist" flush>
             {g.reviewChecklist.length ? (
-              <ol className="space-y-1.5">
+              <ol className="divide-y">
                 {g.reviewChecklist.map((c, i) => (
-                  // biome-ignore lint/suspicious/noArrayIndexKey: static list
-                  <li key={i} className="flex gap-2">
-                    <ListChecks className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                  <li key={i} className="flex items-baseline gap-3 px-4 py-2">
+                    <span className="w-4 shrink-0 text-right text-xs text-muted-foreground tabular">{i + 1}</span>
                     {c}
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="text-muted-foreground">No checklist.</p>
+              <p className="px-4 py-3 text-muted-foreground">No checklist. Add one from Edit so reviewers know what to check.</p>
             )}
-          </Panel>
-          <Panel title="Requirements & timing">
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5">
-              <dt className="text-muted-foreground">Min karma</dt>
-              <dd className="tabular">{g.minKarma ? formatNumber(g.minKarma) : 'Any'}</dd>
-              <dt className="text-muted-foreground">Account age</dt>
-              <dd className="tabular">{g.minAccountAgeMonths ? `${g.minAccountAgeMonths}+ months` : 'Any'}</dd>
-              <dt className="text-muted-foreground">States</dt>
-              <dd>{g.allowedStates.length ? g.allowedStates.join(', ') : 'All of India'}</dd>
-              <dt className="text-muted-foreground">Claim window</dt>
-              <dd>{formatHours(g.claimWindowHours)}</dd>
-              <dt className="text-muted-foreground">Live hold</dt>
-              <dd>{g.liveHoldHours ? formatHours(g.liveHoldHours) : 'Approve immediately'}</dd>
-              <dt className="text-muted-foreground">Starts</dt>
-              <dd>{g.startsAt ? formatDateTime(g.startsAt) : 'On publish'}</dd>
-              <dt className="text-muted-foreground">Ends</dt>
-              <dd>{g.endsAt ? formatDateTime(g.endsAt) : 'No end date'}</dd>
-              <dt className="text-muted-foreground">Priority</dt>
-              <dd className="tabular">{g.priority}</dd>
-            </dl>
           </Panel>
         </div>
       </div>
 
       <section className="space-y-3">
-        <h2 className="font-display text-lg font-semibold">Submissions</h2>
+        <h2 className="font-display text-lg font-bold">Submissions</h2>
         <DataTable<QueueRow>
           columns={gigSubmissionColumns}
           data={subs}

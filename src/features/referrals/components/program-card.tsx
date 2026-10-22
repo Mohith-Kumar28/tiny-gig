@@ -2,7 +2,6 @@ import { Link } from '@tanstack/react-router'
 import { Copy, Pencil } from 'lucide-react'
 import { Money } from '@/components/shared/money'
 import { formatDate } from '@/components/shared/relative-time'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
@@ -11,6 +10,8 @@ import { cn } from '@/lib/utils'
 import { describeProgram, TRIGGER_LABELS } from '../rules'
 import type { ProgramRow } from './program-form-values'
 import { ProgramStateBadge, programState } from './program-state-badge'
+
+const TAG = 'inline-flex h-5.5 items-center rounded-[3px] border bg-muted/40 px-1.5 text-xs whitespace-nowrap'
 
 export function ProgramCard({
   program: p,
@@ -27,11 +28,11 @@ export function ProgramCard({
 }) {
   const state = programState(p)
   return (
-    <article className={cn('flex flex-col rounded-xl border bg-card p-5 transition-colors', state !== 'running' && 'bg-card/60')}>
+    <article className={cn('flex flex-col rounded-lg border bg-card p-5 transition-colors', state !== 'running' && 'bg-card/60')}>
       <header className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="truncate font-display text-base font-semibold tracking-tight">{p.name}</h3>
+            <h3 className="truncate font-display text-base font-bold">{p.name}</h3>
             <ProgramStateBadge state={state} />
           </div>
           {p.description ? <p className="line-clamp-2 text-sm text-muted-foreground">{p.description}</p> : null}
@@ -49,34 +50,34 @@ export function ProgramCard({
       <p className="mt-3 text-sm leading-relaxed text-pretty">{describeProgram(p)}</p>
 
       <div className="mt-3 flex flex-wrap gap-1.5">
-        <Badge variant="outline">{TRIGGER_LABELS[p.trigger]}</Badge>
-        <Badge variant="outline">{p.autoApprove ? 'Auto-approve' : 'Manual review'}</Badge>
+        <span className={TAG}>{TRIGGER_LABELS[p.trigger]}</span>
+        <span className={TAG}>{p.autoApprove ? 'Auto-approve' : 'Manual review'}</span>
         {p.startsAt || p.endsAt ? (
-          <Badge variant="outline" className="tabular">
-            {p.startsAt ? formatDate(p.startsAt) : 'Any time'} → {p.endsAt ? formatDate(p.endsAt) : 'no end'}
-          </Badge>
+          <span className={cn(TAG, 'tabular')}>
+            {p.startsAt ? formatDate(p.startsAt) : 'Any time'} to {p.endsAt ? formatDate(p.endsAt) : 'no end'}
+          </span>
         ) : null}
       </div>
 
       <dl className="mt-4 grid grid-cols-3 gap-3 border-t pt-4 text-sm">
         <div>
-          <dt className="text-xs text-muted-foreground">Rewards issued</dt>
-          <dd className="font-display text-lg font-semibold tabular">{formatNumber(p.rewardsCount)}</dd>
+          <dt className="ledger-label">Rewards issued</dt>
+          <dd className="font-display text-lg font-bold tabular">{formatNumber(p.rewardsCount)}</dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Amount</dt>
+          <dt className="ledger-label">Amount</dt>
           <dd className="font-display text-lg">
-            <Money paise={p.rewardsAmount} className="font-semibold" />
+            <Money paise={p.rewardsAmount} className="font-bold" />
           </dd>
         </div>
         <div>
-          <dt className="text-xs text-muted-foreground">Pending review</dt>
-          <dd className="font-display text-lg font-semibold tabular">
+          <dt className="ledger-label">Pending review</dt>
+          <dd className="font-display text-lg font-bold tabular">
             {p.pendingCount ? (
               <Link
                 to="/admin/referrals"
                 search={{ programId: p.id }}
-                className="text-primary underline-offset-4 hover:underline"
+                className="text-ink underline-offset-4 hover:underline"
               >
                 {formatNumber(p.pendingCount)}
               </Link>

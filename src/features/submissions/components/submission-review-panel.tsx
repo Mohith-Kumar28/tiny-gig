@@ -34,7 +34,7 @@ import { type DecisionVars, useReviewDecision } from './use-review-decision'
 function Section({ title, children, className }: { title: string; children: React.ReactNode; className?: string }) {
   return (
     <section className={cn('space-y-2.5', className)}>
-      <h3 className="text-xs font-medium tracking-wide text-muted-foreground uppercase">{title}</h3>
+      <h3 className="ledger-label">{title}</h3>
       {children}
     </section>
   )
@@ -116,13 +116,13 @@ export function SubmissionReviewPanel({
             {sub.revision > 1 ? <span className="text-xs text-muted-foreground">Revision {sub.revision}</span> : null}
             <SubmissionClientSelect submissionId={sub.id} value={sub.clientTagId} />
             <span className="ml-auto">
-              <Money paise={sub.payoutAmount} className="font-display text-lg" />
+              <Money paise={sub.payoutAmount} className="font-display text-xl font-bold" />
             </span>
           </div>
           <Link
             to="/admin/gigs/$gigId"
             params={{ gigId: gig.id }}
-            className="block font-display text-xl leading-tight font-semibold tracking-tight hover:underline"
+            className="block font-display text-xl leading-tight font-bold text-balance underline-offset-4 hover:underline"
           >
             {gig.title}
           </Link>
@@ -133,7 +133,12 @@ export function SubmissionReviewPanel({
             {data.account ? (
               <>
                 <span>·</span>
-                <a href={data.account.url} target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">
+                <a
+                  href={data.account.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-foreground hover:underline"
+                >
                   {accountLabel(data.account.platform, data.account.handle)}
                 </a>
                 {sub.level ? <span>{sub.level}</span> : null}
@@ -153,11 +158,11 @@ export function SubmissionReviewPanel({
         {isLiveCheck && sub.liveCheckAt ? (
           <div
             className={cn(
-              'flex gap-3 rounded-xl border p-3.5 text-sm',
-              liveDue ? 'border-info/40 bg-info/8' : 'border-border bg-muted/40',
+              'flex gap-3 rounded-lg border p-3.5 text-sm',
+              liveDue ? 'border-ink/40 bg-ink/8' : 'border-border bg-muted/40',
             )}
           >
-            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-info" />
+            <ShieldCheck className="mt-0.5 size-4 shrink-0 text-ink" />
             <div className="space-y-1">
               <p className="font-medium">
                 {liveDue ? 'Live check due: open the link and confirm it is still up' : 'Waiting for the live-hold period'}
@@ -171,13 +176,24 @@ export function SubmissionReviewPanel({
         ) : null}
 
         {onHold && sub.liveCheckAt ? (
-          <div className={cn('flex gap-3 rounded-xl border p-3.5 text-sm', holdOver ? 'border-warning/40 bg-warning/10' : 'border-border bg-muted/40')}>
+          <div
+            className={cn(
+              'flex gap-3 rounded-lg border p-3.5 text-sm',
+              holdOver ? 'border-warning/40 bg-warning/10' : 'border-border bg-muted/40',
+            )}
+          >
             <ShieldCheck className="mt-0.5 size-4 shrink-0 text-info" />
             <div className="space-y-1">
-              <p className="font-medium">{holdOver ? 'Hold over: waiting for the insights screenshot' : 'On hold: the post must stay live'}</p>
+              <p className="font-medium">
+                {holdOver ? 'Hold over: waiting for the insights screenshot' : 'On hold: the post must stay live'}
+              </p>
               <p className="text-muted-foreground">
                 Live until {formatDateTime(sub.liveCheckAt)}.{' '}
-                {!holdOver ? <Countdown to={sub.liveCheckAt} prefix="Hold ends" className="align-middle" /> : 'The worker has been reminded.'}
+                {!holdOver ? (
+                  <Countdown to={sub.liveCheckAt} prefix="Hold ends" className="align-middle" />
+                ) : (
+                  'The worker has been reminded.'
+                )}
               </p>
             </div>
           </div>
@@ -189,14 +205,16 @@ export function SubmissionReviewPanel({
           {sub.insightsKeys.length ? (
             <div className="space-y-1.5">
               <p className="text-xs font-medium text-muted-foreground">
-                Insights (uploaded {sub.insightsSubmittedAt ? formatDateTime(sub.insightsSubmittedAt) : ''}): check the post survived and the worker replied to comments
+                Insights (uploaded {sub.insightsSubmittedAt ? formatDateTime(sub.insightsSubmittedAt) : ''}): check the post
+                survived and the worker replied to comments
               </p>
               <ReviewScreenshots keys={sub.insightsKeys} />
             </div>
           ) : null}
           {sub.onBehalfBy ? (
             <p className="text-xs text-muted-foreground">
-              Added by {data.onBehalfName ?? 'staff'} on behalf of {data.account ? accountLabel(data.account.platform, data.account.handle) : 'the worker'}.
+              Added by {data.onBehalfName ?? 'staff'} on behalf of{' '}
+              {data.account ? accountLabel(data.account.platform, data.account.handle) : 'the worker'}.
             </p>
           ) : null}
           <OnBehalfActions
@@ -206,7 +224,7 @@ export function SubmissionReviewPanel({
             accountLabel={data.account ? accountLabel(data.account.platform, data.account.handle) : undefined}
           />
           {sub.workerNote ? (
-            <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm whitespace-pre-wrap">
+            <p className="rounded-md border bg-muted/50 px-3 py-2 text-sm whitespace-pre-wrap">
               <span className="text-muted-foreground">Worker note: </span>
               {sub.workerNote}
             </p>
@@ -215,14 +233,14 @@ export function SubmissionReviewPanel({
 
         {gig.reviewChecklist.length ? (
           <Section title="Review checklist">
-            <ul className="space-y-1.5 text-sm">
-              {gig.reviewChecklist.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-muted-foreground/50" />
+            <ol className="divide-y rounded-lg border bg-card text-sm">
+              {gig.reviewChecklist.map((item, i) => (
+                <li key={item} className="flex items-baseline gap-3 px-3.5 py-2">
+                  <span className="w-4 shrink-0 text-right text-xs text-muted-foreground tabular">{i + 1}</span>
                   {item}
                 </li>
               ))}
-            </ul>
+            </ol>
           </Section>
         ) : null}
 
@@ -230,7 +248,7 @@ export function SubmissionReviewPanel({
           <ReviewWorkerCard worker={worker} history={workerHistory} />
         </Section>
 
-        <details className="group rounded-xl border">
+        <details className="group rounded-lg border">
           <summary className="flex cursor-pointer list-none items-center justify-between px-3.5 py-2.5 text-sm font-medium">
             Gig brief
             <ChevronDown className="size-4 transition group-open:rotate-180" />
@@ -274,23 +292,23 @@ export function SubmissionReviewPanel({
       </div>
 
       {canDecide ? (
-        <footer className="flex flex-wrap items-center gap-2 border-t bg-background/95 p-3 backdrop-blur">
+        <footer className="flex flex-wrap items-center gap-1.5 border-t bg-card px-3 py-2.5 lg:flex-nowrap xl:gap-2">
           <Button
             variant="outline"
             onClick={() => setDialog('reject')}
             disabled={decide.isPending}
-            className="flex-1 sm:flex-none"
+            className="flex-1 hover:border-destructive/40 hover:text-destructive sm:flex-none lg:has-[>svg]:px-2 xl:has-[>svg]:px-3"
           >
-            <X /> {isLiveCheck || onHold ? 'Removed: reject' : 'Reject'} <Kbd className="ml-1 hidden sm:inline-flex">R</Kbd>
+            <X /> {isLiveCheck || onHold ? 'Removed: reject' : 'Reject'} <Kbd className="ml-1 hidden xl:inline-flex">R</Kbd>
           </Button>
           {!isLiveCheck ? (
             <Button
               variant="outline"
               onClick={() => setDialog('changes')}
               disabled={decide.isPending}
-              className="flex-1 sm:flex-none"
+              className="flex-1 sm:flex-none lg:has-[>svg]:px-2 xl:has-[>svg]:px-3"
             >
-              <RotateCcw /> Changes <Kbd className="ml-1 hidden sm:inline-flex">C</Kbd>
+              <RotateCcw /> Changes <Kbd className="ml-1 hidden xl:inline-flex">C</Kbd>
             </Button>
           ) : null}
           <ButtonGroup className="ml-auto w-full sm:w-auto">
@@ -303,9 +321,9 @@ export function SubmissionReviewPanel({
                   : isLiveCheck
                     ? 'Still live: approve'
                     : gig.liveHoldHours > 0
-                      ? 'Approve → live check'
+                      ? 'Approve, start live check'
                       : 'Approve'}
-              <Kbd className="ml-1 hidden bg-primary-foreground/20 text-primary-foreground sm:inline-flex">A</Kbd>
+              <Kbd className="ml-1 hidden bg-primary-foreground/20 text-primary-foreground xl:inline-flex">A</Kbd>
             </Button>
             {!isLiveCheck && !onHold && !twoStepReview && gig.liveHoldHours > 0 ? (
               <DropdownMenu>
@@ -324,7 +342,7 @@ export function SubmissionReviewPanel({
           </ButtonGroup>
         </footer>
       ) : (
-        <footer className="flex items-center gap-2 border-t p-3 text-sm text-muted-foreground">
+        <footer className="flex items-center gap-2 border-t bg-card p-3 text-sm text-muted-foreground">
           <Clock className="size-4" />
           {sub.status === 'claimed'
             ? 'Waiting for the worker to submit.'
@@ -374,10 +392,17 @@ export function SubmissionReviewPanel({
         extra={
           data.account ? (
             <div className="flex items-start gap-2 rounded-lg border p-3 text-sm">
-              <Checkbox id={`removed-${id}`} checked={removed} onCheckedChange={(v) => setRemoved(v === true)} className="mt-0.5" />
+              <Checkbox
+                id={`removed-${id}`}
+                checked={removed}
+                onCheckedChange={(v) => setRemoved(v === true)}
+                className="mt-0.5"
+              />
               <label htmlFor={`removed-${id}`}>
                 The post was removed (by the worker, a moderator or Reddit).{' '}
-                <span className="text-muted-foreground">Marks {accountLabel(data.account.platform, data.account.handle)} as warned.</span>
+                <span className="text-muted-foreground">
+                  Marks {accountLabel(data.account.platform, data.account.handle)} as warned.
+                </span>
               </label>
             </div>
           ) : null

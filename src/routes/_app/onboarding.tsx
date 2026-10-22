@@ -20,9 +20,18 @@ function OnboardingPage() {
   const { viewer } = Route.useRouteContext()
   return (
     <SimpleShell email={viewer.user.email}>
-      <div className="mb-8 space-y-2">
-        <p className="font-mono text-xs tracking-wider text-primary uppercase">Step 1 of 2 · Apply</p>
-        <h1 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">Tell us about yourself</h1>
+      <div className="mb-8 space-y-3">
+        <ol className="grid max-w-sm grid-cols-2 gap-1.5 text-xs" aria-label="Getting started">
+          <li aria-current="step">
+            <span aria-hidden className="block h-[3px] rounded-[1px] bg-ink" />
+            <span className="mt-1.5 block font-semibold text-ink">1 Apply</span>
+          </li>
+          <li>
+            <span aria-hidden className="block h-[3px] rounded-[1px] bg-border" />
+            <span className="mt-1.5 block text-muted-foreground">2 Get approved</span>
+          </li>
+        </ol>
+        <h1 className="font-display text-[1.75rem] leading-tight font-bold sm:text-4xl">Tell us about yourself</h1>
         <p className="max-w-xl text-muted-foreground">
           {defaults.status === 'rejected'
             ? 'Update your details and re-apply. Our team will take another look.'

@@ -19,37 +19,59 @@ export const Route = createFileRoute('/login')({
   component: LoginPage,
 })
 
+const POINTS = [
+  'Raise your hand for Reddit, X, LinkedIn and Threads gigs',
+  'Submit a link, get reviewed by a real person',
+  'Approved earnings go straight to your UPI ID',
+]
+
 function LoginPage() {
   const config = Route.useLoaderData()
   const { redirect: redirectTo } = Route.useSearch()
   return (
-    <div className="grid min-h-dvh lg:grid-cols-[1fr_minmax(0,560px)]">
-      <aside className="relative hidden overflow-hidden bg-foreground p-10 text-background lg:flex lg:flex-col lg:justify-between dark:bg-card dark:text-foreground">
-        <Logo className="text-background dark:text-foreground" />
-        <div className="max-w-md space-y-5">
-          <p className="font-display text-4xl leading-[1.05] font-semibold tracking-tight">
-            Small tasks. <span className="text-primary">Real UPI payouts.</span>
-          </p>
-          <ul className="space-y-2.5 text-sm opacity-80">
-            <li>• Get picked for Reddit, X, LinkedIn & Threads gigs</li>
-            <li>• Submit a link, get reviewed by a real person</li>
-            <li>• Approved earnings go straight to your UPI ID</li>
-          </ul>
+    <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
+      {/* Desktop: the red cloth cover of the khata. */}
+      <aside className="relative hidden flex-col justify-between bg-cloth p-10 text-cloth-foreground lg:flex">
+        <Logo inverse />
+        <div className="max-w-md space-y-6">
+          <p className="font-display text-[2.6rem] leading-[1.05] font-extrabold">Small tasks. Real UPI payouts.</p>
+          <ol className="border-t border-cloth-foreground/20 text-sm">
+            {POINTS.map((p, i) => (
+              <li key={p} className="grid grid-cols-[2rem_1fr] border-b border-cloth-foreground/20 py-3">
+                <span className="font-display font-extrabold tabular">{i + 1}</span>
+                <span className="text-cloth-foreground/85">{p}</span>
+              </li>
+            ))}
+          </ol>
         </div>
-        <p className="text-xs opacity-60">Applications are reviewed by hand, usually within 24–48 hours.</p>
+        <p className="text-xs text-cloth-foreground/65">Applications are reviewed by hand, usually within 24 to 48 hours.</p>
       </aside>
-      <main className="flex flex-col px-6 py-8 sm:px-10">
-        <div className="lg:hidden">
-          <Logo />
-        </div>
-        <div className="flex flex-1 items-center justify-center py-10">
-          <LoginCard google={config.google} devEmails={config.devEmails} redirectTo={redirectTo} />
-        </div>
-        <p className="text-center text-xs text-muted-foreground">
-          By continuing you agree to our <Link to="/terms" className="underline underline-offset-4">Terms</Link> and{' '}
-          <Link to="/privacy" className="underline underline-offset-4">Privacy Policy</Link>.
-        </p>
-      </main>
+
+      <div className="flex min-h-dvh flex-col">
+        {/* Phone: the cloth band, as on the public site. */}
+        <header className="bg-cloth px-5 pt-3.5 pb-5 text-cloth-foreground lg:hidden">
+          <Logo inverse />
+          <p className="mt-4 font-display text-[1.35rem] leading-tight font-extrabold">Small tasks. Real UPI payouts.</p>
+        </header>
+        <main className="ledger-paper flex flex-1 flex-col px-4 py-8 [--line:2.25rem] [--margin:0.85rem] sm:px-10 sm:[--margin:1.6rem]">
+          <div className="flex flex-1 items-start justify-center sm:items-center">
+            <div className="w-full max-w-sm rounded-lg border bg-card p-5 sm:p-6">
+              <LoginCard google={config.google} devEmails={config.devEmails} redirectTo={redirectTo} />
+            </div>
+          </div>
+          <p className="mt-8 text-center text-xs text-muted-foreground">
+            By continuing you agree to our{' '}
+            <Link to="/terms" className="underline underline-offset-4 hover:text-ink">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link to="/privacy" className="underline underline-offset-4 hover:text-ink">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </main>
+      </div>
     </div>
   )
 }

@@ -16,7 +16,7 @@ export function PayAmount({ pay, className }: { pay: Pay; className?: string }) 
   if (pay.min === pay.max) return <Money paise={pay.min} className={className} />
   return (
     <span className={cn('tabular whitespace-nowrap', className)}>
-      {formatMoney(pay.min)}–{formatMoney(pay.max)}
+      {formatMoney(pay.min)}-{formatMoney(pay.max)}
     </span>
   )
 }

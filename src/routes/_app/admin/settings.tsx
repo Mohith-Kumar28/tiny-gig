@@ -24,11 +24,12 @@ export const Route = createFileRoute('/_app/admin/settings')({
 function SettingsPage() {
   const { data: settings } = useSuspenseQuery(settingsQuery())
   return (
-    <div className="max-w-4xl space-y-10">
-      <div className="space-y-6">
-        <PageHeader title="Settings" />
-        <SettingsForm initial={settings} />
-      </div>
+    <div className="max-w-5xl space-y-8">
+      <PageHeader
+        title="Settings"
+        description="How TinyGig runs: alerts, cooldowns, pay by level, clients, and who can use this console."
+      />
+      <SettingsForm initial={settings} />
       <ClientsManager />
       <AdminTeam />
       <ReviewTemplatesManager />

@@ -39,19 +39,31 @@ export const FAQ: FaqItem[] = [
     id: 'proof',
     question: 'What do I submit as proof?',
     answer:
-      'A link to your live post, comment or reply, plus optional screenshots. The link must point to the work you did for that gig, posted from the account you applied with.',
+      'Two things, at two times. First, the link to your post or comment, posted from the account that was selected for the gig. Then, once the live hold is over, a screenshot of the post’s insights.',
   },
   {
     id: 'review',
     question: 'What happens after I submit?',
     answer:
-      'A reviewer checks your work against the brief. They can approve it, request changes with comments (you fix it and resubmit), or reject it if it does not follow the brief. Rejected work is not paid.',
+      'A reviewer checks your link and insights against the brief. They approve it, ask for changes with a comment (you fix it and send it again), or reject it if it does not follow the brief. Approved work goes into your balance. Rejected work is not paid.',
   },
   {
     id: 'live-hold',
     question: 'What is the live hold?',
     answer:
       'After you submit the link, your post or comment must stay live for the hold period shown on the gig, usually 24 hours. Then you upload a screenshot of the post’s insights (Reddit shows them under the post). If it is removed by you, a moderator or the platform during the hold, it is not paid. Replying to comments on your own post is part of the task.',
+  },
+  {
+    id: 'cooldowns',
+    question: 'Why is a gig locked for me?',
+    answer:
+      'To keep accounts healthy, every gig checks a few cooldowns: one gig a day per person, no repeat in the same community within a week, a limit on how many open tasks you hold, and limits on work for the same client per account. A locked gig always says which rule applies and the date it opens again.',
+  },
+  {
+    id: 'account-safety',
+    question: 'Can I lose my Reddit account doing gigs?',
+    answer:
+      'Any platform can warn, restrict or ban any account, including while it does gigs. You run your own accounts and they are your responsibility: TinyGig is not liable if one is suspended, shadowbanned or lost. Writing in your own words, following the brief and respecting each community’s rules is the best way to keep an account healthy.',
   },
   {
     id: 'pay-levels',
@@ -63,7 +75,7 @@ export const FAQ: FaqItem[] = [
     id: 'payouts',
     question: 'How and when do I get paid?',
     answer:
-      'Approved earnings are added to your TinyGig balance. Balances are paid every week, with no minimum, directly to the UPI ID on your profile, and you get an email with the UTR reference for each payout so you can match it in your bank or UPI app.',
+      'Approved earnings are added to your TinyGig balance. Every Monday, the whole balance goes into that week’s payout, with no minimum, and our team sends it to the UPI ID on your profile. You get an email with the UTR reference for each payout so you can match it in your bank or UPI app.',
   },
   {
     id: 'earnings',

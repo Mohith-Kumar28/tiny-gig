@@ -192,7 +192,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
         />
 
         <div className="flex flex-col-reverse items-stretch gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">We review every application by hand, usually within 24–48 hours.</p>
+          <p className="text-xs text-muted-foreground">We review every application by hand, usually within 24 to 48 hours.</p>
           <Button type="submit" size="lg" disabled={submit.isPending}>
             {submit.isPending ? <Spinner /> : null}
             Submit application

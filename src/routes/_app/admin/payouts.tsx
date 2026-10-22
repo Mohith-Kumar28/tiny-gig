@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { CheckCheck, Clock, Download, HandCoins, Wallet } from 'lucide-react'
+import { CheckCheck, Clock, Download, HandCoins } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { z } from 'zod'
 import { DataTable } from '@/components/data-table/data-table'
@@ -9,7 +9,7 @@ import { useTableSearch } from '@/components/data-table/use-table-search'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
 import { PageHeader } from '@/components/shared/page-header'
-import { StatCard } from '@/components/shared/stat-card'
+import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CreatePayoutsDialog } from '@/features/payouts/components/create-payouts-dialog'
@@ -65,11 +65,15 @@ function PayoutsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Payouts"
+        description="Workers are paid weekly over UPI. Lock balances into payouts on To pay, send the money, then mark each payout paid with its UTR."
       />
       <Tabs value={tab} onValueChange={(v) => navigate({ search: v === 'to_pay' ? {} : { tab: v as Tab }, replace: true })}>
         <TabsList>
           <TabsTrigger value="to_pay">
-            To pay{balances?.length ? <span className="ml-1 text-xs text-muted-foreground tabular">{balances.length}</span> : null}
+            To pay
+            {balances?.length ? (
+              <span className="ml-1 rounded-[3px] bg-muted px-1 text-xs text-muted-foreground tabular">{balances.length}</span>
+            ) : null}
           </TabsTrigger>
           <TabsTrigger value="payouts">Payouts</TabsTrigger>
         </TabsList>
@@ -127,10 +131,20 @@ function ToPay({ rows, total }: { rows: BalanceRow[] | undefined; total: number 
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatCard label="Owed to workers" value={<Money paise={total} />} icon={Wallet} tone={total ? 'attention' : 'default'} />
-        <StatCard label="Workers to pay" value={formatNumber(rows?.length ?? 0)} icon={HandCoins} />
-      </div>
+      <StatGrid className="grid-cols-2 lg:grid-cols-4">
+        <StatCard label="Owed to workers" value={<Money paise={total} className="font-bold" />} hint="Approved, not yet in a payout" />
+        <StatCard label="Workers to pay" value={formatNumber(rows?.length ?? 0)} />
+        <StatCard
+          label="From gigs"
+          value={<Money paise={(rows ?? []).reduce((s, r) => s + r.gigAmount, 0)} className="font-bold" />}
+          hint={`${formatNumber((rows ?? []).reduce((s, r) => s + r.gigCount, 0))} approved gigs`}
+        />
+        <StatCard
+          label="From referrals"
+          value={<Money paise={(rows ?? []).reduce((s, r) => s + r.rewardAmount, 0)} className="font-bold" />}
+          hint={`${formatNumber((rows ?? []).reduce((s, r) => s + r.rewardCount, 0))} rewards`}
+        />
+      </StatGrid>
       <DataTable<BalanceRow>
         columns={balanceColumns}
         data={data}
@@ -148,12 +162,19 @@ function ToPay({ rows, total }: { rows: BalanceRow[] | undefined; total: number 
           ) : null
         }
         empty={
-          <EmptyState
-            icon={CheckCheck}
-            title="Nothing to pay"
-            description="Approved earnings will show up here."
-            className="border-0 bg-transparent"
-          />
+          search.q ? (
+            <EmptyState
+              title="No one matches"
+              description="No worker with money owed fits this search. Press Reset to see everyone."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="Nothing to pay"
+              description="Everyone is settled. When you approve gigs or referral rewards, the money owed lands here, one row per worker."
+              className="border-0 bg-transparent"
+            />
+          )
         }
         bulkActions={(sel, clear) => (
           <Button size="sm" onClick={() => setCreating({ rows: sel, clear })}>
@@ -191,15 +212,24 @@ function PayoutList() {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <StatGrid className="grid-cols-2 lg:grid-cols-3">
+        <StatCard label="Not paid yet" value={<Money paise={data?.sums.pending ?? 0} className="font-bold" />} hint="Pending and processing" />
         <StatCard
-          label="Not paid yet"
-          value={<Money paise={data?.sums.pending ?? 0} />}
-          icon={Clock}
-          tone={data?.sums.pending ? 'attention' : 'default'}
+          label="Paid to date"
+          value={
+            <span className="ledger-total">
+              <Money paise={data?.sums.paid ?? 0} className="font-bold" />
+            </span>
+          }
+          tone="success"
         />
-        <StatCard label="Paid to date" value={<Money paise={data?.sums.paid ?? 0} />} icon={CheckCheck} tone="success" />
-      </div>
+        <StatCard
+          label="In this list"
+          value={data ? formatNumber(data.total) : '—'}
+          hint="Payouts matching the filters below"
+          className="col-span-2 lg:col-span-1"
+        />
+      </StatGrid>
       <DataTable<PayoutRow>
         columns={payoutColumns}
         data={data}
@@ -226,7 +256,17 @@ function PayoutList() {
             <Download /> Export page
           </Button>
         }
-        empty={<EmptyState icon={Wallet} title="No payouts here" description="Create payouts from the To pay tab." className="border-0 bg-transparent" />}
+        empty={
+          <EmptyState
+            title="No payouts here"
+            description={
+              search.status || search.q
+                ? 'Nothing fits these filters. Press Reset to see payouts still to be paid.'
+                : 'Nothing is waiting to be paid. Create payouts from the To pay tab, then pay them over UPI.'
+            }
+            className="border-0 bg-transparent"
+          />
+        }
         bulkActions={(rows, clear) => {
           const unpaid = rows.filter((r) => r.status !== 'paid' && r.status !== 'failed')
           return (

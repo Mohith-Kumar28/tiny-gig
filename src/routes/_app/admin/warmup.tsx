@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { Archive, ExternalLink, Plus, Sprout } from 'lucide-react'
+import { Archive, ChevronRight, ExternalLink, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
@@ -38,44 +38,65 @@ function WarmupAdminPage() {
         }
       />
       {data.length ? (
-        <ul className="space-y-3">
+        <ul className="divide-y rounded-lg border bg-card">
           {data.map((it) => (
-            <li key={it.id} className={cn('rounded-xl border bg-card p-4', it.archivedAt && 'opacity-60')}>
+            <li key={it.id} className={cn('p-4', it.archivedAt && 'bg-muted/30 text-muted-foreground')}>
               <div className="flex flex-wrap items-start gap-3">
                 <div className="min-w-0 flex-1 space-y-1">
-                  <p className="font-medium">{it.title}</p>
+                  <p className="font-display font-bold text-foreground">
+                    {it.title}
+                    {it.archivedAt ? <span className="ml-2 align-middle font-sans text-xs font-normal text-muted-foreground">Archived</span> : null}
+                  </p>
                   <p className="text-xs text-muted-foreground">
                     {describeAudience(it.audience)} · pushed <RelativeTime date={it.createdAt} />
-                    {it.archivedAt ? ' · archived' : ''}
                   </p>
                 </div>
-                <div className="w-40 space-y-1 text-right">
+                <div className="w-40 space-y-1.5 text-right">
                   <p className="text-xs text-muted-foreground tabular">
-                    {it.doneCount} of {it.audienceSize} done
+                    <span className="font-display text-sm font-bold text-foreground">{it.doneCount}</span> of {it.audienceSize} say done
                   </p>
-                  <Progress value={it.audienceSize ? (it.doneCount / it.audienceSize) * 100 : 0} className="h-1.5" />
+                  <Progress
+                    value={it.audienceSize ? (it.doneCount / it.audienceSize) * 100 : 0}
+                    className="h-1 rounded-sm bg-success/15 *:data-[slot=progress-indicator]:bg-success"
+                  />
                 </div>
                 {!it.archivedAt ? (
-                  <Button variant="ghost" size="icon" className="size-8" aria-label="Archive" onClick={() => archive.mutate(it.id)}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8 text-muted-foreground"
+                    aria-label="Archive"
+                    title="Archive: hide it from workers"
+                    disabled={archive.isPending}
+                    onClick={() => archive.mutate(it.id)}
+                  >
                     <Archive />
                   </Button>
-                ) : null}
+                ) : (
+                  <span className="size-8" />
+                )}
               </div>
               <p className="mt-2 text-sm whitespace-pre-wrap text-muted-foreground">{it.instructions}</p>
               {it.links.length ? (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {it.links.map((l) => (
-                    <a key={l} href={l} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+                    <a key={l} href={l} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-[3px] border px-1.5 py-0.5 text-xs text-ink transition-colors duration-150 hover:border-ink/40 hover:bg-ink/[0.04]">
                       {l.replace(/^https?:\/\/(www\.)?reddit\.com\//, '')} <ExternalLink className="size-3" />
                     </a>
                   ))}
                 </div>
               ) : null}
-              <button type="button" className="mt-3 text-xs font-medium text-muted-foreground hover:text-foreground" onClick={() => setExpanded(expanded === it.id ? null : it.id)}>
-                {expanded === it.id ? 'Hide people' : 'Show people'}
+              <button
+                type="button"
+                aria-expanded={expanded === it.id}
+                className="mt-3 inline-flex items-center gap-1 rounded-md text-xs font-medium text-muted-foreground transition-colors duration-150 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring"
+                onClick={() => setExpanded(expanded === it.id ? null : it.id)}
+              >
+                <ChevronRight className={cn('size-3.5 transition-transform duration-200', expanded === it.id && 'rotate-90')} />
+                {expanded === it.id ? 'Hide people' : `Show people (${it.people.length})`}
               </button>
               {expanded === it.id ? (
-                <ul className="mt-2 divide-y rounded-lg border text-sm">
+                <ul className="mt-2 divide-y rounded-md border bg-background text-sm">
                   {it.people.map((p) => (
                     <li key={p.id} className="flex items-center justify-between px-3 py-1.5">
                       <Link to="/admin/workers/$userId" params={{ userId: p.id }} className="hover:underline">
@@ -97,9 +118,8 @@ function WarmupAdminPage() {
         </ul>
       ) : (
         <EmptyState
-          icon={Sprout}
           title="No warm-up tasks yet"
-          description="Push subreddits to join to new or low-karma accounts."
+          description="Push a warm-up to new or low-karma accounts: which subreddits to join and how to behave there. Workers mark it done themselves."
           action={
             <Button onClick={() => setOpen(true)}>
               <Plus /> Push warm-up

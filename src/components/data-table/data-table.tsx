@@ -10,6 +10,7 @@ import { X } from 'lucide-react'
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import type { Paginated } from '@/lib/table-query'
 import { cn } from '@/lib/utils'
@@ -115,7 +116,7 @@ export function DataTable<TData>({
         <DataTableSearch value={search.q} onChange={(q) => onSearchChange({ q })} placeholder={searchPlaceholder} />
         {filters}
         {hasActiveFilters && onResetFilters ? (
-          <Button variant="ghost" size="sm" className="h-8 px-2" onClick={onResetFilters}>
+          <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground" onClick={onResetFilters}>
             Reset
             <X />
           </Button>
@@ -126,25 +127,35 @@ export function DataTable<TData>({
         </div>
       </div>
 
-      <div className={cn('overflow-hidden rounded-xl border bg-card transition-opacity', isFetching && 'opacity-70')}>
-        <Table>
-          <TableHeader className="bg-muted/40">
+      <div className={cn('overflow-hidden rounded-lg border bg-card transition-opacity duration-200', isFetching && 'opacity-70')}>
+        <Table className="tabular">
+          <TableHeader className="bg-muted/45 [&_tr]:border-b-foreground/12">
             {table.getHeaderGroups().map((hg) => (
               <TableRow key={hg.id} className="hover:bg-transparent">
-                {hg.headers.map((h) => (
-                  <TableHead key={h.id} className={cn('h-9 text-xs font-medium', h.column.columnDef.meta?.headerClassName)}>
-                    {h.isPlaceholder ? null : typeof h.column.columnDef.header === 'string' ? (
-                      <DataTableColumnHeader
-                        column={h.column}
-                        title={h.column.columnDef.header}
-                        sort={search.sort}
-                        onSearchChange={onSearchChange}
-                      />
-                    ) : (
-                      flexRender(h.column.columnDef.header, h.getContext())
-                    )}
-                  </TableHead>
-                ))}
+                {hg.headers.map((h) => {
+                  const headerClassName = h.column.columnDef.meta?.headerClassName
+                  return (
+                    <TableHead
+                      key={h.id}
+                      className={cn(
+                        'ledger-label h-9 px-2.5 font-semibold text-muted-foreground first:pl-4 last:pr-3',
+                        headerClassName,
+                      )}
+                    >
+                      {h.isPlaceholder ? null : typeof h.column.columnDef.header === 'string' ? (
+                        <DataTableColumnHeader
+                          column={h.column}
+                          title={h.column.columnDef.header}
+                          sort={search.sort}
+                          onSearchChange={onSearchChange}
+                          align={headerClassName?.includes('text-right') ? 'right' : 'left'}
+                        />
+                      ) : (
+                        flexRender(h.column.columnDef.header, h.getContext())
+                      )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
           </TableHeader>
@@ -153,23 +164,37 @@ export function DataTable<TData>({
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
-                  data-state={row.getIsSelected() ? 'selected' : activeRowId === row.id ? 'selected' : undefined}
+                  data-state={row.getIsSelected() || activeRowId === row.id ? 'selected' : undefined}
+                  data-active={activeRowId === row.id ? '' : undefined}
                   onClick={onRowClick ? () => onRowClick(row.original) : undefined}
-                  className={cn(onRowClick && 'cursor-pointer')}
+                  className={cn(
+                    'transition-colors duration-150 hover:bg-muted/45 data-[state=selected]:bg-ink/[0.05] data-[active]:bg-ink/[0.08]',
+                    onRowClick && 'cursor-pointer',
+                  )}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id} className={cn('py-2.5', cell.column.columnDef.meta?.className)}>
+                    <TableCell key={cell.id} className={cn('h-12 px-2.5 py-2 first:pl-4 last:pr-3', cell.column.columnDef.meta?.className)}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
-            ) : (
+            ) : data ? (
               <TableRow className="hover:bg-transparent">
-                <TableCell colSpan={allColumns.length} className="h-40 text-center text-sm text-muted-foreground">
-                  {data ? (empty ?? 'No results.') : 'Loading…'}
+                <TableCell colSpan={allColumns.length} className="h-40 text-center text-sm whitespace-normal text-muted-foreground">
+                  {empty ?? 'No results.'}
                 </TableCell>
               </TableRow>
+            ) : (
+              Array.from({ length: 6 }, (_, i) => (
+                <TableRow key={i} className="hover:bg-transparent" aria-hidden>
+                  {table.getVisibleLeafColumns().map((c) => (
+                    <TableCell key={c.id} className="h-12 px-2.5 first:pl-4 last:pr-3">
+                      <Skeleton className={cn('h-3.5', c.id === '__select' ? 'w-4' : 'w-full max-w-28')} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
             )}
           </TableBody>
         </Table>
@@ -188,7 +213,7 @@ export function DataTable<TData>({
 
       {bulkActions && selected.length > 0 ? (
         <div className="fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
-          <div className="flex items-center gap-2 rounded-xl border bg-popover px-3 py-2 text-popover-foreground shadow-lg animate-in fade-in slide-in-from-bottom-2">
+          <div className="flex items-center gap-2 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg animate-in fade-in slide-in-from-bottom-2">
             <span className="px-1 text-sm font-medium tabular">{selected.length} selected</span>
             <div className="h-5 w-px bg-border" />
             {bulkActions(selected, clear)}

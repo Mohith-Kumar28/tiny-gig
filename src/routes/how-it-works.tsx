@@ -5,7 +5,7 @@ import { FinalCta } from '@/features/marketing/final-cta'
 import { JsonLd } from '@/features/marketing/json-ld'
 import { MarketingLayout } from '@/features/marketing/marketing-layout'
 import { PageIntro } from '@/features/marketing/page-intro'
-import { PayoutsSection } from '@/features/marketing/payouts-section'
+import { RulesSection } from '@/features/marketing/rules-section'
 import { pageHead } from '@/features/marketing/seo'
 import { STEPS } from '@/features/marketing/steps-data'
 import { howToJsonLd } from '@/features/marketing/structured-data'
@@ -28,27 +28,27 @@ function HowItWorksPage() {
       <JsonLd data={howToJsonLd()} />
       <PageIntro
         title="How TinyGig works"
-        lead="Four steps from sign-up to getting paid. Every application and every submission is checked by a person on our team."
+        lead="Four steps from sign-up to getting paid. A person on our team checks every application and every piece of work."
       />
       <Container className="py-14 sm:py-20">
-        <ol className="space-y-6">
+        <ol className="border-t-2 border-foreground">
           {STEPS.map((step, i) => (
             <li
               key={step.id}
               id={step.id}
-              className="mk-reveal grid scroll-mt-24 gap-6 rounded-3xl border bg-card p-6 sm:p-9 md:grid-cols-[8rem_1fr_1.3fr] md:gap-10"
+              className="grid scroll-mt-24 gap-x-10 gap-y-4 border-b py-10 md:grid-cols-[4rem_minmax(0,1fr)_minmax(0,1.3fr)]"
             >
-              <span aria-hidden className="font-display text-7xl leading-none font-bold text-primary tabular">
+              <span aria-hidden className="font-display text-5xl leading-none font-extrabold text-primary tabular">
                 {i + 1}
               </span>
               <div>
-                <h2 className="font-display text-3xl font-bold tracking-tight">{step.title}</h2>
+                <h2 className="font-display text-3xl leading-tight font-extrabold">{step.title}</h2>
                 <p className="mt-3 leading-relaxed text-muted-foreground">{step.summary}</p>
               </div>
               <ul className="space-y-3">
                 {step.details.map((d) => (
-                  <li key={d} className="flex gap-3 leading-relaxed">
-                    <Check className="mt-1 size-4 shrink-0 text-primary" aria-hidden />
+                  <li key={d} className="grid grid-cols-[1.25rem_1fr] gap-2 leading-relaxed">
+                    <Check className="mt-1 size-4 text-success" strokeWidth={2.5} aria-hidden />
                     <span>{d}</span>
                   </li>
                 ))}
@@ -57,9 +57,7 @@ function HowItWorksPage() {
           ))}
         </ol>
       </Container>
-      <div className="border-t">
-        <PayoutsSection />
-      </div>
+      <RulesSection />
       <FinalCta />
     </MarketingLayout>
   )

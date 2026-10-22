@@ -109,7 +109,12 @@ export function ProfileForm({ profile }: { profile: Profile }) {
               <FormItem className="sm:col-span-2">
                 <FormLabel>Short bio (optional)</FormLabel>
                 <FormControl>
-                  <Textarea rows={3} maxLength={500} placeholder="Topics you know well, communities you're active in…" {...field} />
+                  <Textarea
+                    rows={3}
+                    maxLength={500}
+                    placeholder="Topics you know well, communities you're active in…"
+                    {...field}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -119,12 +124,14 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
         <Link
           to="/w/accounts"
-          className="flex items-center gap-3 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40"
+          className="flex items-center gap-3 rounded-lg border bg-card p-4 transition-colors duration-150 hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
         >
           <AtSign className="size-5 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">Reddit and other social accounts</p>
-            <p className="text-xs text-muted-foreground">Add accounts, update karma and see each account’s pay level on My accounts.</p>
+            <p className="text-xs text-muted-foreground">
+              Add accounts, update karma and see each account’s pay level on My accounts.
+            </p>
           </div>
           <ChevronRight className="size-4 text-muted-foreground" />
         </Link>
@@ -155,48 +162,52 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
         <FormSection title="Notifications">
           <PushToggle className="sm:col-span-2" />
-          <FormField
-            control={form.control}
-            name="emailPrefs.newGigs"
-            render={({ field }) => (
-              <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
-                <div className="space-y-0.5">
-                  <FormLabel>New gig alerts</FormLabel>
-                  
-                </div>
-                <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="emailPrefs.reminders"
-            render={({ field }) => (
-              <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3 sm:col-span-2">
-                <div className="space-y-0.5">
-                  <FormLabel>Deadline reminders</FormLabel>
-                  
-                </div>
-                <FormControl>
-                  <Switch checked={field.value} onCheckedChange={field.onChange} />
-                </FormControl>
-              </FormItem>
-            )}
-          />
+          <div className="divide-y overflow-hidden rounded-lg border bg-card sm:col-span-2">
+            <FormField
+              control={form.control}
+              name="emailPrefs.newGigs"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>New gig emails</FormLabel>
+                    <p className="text-xs text-muted-foreground">An email when a gig you can do goes live.</p>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="emailPrefs.reminders"
+              render={({ field }) => (
+                <FormItem className="flex items-center justify-between gap-4 px-4 py-3">
+                  <div className="space-y-0.5">
+                    <FormLabel>Deadline reminders</FormLabel>
+                    <p className="text-xs text-muted-foreground">A nudge before a task you were picked for is due.</p>
+                  </div>
+                  <FormControl>
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+          </div>
         </FormSection>
 
         <FormSection title="Referral code">
-          <div className="flex items-center gap-2 rounded-lg border bg-muted/40 p-2 pl-3 sm:col-span-2">
+          <div className="flex items-center gap-2 rounded-md border bg-card py-1.5 pr-1.5 pl-3 sm:col-span-2">
             <span className="flex-1 font-mono text-sm font-semibold">{profile.ownReferralCode}</span>
-            <span className="text-xs text-muted-foreground">{profile.referredCount} joined</span>
+            <span className="text-xs text-muted-foreground tabular">{profile.referredCount} joined</span>
             <CopyButton value={profile.referralLink} label="Copy link" size="sm" />
           </div>
         </FormSection>
 
-        <div className="sticky bottom-[var(--mobile-nav-offset,0px)] z-10 -mx-3 flex items-center justify-end gap-3 border-t bg-background/95 px-3 py-3 backdrop-blur sm:-mx-6 sm:px-6">
-          {form.formState.isDirty ? <span className="mr-auto text-xs text-muted-foreground">You have unsaved changes</span> : null}
+        <div className="sticky bottom-[var(--mobile-nav-offset,0px)] z-10 -mx-4 flex items-center justify-end gap-3 border-t bg-background/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+          {form.formState.isDirty ? (
+            <span className="mr-auto text-xs text-muted-foreground">You have unsaved changes</span>
+          ) : null}
           <Button type="button" variant="ghost" disabled={!form.formState.isDirty || save.isPending} onClick={() => form.reset()}>
             Discard
           </Button>

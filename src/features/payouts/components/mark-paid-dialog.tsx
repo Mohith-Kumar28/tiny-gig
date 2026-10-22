@@ -83,11 +83,11 @@ export function MarkPaidDialog({
         </DialogHeader>
         <div className="max-h-[55vh] overflow-y-auto rounded-lg border">
           <table className="w-full text-sm">
-            <thead className="sticky top-0 bg-muted/80 text-xs text-muted-foreground backdrop-blur">
+            <thead className="sticky top-0 border-b bg-muted/90 backdrop-blur">
               <tr>
-                <th className="px-3 py-2 text-left font-medium">Worker</th>
-                <th className="px-3 py-2 text-right font-medium">Amount</th>
-                <th className="px-3 py-2 text-left font-medium">UTR (optional)</th>
+                <th className="ledger-label px-3 py-2 text-left">Worker</th>
+                <th className="ledger-label px-3 py-2 text-right">Amount</th>
+                <th className="ledger-label px-3 py-2 text-left">UTR (optional)</th>
               </tr>
             </thead>
             <tbody className="divide-y">
@@ -102,7 +102,7 @@ export function MarkPaidDialog({
                   </td>
                   <td className="px-3 py-1.5 text-right whitespace-nowrap">
                     <span className="inline-flex items-center gap-0.5">
-                      <Money paise={p.amount} />
+                      <Money paise={p.amount} className="font-display font-bold" />
                       <QuickCopy value={String(p.amount / 100)} />
                     </span>
                   </td>
@@ -127,13 +127,24 @@ export function MarkPaidDialog({
                         }
                       }}
                       placeholder="e.g. 412345678901"
-                      className="h-8 font-mono text-xs"
+                      className="h-8 font-mono text-xs tracking-wide"
                       aria-label={`UTR for ${p.workerName}`}
                     />
                   </td>
                 </tr>
               ))}
             </tbody>
+            {list.length > 1 ? (
+              <tfoot className="border-t">
+                <tr>
+                  <td className="ledger-label px-3 py-2">Total</td>
+                  <td className="px-3 py-2 pr-9 text-right">
+                    <Money paise={total} className="font-display font-bold" />
+                  </td>
+                  <td />
+                </tr>
+              </tfoot>
+            ) : null}
           </table>
         </div>
         <DialogFooter className="items-center sm:justify-between">

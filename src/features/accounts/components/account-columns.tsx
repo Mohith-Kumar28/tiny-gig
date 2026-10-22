@@ -1,3 +1,4 @@
+import { StatusBadge } from '@/components/shared/status-badge'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Link } from '@tanstack/react-router'
 import { CircleDot, ExternalLink } from 'lucide-react'
@@ -21,8 +22,10 @@ export function LevelBadge({ level, className }: { level: string | null; classNa
   return (
     <span
       className={cn(
-        'inline-flex h-5.5 items-center rounded-md px-1.5 text-xs font-semibold tabular ring-1 ring-inset',
-        level === 'warmup' ? 'bg-muted text-muted-foreground ring-border' : 'bg-primary/10 text-primary ring-primary/20',
+        'inline-flex h-5 shrink-0 items-center rounded-[3px] border px-1 text-[0.7rem] leading-none font-semibold tracking-[0.04em] tabular uppercase [font-stretch:82%]',
+        level === 'warmup'
+          ? 'border-dashed border-muted-foreground/50 text-muted-foreground'
+          : 'border-foreground/30 bg-card text-foreground',
         className,
       )}
     >
@@ -138,11 +141,9 @@ export const accountColumns: ColumnDef<RosterRow, unknown>[] = [
     meta: { sortKey: 'inUse', label: 'In use' },
     cell: ({ row }) =>
       row.original.inUse ? (
-        <span className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
-          <span className="size-1.5 animate-pulse rounded-full bg-primary" /> In use
-        </span>
+        <StatusBadge status="claimed" label="In use" />
       ) : row.original.free ? (
-        <span className="text-xs text-success">Free</span>
+        <span className="text-xs font-medium text-success">Free</span>
       ) : (
         <span className="text-xs text-muted-foreground">—</span>
       ),
@@ -223,7 +224,7 @@ export const accountColumns: ColumnDef<RosterRow, unknown>[] = [
         <Tooltip>
           <TooltipTrigger asChild>
             <a
-              href={whatsappLink(r.ownerPhone, `Hi ${first}, about your account ${accountLabel(r.platform, r.handle)} — `)}
+              href={whatsappLink(r.ownerPhone, `Hi ${first}, about your account ${accountLabel(r.platform, r.handle)}: `)}
               target="_blank"
               rel="noreferrer noopener"
               onClick={(e) => e.stopPropagation()}

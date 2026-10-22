@@ -20,14 +20,16 @@ export function BottomNav({ items, badges }: { items: NavItem[]; badges?: Record
                 to={item.to}
                 aria-current={active ? 'page' : undefined}
                 className={cn(
-                  'relative flex h-full flex-col items-center justify-center gap-1 text-[11px] font-medium transition-colors active:scale-95',
-                  active ? 'text-primary' : 'text-muted-foreground',
+                  'relative flex h-full flex-col items-center justify-center gap-1 text-[11px] font-semibold transition-colors active:scale-95',
+                  active
+                    ? 'text-primary before:absolute before:inset-x-5 before:top-0 before:h-[3px] before:rounded-b-sm before:bg-primary'
+                    : 'text-muted-foreground',
                 )}
               >
                 <span className="relative">
                   <item.icon className={cn('size-5.5', active && 'stroke-[2.25]')} />
                   {badge ? (
-                    <span className="absolute -top-1.5 -right-2.5 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-4 font-semibold text-primary-foreground tabular">
+                    <span className="absolute -top-1.5 -right-2.5 flex min-w-4 items-center justify-center rounded-[3px] bg-primary px-1 text-[10px] leading-4 font-semibold text-primary-foreground tabular">
                       {badge > 9 ? '9+' : badge}
                     </span>
                   ) : null}

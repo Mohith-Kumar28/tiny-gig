@@ -1,6 +1,18 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { AtSign, Bell, Sprout, ChevronRight, CircleUserRound, Gift, LogOut, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
+import {
+  AtSign,
+  Bell,
+  Sprout,
+  ChevronRight,
+  CircleUserRound,
+  Gift,
+  LogOut,
+  Moon,
+  ShieldCheck,
+  Sun,
+  UserRound,
+} from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTheme } from '@/components/shared/theme-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -15,14 +27,44 @@ export const Route = createFileRoute('/_app/w/me')({
   component: MePage,
 })
 
-function Row({ to, search, icon, label, hint }: { to: string; search?: Record<string, string>; icon: ReactNode; label: string; hint?: ReactNode }) {
+function Row({
+  to,
+  search,
+  icon,
+  label,
+  sub,
+  hint,
+}: {
+  to: string
+  search?: Record<string, string>
+  icon: ReactNode
+  label: string
+  sub?: string
+  hint?: ReactNode
+}) {
   return (
-    <Link to={to} search={search} className="flex min-h-14 items-center gap-3 px-4 py-3 active:bg-accent">
+    <Link
+      to={to}
+      search={search}
+      className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors duration-150 hover:bg-accent/40 focus-visible:bg-accent/50 focus-visible:outline-none active:bg-accent"
+    >
       <span className="text-muted-foreground [&_svg]:size-5">{icon}</span>
-      <span className="flex-1 text-[15px] font-medium">{label}</span>
+      <span className="min-w-0 flex-1">
+        <span className="block text-[15px] font-medium">{label}</span>
+        {sub ? <span className="block text-xs text-muted-foreground">{sub}</span> : null}
+      </span>
       {hint}
       <ChevronRight className="size-4 text-muted-foreground" />
     </Link>
+  )
+}
+
+function Group({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <section className="space-y-1.5">
+      <h2 className="ledger-label px-1">{label}</h2>
+      <div className="divide-y overflow-hidden rounded-lg border bg-card">{children}</div>
+    </section>
   )
 }
 
@@ -39,52 +81,62 @@ function MePage() {
   }
   return (
     <div className="mx-auto max-w-lg space-y-5">
-      <Link to="/w/profile" search={{ tab: 'account' }} className="flex items-center gap-4 rounded-2xl border bg-card p-4">
+      <Link
+        to="/w/profile"
+        search={{ tab: 'account' }}
+        className="flex items-center gap-4 rounded-lg border bg-card p-4 transition-colors duration-150 hover:bg-accent/40 focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none"
+      >
         <Avatar className="size-14">
           {viewer.user.image ? <AvatarImage src={viewer.user.image} alt="" /> : null}
           <AvatarFallback>{initials(viewer.user.name || viewer.user.email)}</AvatarFallback>
         </Avatar>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-lg font-semibold">{viewer.user.name}</p>
+          <p className="truncate font-display text-lg font-bold">{viewer.user.name}</p>
           <p className="truncate text-sm text-muted-foreground">{viewer.user.email}</p>
         </div>
         <ChevronRight className="size-4 text-muted-foreground" />
       </Link>
 
-      <PushToggle className="rounded-2xl" />
+      <PushToggle className="rounded-lg" />
 
-      <div className="divide-y overflow-hidden rounded-2xl border bg-card">
-        <Row to="/w/accounts" icon={<AtSign />} label="My accounts" />
-        <Row to="/w/warmup" icon={<Sprout />} label="Warm-up" />
-        <Row to="/w/referrals" icon={<Gift />} label="Invite & earn" />
+      <Group label="Your work">
+        <Row to="/w/accounts" icon={<AtSign />} label="My accounts" sub="Karma, account age and pay level" />
+        <Row to="/w/warmup" icon={<Sprout />} label="Warm-up" sub="Build history on new accounts" />
+        <Row to="/w/referrals" icon={<Gift />} label="Invite & earn" sub="Your referral link and rewards" />
         <Row
           to="/w/notifications"
           icon={<Bell />}
           label="Notifications"
           hint={
             notes?.unread ? (
-              <span className="rounded-full bg-primary px-2 text-xs leading-5 font-semibold text-primary-foreground tabular">{notes.unread}</span>
+              <span className="rounded-[3px] bg-primary px-1.5 text-xs leading-5 font-semibold text-primary-foreground tabular">
+                {notes.unread}
+              </span>
             ) : null
           }
         />
-      </div>
+      </Group>
 
-      <div className="divide-y overflow-hidden rounded-2xl border bg-card">
-        <Row to="/w/profile" icon={<UserRound />} label="Work profile" />
+      <Group label="Settings">
+        <Row to="/w/profile" icon={<UserRound />} label="Work profile" sub="Phone, state, UPI ID, alerts" />
         <Row to="/w/profile" search={{ tab: 'account' }} icon={<CircleUserRound />} label="Account" />
         <Row to="/w/profile" search={{ tab: 'security' }} icon={<ShieldCheck />} label="Password & security" />
-      </div>
+      </Group>
 
-      <div className="divide-y overflow-hidden rounded-2xl border bg-card">
+      <div className="divide-y overflow-hidden rounded-lg border bg-card">
         <button
           type="button"
           onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
-          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left active:bg-accent"
+          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left transition-colors duration-150 hover:bg-accent/40 focus-visible:bg-accent/50 focus-visible:outline-none active:bg-accent"
         >
           <span className="text-muted-foreground [&_svg]:size-5">{resolvedTheme === 'dark' ? <Sun /> : <Moon />}</span>
           <span className="flex-1 text-[15px] font-medium">{resolvedTheme === 'dark' ? 'Light mode' : 'Dark mode'}</span>
         </button>
-        <button type="button" onClick={signOut} className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left text-destructive active:bg-accent">
+        <button
+          type="button"
+          onClick={signOut}
+          className="flex min-h-14 w-full items-center gap-3 px-4 py-3 text-left text-destructive transition-colors duration-150 hover:bg-destructive/5 focus-visible:bg-destructive/5 focus-visible:outline-none active:bg-accent"
+        >
           <LogOut className="size-5" />
           <span className="flex-1 text-[15px] font-medium">Sign out</span>
         </button>

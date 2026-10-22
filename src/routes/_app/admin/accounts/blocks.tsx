@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import type { ColumnDef } from '@tanstack/react-table'
-import { ArrowLeft, ShieldOff } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
 import { useTableSearch } from '@/components/data-table/use-table-search'
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { RULE_LABELS, type RuleKey } from '@/features/accounts/cooldowns'
 import { accountLabel } from '@/features/accounts/rules'
 import { blockLogSearchSchema, listBlockLog } from '@/features/accounts/server/blocks'
+import { cn } from '@/lib/utils'
 
 type Row = Awaited<ReturnType<typeof listBlockLog>>['rows'][number]
 
@@ -66,7 +67,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     header: () => 'Rule',
     cell: ({ row }) => (
       <div>
-        <span className="inline-flex h-5.5 items-center rounded-md bg-muted px-1.5 text-xs whitespace-nowrap">{RULE_LABELS[row.original.rule as RuleKey] ?? row.original.rule}</span>
+        <span className="inline-flex h-5.5 items-center rounded-[3px] border bg-muted/60 px-1.5 text-xs font-medium whitespace-nowrap">{RULE_LABELS[row.original.rule as RuleKey] ?? row.original.rule}</span>
         {row.original.detail ? <div className="mt-0.5 max-w-80 truncate text-xs text-muted-foreground">{row.original.detail}</div> : null}
       </div>
     ),
@@ -74,7 +75,8 @@ const columns: ColumnDef<Row, unknown>[] = [
   {
     id: 'unlock',
     header: () => 'Unlocks',
-    cell: ({ row }) => (row.original.unlockAt ? formatDate(row.original.unlockAt) : <span className="text-muted-foreground">—</span>),
+    cell: ({ row }) =>
+      row.original.unlockAt ? <span className="tabular">{formatDate(row.original.unlockAt)}</span> : <span className="text-muted-foreground">—</span>,
   },
   {
     id: 'source',
@@ -108,21 +110,34 @@ function BlockLogPage() {
         <PageHeader title="Block log" description="Every time a cooldown kept someone out. Use it to see whether a limit is protecting accounts or just costing work." />
       </div>
       {byRule.length ? (
-        <div className="flex flex-wrap gap-2">
-          {byRule.map((r) => (
-            <button
-              key={r.rule}
-              type="button"
-              onClick={() => onSearchChange({ rule: [r.rule] })}
-              className="rounded-lg border bg-card px-3 py-2 text-left hover:bg-accent/40"
-            >
-              <div className="text-xs text-muted-foreground">{RULE_LABELS[r.rule as RuleKey] ?? r.rule}</div>
-              <div className="text-sm font-semibold tabular">
-                {r.n} <span className="text-xs font-normal text-muted-foreground">· {r.workers} people · 30d</span>
-              </div>
-            </button>
-          ))}
-        </div>
+        <section className="space-y-2">
+          <h2 className="ledger-label">Blocks by rule · last 30 days</h2>
+          <div className="flex flex-wrap gap-2">
+            {byRule.map((r) => {
+              const active = search.rule?.length === 1 && search.rule[0] === r.rule
+              return (
+                <button
+                  key={r.rule}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => onSearchChange({ rule: active ? undefined : [r.rule] })}
+                  className={cn(
+                    'min-w-40 rounded-md border bg-card px-3 py-2.5 text-left transition-colors duration-150 hover:bg-accent/60 focus-visible:outline-2 focus-visible:outline-ring',
+                    active && 'border-ink/40 bg-ink/[0.04]',
+                  )}
+                >
+                  <div className="text-xs text-muted-foreground">{RULE_LABELS[r.rule as RuleKey] ?? r.rule}</div>
+                  <div className="mt-0.5 flex items-baseline gap-1.5">
+                    <span className="font-display text-xl leading-tight font-bold tabular">{r.n}</span>
+                    <span className="text-xs text-muted-foreground tabular">
+                      {r.workers} {r.workers === 1 ? 'person' : 'people'}
+                    </span>
+                  </div>
+                </button>
+              )
+            })}
+          </div>
+        </section>
       ) : null}
       <DataTable<Row>
         columns={columns}
@@ -150,7 +165,21 @@ function BlockLogPage() {
             />
           </>
         }
-        empty={<EmptyState icon={ShieldOff} title="No blocks recorded" description="Nothing matches these filters." className="border-0 bg-transparent" />}
+        empty={
+          search.rule || search.source || search.q ? (
+            <EmptyState
+              title="No blocks match"
+              description="Nothing fits these filters. Press Reset to see the whole log."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="No blocks recorded"
+              description="When a cooldown keeps someone out of an alert, an interest or a selection, it is written here with the rule and the unlock date."
+              className="border-0 bg-transparent"
+            />
+          )
+        }
       />
     </div>
   )

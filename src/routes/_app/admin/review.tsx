@@ -10,6 +10,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { Kbd } from '@/components/ui/kbd'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Sheet, SheetClose, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet'
@@ -197,7 +198,7 @@ function ReviewInbox() {
         </Button>
       </div>
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[minmax(320px,400px)_minmax(0,1fr)]">
+      <div className="grid min-h-0 flex-1 grid-cols-1 grid-rows-[minmax(0,1fr)] lg:grid-cols-[320px_minmax(0,1fr)] xl:grid-cols-[minmax(340px,400px)_minmax(0,1fr)]">
         <div className="flex min-h-0 min-w-0 flex-col lg:border-r">
           <div className="flex h-11 shrink-0 items-center gap-2 border-b px-3">
             <Checkbox
@@ -226,10 +227,16 @@ function ReviewInbox() {
                 </Button>
               </div>
             ) : (
-              <span className="text-sm text-muted-foreground tabular">
-                {data ? `${data.total} ${data.total === 1 ? 'item' : 'items'}` : 'Loading…'}
-                {isFetching ? ' · updating' : ''}
-              </span>
+              <>
+                <span className="text-sm text-muted-foreground tabular">
+                  {data ? `${data.total} ${data.total === 1 ? 'item' : 'items'}` : 'Loading…'}
+                  {isFetching ? ' · updating' : ''}
+                </span>
+                <span className="ml-auto hidden items-center gap-1 text-xs text-muted-foreground lg:inline-flex">
+                  <Kbd>J</Kbd>
+                  <Kbd>K</Kbd> to move
+                </span>
+              </>
             )}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto">
@@ -262,11 +269,11 @@ function ReviewInbox() {
             ) : (
               <EmptyState
                 icon={Check}
-                title={tab === 'needs_review' ? 'Inbox zero 🎉' : 'Nothing here'}
+                title={tab === 'needs_review' ? 'Inbox zero' : 'Nothing here'}
                 description={
                   tab === 'needs_review'
-                    ? 'Every submission has been reviewed. New ones will appear here.'
-                    : 'No submissions match this view.'
+                    ? 'Every submission has been reviewed. New ones land here as workers send them.'
+                    : 'No submissions match this view. Try another view or clear the filters.'
                 }
                 className="m-3 border-0"
               />
@@ -354,7 +361,7 @@ function TabCount({ tab, count }: { tab: ReviewTab; count?: number }) {
   return (
     <span
       className={cn(
-        'rounded-full px-1.5 text-[11px] leading-4 tabular',
+        'rounded-[3px] px-1.5 text-[11px] leading-4 tabular',
         urgent ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/15 text-muted-foreground',
       )}
     >

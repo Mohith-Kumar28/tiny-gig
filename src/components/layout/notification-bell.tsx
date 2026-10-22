@@ -20,7 +20,7 @@ export function NotificationBell({ allHref }: { allHref?: string }) {
         <Button variant="ghost" size="icon" className="relative size-8" aria-label={`Notifications${unread ? ` (${unread} unread)` : ''}`}>
           <Bell />
           {unread > 0 ? (
-            <span className="absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-4 font-semibold text-primary-foreground tabular">
+            <span className="absolute top-1 right-1 flex min-w-4 items-center justify-center rounded-[3px] bg-primary px-1 text-[10px] leading-4 font-semibold text-primary-foreground tabular">
               {unread > 99 ? '99+' : unread}
             </span>
           ) : null}

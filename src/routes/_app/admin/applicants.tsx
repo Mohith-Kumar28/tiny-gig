@@ -1,9 +1,10 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { Check, UserCheck, X } from 'lucide-react'
+import { Check, X } from 'lucide-react'
 import { useState } from 'react'
 import { DataTable } from '@/components/data-table/data-table'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
+import { DataTableToggleFilter } from '@/components/data-table/data-table-toggle-filter'
 import { useTableSearch } from '@/components/data-table/use-table-search'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
@@ -65,6 +66,7 @@ function ApplicantsPage() {
     <div className="space-y-6">
       <PageHeader
         title="Applicants"
+        description="New sign-ups waiting for a decision. Open one to check their Reddit account, then approve or reject. Either way they get an email."
       />
       <DataTable<WorkerRow>
         columns={applicantColumns}
@@ -93,17 +95,29 @@ function ApplicantsPage() {
               value={search.state}
               onChange={(v) => onSearchChange({ state: v })}
             />
-            <Button
-              variant={search.flagged ? 'secondary' : 'outline'}
-              size="sm"
-              className="h-8 border-dashed"
-              onClick={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
+            <DataTableToggleFilter
+              active={!!search.flagged}
+              onToggle={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
             >
               Flagged referrals
-            </Button>
+            </DataTableToggleFilter>
           </>
         }
-        empty={<EmptyState icon={UserCheck} title="No applicants here"  className="border-0 bg-transparent" />}
+        empty={
+          search.status || search.state || search.q || search.flagged ? (
+            <EmptyState
+              title="No applicants match"
+              description="Nothing fits these filters. Press Reset to go back to everyone pending."
+              className="border-0 bg-transparent"
+            />
+          ) : (
+            <EmptyState
+              title="No one is waiting"
+              description="New applications land here as soon as someone signs up. Share a worker's referral link to bring more in."
+              className="border-0 bg-transparent"
+            />
+          )
+        }
         bulkActions={(rows, clear) => (
           <>
             <Button

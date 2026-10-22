@@ -1,6 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { ClipboardCheck } from 'lucide-react'
 import { z } from 'zod'
 import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
@@ -19,11 +18,14 @@ const TAB_LABELS: Record<MyWorkTab, string> = {
 }
 
 const EMPTY: Record<MyWorkTab, { title: string; description: string }> = {
-  active: { title: 'Nothing to do right now', description: 'When you’re selected for a gig it shows up here with its deadline.' },
+  active: {
+    title: 'Nothing to do right now',
+    description: 'Tap “I’m interested” on a gig. When you’re selected, the task shows up here with its deadline.',
+  },
   in_review: { title: 'Nothing in review', description: 'Tasks you submit wait here while our team checks them.' },
-  approved: { title: 'No approved tasks yet', description: 'Approved tasks and their earnings will show up here.' },
+  approved: { title: 'No approved tasks yet', description: 'Approved tasks land here and their pay goes to your balance.' },
   closed: { title: 'No closed tasks', description: 'Rejected, expired and withdrawn tasks show up here.' },
-  all: { title: 'No tasks yet', description: 'Find a gig you like and claim it to get started.' },
+  all: { title: 'No tasks yet', description: 'Find a gig you qualify for and tap “I’m interested” to get started.' },
 }
 
 const searchSchema = z.object({ tab: z.enum(MY_WORK_TABS).optional().catch(undefined) })
@@ -51,14 +53,23 @@ function MyWorkPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="My work" />
-      <Tabs value={tab} onValueChange={(v) => navigate({ search: { tab: v === 'active' ? undefined : (v as MyWorkTab) }, replace: true })}>
-        <div className="-mx-3 overflow-x-auto px-3 [scrollbar-width:none] sm:mx-0 sm:px-0">
-          <TabsList>
+      <Tabs
+        value={tab}
+        onValueChange={(v) => navigate({ search: { tab: v === 'active' ? undefined : (v as MyWorkTab) }, replace: true })}
+      >
+        <div className="-mx-4 overflow-x-auto border-b px-4 [scrollbar-width:none] sm:mx-0 sm:px-0">
+          <TabsList variant="line" className="h-auto gap-0 p-0">
             {MY_WORK_TABS.map((t) => (
-              <TabsTrigger key={t} value={t} className="gap-1.5 px-3">
+              <TabsTrigger
+                key={t}
+                value={t}
+                className="h-10 flex-none gap-1 rounded-none px-2 first:pl-0 after:bg-ink data-[state=active]:text-ink group-data-[orientation=horizontal]/tabs:after:bottom-0 dark:data-[state=active]:text-ink"
+              >
                 {TAB_LABELS[t]}
                 {counts && counts[t] > 0 ? (
-                  <span className="rounded-full bg-foreground/8 px-1.5 text-[11px] leading-4 tabular">{counts[t]}</span>
+                  <span className="rounded-[3px] bg-foreground/8 px-1 text-[11px] leading-4 font-semibold tabular">
+                    {counts[t]}
+                  </span>
                 ) : null}
               </TabsTrigger>
             ))}
@@ -67,13 +78,13 @@ function MyWorkPage() {
       </Tabs>
 
       {isPending ? (
-        <div className="divide-y rounded-xl border bg-card">
+        <div className="divide-y overflow-hidden rounded-lg border bg-card">
           {Array.from({ length: 4 }, (_, i) => (
             <WorkerTaskRowSkeleton key={i} />
           ))}
         </div>
       ) : rows.length ? (
-        <div className="divide-y overflow-hidden rounded-xl border bg-card">
+        <div className="divide-y overflow-hidden rounded-lg border bg-card">
           {rows.map((r) => (
             <WorkerTaskRow
               key={r.id}
@@ -95,7 +106,6 @@ function MyWorkPage() {
         </div>
       ) : (
         <EmptyState
-          icon={ClipboardCheck}
           title={EMPTY[tab].title}
           description={EMPTY[tab].description}
           action={

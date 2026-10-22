@@ -1,4 +1,5 @@
 import { Link } from '@tanstack/react-router'
+import { ArrowRight } from 'lucide-react'
 import type { ColumnDef } from '@tanstack/react-table'
 import { Money } from '@/components/shared/money'
 import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon'
@@ -20,8 +21,8 @@ export function SlotsBar({ claimed, total, className }: { claimed: number; total
         <span className="font-medium">{formatNumber(claimed)}</span>
         <span className="text-muted-foreground"> / {formatNumber(total)}</span>
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-        <div className={cn('h-full rounded-full', pct >= 100 ? 'bg-muted-foreground' : 'bg-primary')} style={{ width: `${pct}%` }} />
+      <div className="h-1 overflow-hidden rounded-[1px] bg-muted">
+        <div className={cn('h-full', pct >= 100 ? 'bg-success' : 'bg-foreground/60')} style={{ width: `${pct}%` }} />
       </div>
     </div>
   )
@@ -36,7 +37,7 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
       <div className="flex min-w-0 items-center gap-2.5">
         <PlatformIcon platform={row.original.platform} />
         <div className="min-w-0">
-          <div className="max-w-80 truncate font-medium">{row.original.title}</div>
+          <div className="max-w-[30rem] truncate font-medium">{row.original.title}</div>
           <div className="truncate text-xs text-muted-foreground">
             {row.original.community || PLATFORM_LABELS[row.original.platform]} · {TASK_TYPE_LABELS[row.original.taskType]}
           </div>
@@ -57,10 +58,10 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
       row.original.payMode === 'levels' ? (
         <span className="whitespace-nowrap">
           <span className="text-xs text-muted-foreground">up to </span>
-          <Money paise={row.original.payoutAmount} />
+          <Money paise={row.original.payoutAmount} className="font-display font-bold" />
         </span>
       ) : (
-        <Money paise={row.original.payoutAmount} />
+        <Money paise={row.original.payoutAmount} className="font-display font-bold" />
       ),
   },
   {
@@ -79,9 +80,10 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
           to="/admin/review"
           search={{ gigId: row.original.id }}
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex h-5.5 items-center rounded-full bg-primary/12 px-2 text-xs font-medium text-primary ring-1 ring-primary/25 ring-inset tabular hover:bg-primary/20"
+          className="inline-flex h-6 items-center gap-1 rounded-md border border-primary/40 bg-primary/7 px-2 text-xs font-semibold text-primary tabular transition-colors hover:bg-primary/15 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
-          {formatNumber(row.original.pending)} pending
+          {formatNumber(row.original.pending)} to review
+          <ArrowRight className="size-3" />
         </Link>
       ) : (
         <span className="text-muted-foreground">—</span>
@@ -102,7 +104,7 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
   {
     id: 'endsAt',
     header: 'Ends',
-    meta: { sortKey: 'endsAt', label: 'Ends' },
+    meta: { sortKey: 'endsAt', label: 'Ends', className: 'pl-8', headerClassName: 'pl-8' },
     cell: ({ row }) => <RelativeTime date={row.original.endsAt} className="text-muted-foreground" />,
   },
   {

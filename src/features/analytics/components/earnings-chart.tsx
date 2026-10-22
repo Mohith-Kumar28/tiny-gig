@@ -44,7 +44,7 @@ export function EarningsChart({ rows }: { rows: { week: string; amount: number }
             />
           }
         />
-        <Bar dataKey="amount" fill="var(--color-amount)" radius={[4, 4, 0, 0]} maxBarSize={36} />
+        <Bar dataKey="amount" fill="var(--color-amount)" radius={[2, 2, 0, 0]} maxBarSize={36} />
       </BarChart>
     </ChartContainer>
   )

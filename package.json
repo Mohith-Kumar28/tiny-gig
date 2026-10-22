@@ -25,6 +25,7 @@
   "dependencies": {
     "@block65/webcrypto-web-push": "2.0.0",
     "@daveyplate/better-auth-ui": "3.4.0",
+    "@fontsource-variable/archivo": "^5.3.0",
     "@fontsource-variable/bricolage-grotesque": "^5.3.0",
     "@fontsource-variable/geist": "^5.3.0",
     "@fontsource-variable/geist-mono": "^5.3.0",

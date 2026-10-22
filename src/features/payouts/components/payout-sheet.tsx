@@ -13,6 +13,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { useAction } from '@/hooks/use-action'
+import { cn } from '@/lib/utils'
 import { payoutItemsQuery } from '../queries'
 import { setPayoutStatus } from '../server/payouts'
 import type { PayoutRow } from './payout-columns'
@@ -20,7 +21,7 @@ import type { PayoutRow } from './payout-columns'
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-[100px_1fr] items-center gap-3 py-2 text-sm">
-      <dt className="text-muted-foreground">{label}</dt>
+      <dt className="ledger-label">{label}</dt>
       <dd className="flex min-w-0 items-center gap-1">{children}</dd>
     </div>
   )
@@ -58,7 +59,16 @@ export function PayoutSheet({
     <Sheet open={!!p} onOpenChange={onOpenChange}>
       <SheetContent className="w-full gap-0 sm:max-w-md">
         <SheetHeader className="border-b">
-          <SheetTitle className="font-display text-xl">{p ? <Money paise={p.amount} className="font-semibold" /> : 'Payout'}</SheetTitle>
+          <SheetTitle className="font-display text-2xl">
+            {p ? (
+              <Money
+                paise={p.amount}
+                className={p.status === 'paid' ? 'ledger-total font-bold' : p.status === 'failed' ? 'ledger-struck font-bold' : 'font-bold'}
+              />
+            ) : (
+              'Payout'
+            )}
+          </SheetTitle>
           <SheetDescription className="flex items-center gap-2">
             {p ? <StatusBadge status={p.status} /> : null}
             {p ? (
@@ -90,7 +100,7 @@ export function PayoutSheet({
               {p.paidAt ? <Row label="Paid">{formatDateTime(p.paidAt)}</Row> : null}
               {p.utrReference ? (
                 <Row label="UTR">
-                  <span className="font-mono text-xs">{p.utrReference}</span>
+                  <span className="font-mono text-xs tracking-wide">{p.utrReference}</span>
                   <CopyButton value={p.utrReference} />
                 </Row>
               ) : null}
@@ -100,7 +110,7 @@ export function PayoutSheet({
               </Row>
             </dl>
 
-            <h3 className="mt-5 mb-2 text-sm font-semibold">What this pays for</h3>
+            <h3 className="mt-5 mb-2 ledger-label">What this pays for</h3>
             {isLoading || !items ? (
               <div className="space-y-2">
                 <Skeleton className="h-8" />
@@ -111,7 +121,7 @@ export function PayoutSheet({
                 {p.status === 'failed' ? 'Items were released back to the worker balance.' : 'No items attached.'}
               </p>
             ) : (
-              <ul className="divide-y rounded-lg border text-sm">
+              <ul className="divide-y overflow-hidden rounded-lg border text-sm">
                 {items.gigs.map((g) => (
                   <li key={g.id} className="flex items-center justify-between gap-3 px-3 py-2">
                     <div className="min-w-0">
@@ -120,7 +130,7 @@ export function PayoutSheet({
                         Approved <RelativeTime date={g.decidedAt} />
                       </div>
                     </div>
-                    <Money paise={g.amount} />
+                    <Money paise={g.amount} className="font-display font-bold" />
                   </li>
                 ))}
                 {items.rewards.map((r) => (
@@ -129,14 +139,21 @@ export function PayoutSheet({
                       <div className="truncate">{r.program}</div>
                       <div className="text-xs text-muted-foreground">Referral reward · {r.role}</div>
                     </div>
-                    <Money paise={r.amount} />
+                    <Money paise={r.amount} className="font-display font-bold" />
                   </li>
                 ))}
+                <li className="flex items-center justify-between gap-3 bg-muted/40 px-3 py-2">
+                  <span className="ledger-label">Total</span>
+                  <Money
+                    paise={items.gigs.reduce((n, g) => n + g.amount, 0) + items.rewards.reduce((n, r) => n + r.amount, 0)}
+                    className={cn('font-display font-bold', p.status === 'paid' && 'ledger-total')}
+                  />
+                </li>
               </ul>
             )}
 
             {failing ? (
-              <div className="mt-5 space-y-2 rounded-lg border border-destructive/30 bg-destructive/5 p-3">
+              <div className="mt-5 space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-3">
                 <Label htmlFor="fail-note">Why did it fail?</Label>
                 <Textarea
                   id="fail-note"

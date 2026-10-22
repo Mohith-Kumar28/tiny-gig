@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { RelativeTime } from '@/components/shared/relative-time'
+import { StatusBadge } from '@/components/shared/status-badge'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,7 +14,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -22,6 +22,7 @@ import { useAction } from '@/hooks/use-action'
 import { initials } from '@/lib/format'
 import { adminsQuery } from '../queries'
 import { addAdmin, removeAdmin } from '../server/admins'
+import { SettingsSection } from './settings-section'
 
 /** Who can use the admin dashboard. Same platform, same data. Just more people. */
 export function AdminTeam() {
@@ -41,13 +42,11 @@ export function AdminTeam() {
   })
 
   return (
-    <section className="space-y-4">
-      <div>
-        <h2 className="font-display text-lg font-semibold">Admins</h2>
-        <p className="text-sm text-muted-foreground">Everyone here can use this dashboard.</p>
-      </div>
-
-      <div className="rounded-xl border bg-card">
+    <SettingsSection
+      title="Admins"
+      description="Everyone here can use this console and sees the same data. New admins are told by email. Owners are set in the server config and can’t be removed here."
+    >
+      <div className="rounded-lg border bg-card">
         <form
           className="flex flex-col gap-2 border-b p-4 sm:flex-row"
           onSubmit={(e) => {
@@ -98,8 +97,8 @@ export function AdminTeam() {
                     ) : null}
                   </p>
                 </div>
-                {a.owner ? <Badge variant="secondary">Owner</Badge> : null}
-                {a.status === 'invited' ? <Badge variant="outline">Invited</Badge> : null}
+                {a.owner ? <StatusBadge status="owner" label="Owner" /> : null}
+                {a.status === 'invited' ? <StatusBadge status="pending" label="Invited" /> : null}
                 {!a.owner && !a.isYou ? (
                   <Button
                     variant="ghost"
@@ -141,6 +140,6 @@ export function AdminTeam() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </section>
+    </SettingsSection>
   )
 }

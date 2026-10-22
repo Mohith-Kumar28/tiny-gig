@@ -77,7 +77,7 @@ export function referralColumns(actions: { onFlag: (row: ReferralRow) => void; o
       id: 'earned',
       header: 'Earned',
       meta: { sortKey: 'earned', label: 'Earned', className: 'text-right', headerClassName: 'text-right' },
-      cell: ({ row }) => <Money paise={row.original.earned} />,
+      cell: ({ row }) => <Money paise={row.original.earned} className="font-display font-bold" />,
     },
     {
       id: 'flag',

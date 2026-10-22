@@ -11,6 +11,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
+import { SettingsSection } from './settings-section'
 import { type AppSettings, type AppSettingsInput, settingsSchema } from '../schemas'
 import { saveSettings } from '../server/settings'
 
@@ -94,13 +95,9 @@ function EmailChipsInput({ value, onChange, id }: { value: string[]; onChange: (
 
 function Group({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <section className="space-y-4 border-t py-6 first:border-t-0 first:pt-0">
-      <div className="space-y-1">
-        <h2 className="text-sm font-semibold">{title}</h2>
-        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
-      </div>
-      <div className="space-y-5">{children}</div>
-    </section>
+    <SettingsSection title={title} description={description} className="first:border-t-0 first:pt-0">
+      <div className="space-y-5 rounded-lg border bg-card p-4 sm:p-5">{children}</div>
+    </SettingsSection>
   )
 }
 
@@ -116,7 +113,7 @@ function SwitchRow({
   onChange: (v: boolean) => void
 }) {
   return (
-    <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3">
+    <FormItem className="flex items-center justify-between gap-4 rounded-md border bg-background/60 p-3">
       <div className="space-y-0.5">
         <FormLabel>{label}</FormLabel>
         {description ? <FormDescription>{description}</FormDescription> : null}
@@ -134,7 +131,7 @@ const ALERT_OPTIONS = [
   { value: 'off', label: 'Off', hint: '' },
 ] as const
 
-const LEVEL_AGES = { L1: '2 wk – 3 mo', L2: '3 – 6 mo', L3: '6 – 12 mo', L4: '12 mo +' } as const
+const LEVEL_AGES = { L1: '2 wk to 3 mo', L2: '3 to 6 mo', L3: '6 to 12 mo', L4: '12 mo +' } as const
 
 /** Stored in paise, typed in rupees. */
 function RupeeInput({ value, onChange, label }: { value: number; onChange: (paise: number) => void; label: string }) {
@@ -188,8 +185,8 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit((v) => save.mutate(v))} noValidate className="rounded-xl border bg-card p-4 sm:p-6">
-        <Group title="Admin alerts">
+      <form onSubmit={form.handleSubmit((v) => save.mutate(v))} noValidate className="space-y-8">
+        <Group title="Admin alerts" description="Who hears about new work, and how often. You always get alerts at your own sign-in email.">
           <FormField
             control={form.control}
             name="alertEmails"
@@ -199,6 +196,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
                 <FormControl>
                   <EmailChipsInput value={field.value} onChange={field.onChange} />
                 </FormControl>
+                <FormDescription>Press Enter or a comma after each address. Up to 20.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -214,7 +212,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
                     {ALERT_OPTIONS.map((o) => (
                       <label
                         key={o.value}
-                        className="flex cursor-pointer items-center gap-2.5 rounded-lg border p-3 has-[[data-state=checked]]:border-primary/50 has-[[data-state=checked]]:bg-primary/[0.04]"
+                        className="flex cursor-pointer items-center gap-2.5 rounded-md border p-3 transition-colors duration-150 hover:bg-accent/50 has-[[data-state=checked]]:border-ink/50 has-[[data-state=checked]]:bg-ink/[0.04]"
                       >
                         <RadioGroupItem value={o.value} />
                         <span className="text-sm font-medium">{o.label}</span>
@@ -239,13 +237,13 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             render={({ field }) => <SwitchRow label="Morning summary email" checked={field.value} onChange={field.onChange} />}
           />
         </Group>
-        <Group title="Reminders">
-          {num('reminderHoursBefore', 'Remind workers before deadline', '0 = no reminders', 'hours before')}
+        <Group title="Reminders" description="A nudge to workers who have claimed a gig but not submitted yet.">
+          {num('reminderHoursBefore', 'Remind workers before deadline', 'Set 0 to turn reminders off.', 'hours before')}
         </Group>
-        <Group title="New gig defaults">
+        <Group title="New gig defaults" description="Starting values for every new gig. You can change them on the gig itself.">
           <div className="grid items-start gap-5 sm:grid-cols-2">
-            {num('defaultClaimWindowHours', 'Time to submit', null, 'hours')}
-            {num('defaultLiveHoldHours', 'Keep live for', '0 = no live check', 'hours')}
+            {num('defaultClaimWindowHours', 'Time to submit', 'From claiming the gig to submitting proof.', 'hours')}
+            {num('defaultLiveHoldHours', 'Keep live for', 'How long the post must stay up before approval. Set 0 to skip the live check.', 'hours')}
           </div>
         </Group>
         <Group title="Account register" description="How the accounts roster judges freshness.">
@@ -269,15 +267,15 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
           title="Pay by account level"
           description="Reddit posts and comments on level-priced gigs pay by the age of the account that does the work. A gig can override these. Rates lock at selection."
         >
-          <div className="overflow-hidden rounded-lg border">
+          <div className="overflow-x-auto rounded-md border">
             <table className="w-full text-sm">
-              <thead className="bg-muted/40 text-xs text-muted-foreground">
+              <thead className="border-b bg-muted/45">
                 <tr>
-                  <th className="px-3 py-2 text-left font-medium" />
+                  <th className="ledger-label px-3 py-2 text-left">Work</th>
                   {(['L1', 'L2', 'L3', 'L4'] as const).map((l) => (
-                    <th key={l} className="px-2 py-2 text-left font-medium">
-                      {l}
-                      <span className="block font-normal">{LEVEL_AGES[l]}</span>
+                    <th key={l} className="px-2 py-2 text-left">
+                      <span className="ledger-label block text-foreground">{l}</span>
+                      <span className="block text-[11px] font-normal text-muted-foreground tabular">{LEVEL_AGES[l]}</span>
                     </th>
                   ))}
                 </tr>
@@ -326,11 +324,22 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             )}
           />
         </Group>
-        <Group title="Opportunities">
+        <Group title="Opportunities" description="Opportunities ask workers to raise a hand, then you pick who does the work.">
           {num('interestWindowMinutes', 'Interest window', 'How long workers have to say they’re interested before you pick.', 'minutes')}
         </Group>
-        <div className="flex items-center justify-end gap-3 border-t pt-4">
-          {form.formState.isDirty ? <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span> : null}
+        <div
+          className={cn(
+            'sticky bottom-0 z-10 -mx-1 flex items-center justify-end gap-3 border-t bg-background/95 px-1 py-3 backdrop-blur transition-colors duration-200',
+            form.formState.isDirty && 'border-ink/30',
+          )}
+        >
+          {form.formState.isDirty ? (
+            <span className="mr-auto flex items-center gap-2 text-sm text-foreground">
+              <span className="size-1.5 rounded-full bg-ink" /> Unsaved changes
+            </span>
+          ) : (
+            <span className="mr-auto text-sm text-muted-foreground">All changes saved</span>
+          )}
           <Button
             type="button"
             variant="ghost"

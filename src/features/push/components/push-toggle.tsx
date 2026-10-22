@@ -9,8 +9,10 @@ function unblockHint() {
   if (typeof navigator === 'undefined') return ''
   const ua = navigator.userAgent
   if (isIos()) return 'Open iPhone Settings → Notifications → TinyGig and allow notifications.'
-  if (/Android/.test(ua)) return 'Tap the lock icon next to the address (or the ⋮ menu → Site settings) → Notifications → Allow, then come back.'
-  if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Safari → Settings → Websites → Notifications → set TinyGig to Allow, then come back.'
+  if (/Android/.test(ua))
+    return 'Tap the lock icon next to the address (or the ⋮ menu → Site settings) → Notifications → Allow, then come back.'
+  if (/Safari/.test(ua) && !/Chrome/.test(ua))
+    return 'Safari → Settings → Websites → Notifications → set TinyGig to Allow, then come back.'
   return 'Click the lock icon next to the address bar → Notifications → Allow, then reload this page.'
 }
 
@@ -25,7 +27,9 @@ export function PushToggle({ className }: { className?: string }) {
     try {
       if (next) {
         const ok = await enable()
-        toast[ok ? 'success' : 'error'](ok ? 'Alerts on for this device' : 'Notifications are blocked for TinyGig in this browser')
+        toast[ok ? 'success' : 'error'](
+          ok ? 'Alerts on for this device' : 'Notifications are blocked for TinyGig in this browser',
+        )
       } else {
         await disable()
         toast.success('Alerts off for this device')
@@ -35,19 +39,26 @@ export function PushToggle({ className }: { className?: string }) {
     }
   }
   return (
-    <div className={cn('flex items-start gap-3 rounded-xl border bg-card p-4', className)}>
-      {state === 'denied' ? <BellOff className="mt-0.5 size-5 shrink-0 text-muted-foreground" /> : <BellRing className="mt-0.5 size-5 shrink-0 text-primary" />}
+    <div className={cn('flex items-start gap-3 rounded-lg border bg-card p-4', className)}>
+      {state === 'denied' ? (
+        <BellOff className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+      ) : (
+        <BellRing className={cn('mt-0.5 size-5 shrink-0', state === 'on' ? 'text-ink' : 'text-muted-foreground')} />
+      )}
       <div className="min-w-0 flex-1 space-y-1">
         <p className="text-sm font-medium">New-gig alerts on this device</p>
         {state === 'needs-install' ? (
           <p className="text-xs text-muted-foreground">
-            On iPhone, alerts work once TinyGig is on your Home Screen: tap <Share className="inline size-3.5 align-text-bottom" /> Share →{' '}
-            <strong>Add to Home Screen</strong>, open TinyGig from there, and turn this on.
+            On iPhone, alerts work once TinyGig is on your Home Screen: tap{' '}
+            <Share className="inline size-3.5 align-text-bottom" /> Share → <strong>Add to Home Screen</strong>, open TinyGig from
+            there, and turn this on.
           </p>
         ) : state === 'denied' ? (
           <p className="text-xs text-muted-foreground">Notifications are blocked for TinyGig. {unblockHint()}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">Gigs only take interest for a few minutes. Get a ping the moment one goes live.</p>
+          <p className="text-xs text-muted-foreground">
+            Gigs only take interest for a few minutes. Get a ping the moment one goes live.
+          </p>
         )}
       </div>
       {state === 'on' || state === 'off' ? (

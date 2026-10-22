@@ -43,9 +43,11 @@ export function WorkerAccountsCard({ workerId, accounts, karmaStaleDays = 30 }: 
     { success: 'Account added', invalidate: [['admin', 'worker', workerId], ['admin', 'accounts']], onSuccess: () => setAdding(false) },
   )
   return (
-    <section className="rounded-xl border bg-card">
+    <section className="rounded-lg border bg-card">
       <div className="flex items-center justify-between gap-2 border-b px-4 py-3">
-        <h2 className="text-sm font-semibold">Accounts · {accounts.length}</h2>
+        <h2 className="font-display text-base font-bold">
+          Accounts <span className="font-normal text-muted-foreground tabular">· {accounts.length}</span>
+        </h2>
         <div className="flex gap-2">
           <Button asChild variant="ghost" size="sm" className="h-7">
             <Link to="/admin/accounts" search={{ workerId, platform: ['reddit', 'x', 'linkedin', 'threads', 'instagram', 'facebook'] }}>
@@ -72,7 +74,7 @@ export function WorkerAccountsCard({ workerId, accounts, karmaStaleDays = 30 }: 
                   <CreatedOnEditor id={a.id} createdOn={a.createdOn} confirmed={!!a.createdOnConfirmedAt}>
                     <span className="inline-flex items-center gap-1.5">
                       <LevelBadge level={levelFor(a.createdOn)} />
-                      <span className={cn('text-xs tabular', a.createdOnConfirmedAt ? 'text-muted-foreground' : 'text-warning')}>
+                      <span className={cn('text-xs tabular', a.createdOnConfirmedAt ? 'text-muted-foreground' : 'text-warning-foreground dark:text-warning')}>
                         {formatAge(accountAgeDays(a.createdOn))}
                         {a.createdOn ? ` · ${formatDate(a.createdOn)}` : ''}
                         {a.createdOn && !a.createdOnConfirmedAt ? ' (unconfirmed)' : ''}
@@ -90,7 +92,11 @@ export function WorkerAccountsCard({ workerId, accounts, karmaStaleDays = 30 }: 
             </li>
           )
         })}
-        {!accounts.length ? <li className="px-4 py-6 text-center text-sm text-muted-foreground">No accounts on file.</li> : null}
+        {!accounts.length ? (
+          <li className="px-4 py-6 text-center text-sm text-muted-foreground">
+            No accounts on file. Use Add account to record the ones they post from, so they show in the register.
+          </li>
+        ) : null}
       </ul>
       <AddAccountDialog
         open={adding}

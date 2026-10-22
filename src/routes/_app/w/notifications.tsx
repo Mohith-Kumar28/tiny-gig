@@ -30,11 +30,13 @@ function NotificationsPage() {
     <div className="max-w-3xl space-y-5">
       <PageHeader
         title="Notifications"
-        description={data.unread ? `${data.unread} unread` : 'Everything is read.'}
+        description={data.unread ? `${data.unread} unread` : 'Task updates, payments and referral news, newest first.'}
         actions={
-          <Button variant="outline" size="sm" disabled={!data.unread || markAll.isPending} onClick={() => markAll.mutate(undefined)}>
-            {markAll.isPending ? <Spinner /> : <CheckCheck />} Mark all read
-          </Button>
+          data.unread ? (
+            <Button variant="outline" size="sm" disabled={markAll.isPending} onClick={() => markAll.mutate(undefined)}>
+              {markAll.isPending ? <Spinner /> : <CheckCheck />} Mark all read
+            </Button>
+          ) : null
         }
       />
       <PushToggle />

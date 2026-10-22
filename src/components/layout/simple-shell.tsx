@@ -12,25 +12,28 @@ export function SimpleShell({ email, children }: { email: string; children: Reac
   const qc = useQueryClient()
   return (
     <div className="min-h-dvh">
-      <header className="mx-auto flex h-16 max-w-3xl items-center justify-between px-4">
-        <Logo />
-        <div className="flex items-center gap-1">
-          <span className="hidden text-sm text-muted-foreground sm:inline">{email}</span>
-          <ThemeToggle />
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={async () => {
-              await authClient.signOut()
-              qc.clear()
-              await router.navigate({ to: '/login' })
-            }}
-          >
-            Sign out
-          </Button>
+      {/* The red cloth band, as on the worker app and the public site. */}
+      <header className="bg-cloth text-cloth-foreground [&_button]:text-cloth-foreground [&_button:hover]:bg-cloth-foreground/12">
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
+          <Logo inverse />
+          <div className="flex items-center gap-1">
+            <span className="hidden text-sm text-cloth-foreground/75 sm:inline">{email}</span>
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={async () => {
+                await authClient.signOut()
+                qc.clear()
+                await router.navigate({ to: '/login' })
+              }}
+            >
+              Sign out
+            </Button>
+          </div>
         </div>
       </header>
-      <main className="mx-auto max-w-3xl px-4 pt-4 pb-16">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 pt-6 pb-16 sm:pt-8">{children}</main>
     </div>
   )
 }

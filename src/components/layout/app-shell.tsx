@@ -1,6 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
-import { LogoMark } from '@/components/shared/logo'
+import { LogoMark, Wordmark } from '@/components/shared/logo'
 import {
   Sidebar,
   SidebarContent,
@@ -24,6 +24,7 @@ import { isNavActive, type NavItem } from './nav'
 import { NotificationBell } from './notification-bell'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
+import { cn } from '@/lib/utils'
 
 type NavGroup = { label?: string; items: NavItem[] }
 
@@ -49,7 +50,7 @@ function NavLinks({ groups, badges }: { groups: NavGroup[]; badges?: Record<stri
                       </Link>
                     </SidebarMenuButton>
                     {badge ? (
-                      <SidebarMenuBadge className="rounded-full bg-primary/12 text-primary tabular">{badge}</SidebarMenuBadge>
+                      <SidebarMenuBadge className="rounded-[3px] bg-cloth-foreground/15 font-semibold text-sidebar-foreground tabular peer-data-[active=true]/menu-button:bg-cloth peer-data-[active=true]/menu-button:text-cloth-foreground">{badge}</SidebarMenuBadge>
                     ) : null}
                   </SidebarMenuItem>
                 )
@@ -90,10 +91,10 @@ export function AppShell({
             <SidebarMenuItem>
               <SidebarMenuButton size="lg" asChild>
                 <Link to={home}>
-                  <LogoMark className="size-8" />
+                  <LogoMark inverse className="size-8!" />
                   <div className="grid flex-1 text-left leading-tight">
-                    <span className="font-display text-base font-semibold">TinyGig</span>
-                    <span className="text-xs text-muted-foreground">{viewer.user.role === 'admin' ? 'Admin console' : 'Worker'}</span>
+                    <Wordmark className="text-base" />
+                    <span className="text-xs text-sidebar-foreground/65">{viewer.user.role === 'admin' ? 'Admin console' : 'Worker'}</span>
                   </div>
                 </Link>
               </SidebarMenuButton>
@@ -109,12 +110,19 @@ export function AppShell({
         <SidebarRail />
       </Sidebar>
       <SidebarInset className="min-w-0">
-        <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6 lg:px-8">
+        <header
+          className={cn(
+            'sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/90 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/75 sm:px-6 lg:px-8',
+            // On phones the worker app wears the red cloth band, like the cover of a khata.
+            mobileNav &&
+              'max-md:border-cloth max-md:bg-cloth max-md:text-cloth-foreground max-md:supports-[backdrop-filter]:bg-cloth max-md:[&_button]:text-cloth-foreground max-md:[&_button:hover]:bg-cloth-foreground/12',
+          )}
+        >
           <SidebarTrigger className={mobileNav ? '-ml-2 hidden md:inline-flex' : '-ml-2'} />
           {mobileNav ? (
-            <Link to={home} className="flex items-center gap-2 font-display font-semibold md:hidden">
-              <LogoMark className="size-7" />
-              TinyGig
+            <Link to={home} className="flex items-center gap-2 md:hidden">
+              <LogoMark inverse className="size-7" />
+              <Wordmark />
             </Link>
           ) : null}
           <div className="flex min-w-0 flex-1 items-center gap-2">{headerExtra}</div>

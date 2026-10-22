@@ -8,6 +8,7 @@ import type { FacetOption } from '@/components/data-table/types'
 import type { SubmissionStatus } from '@/db/schema/enums'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
 import { formatNumber } from '@/lib/format'
+import { cn } from '@/lib/utils'
 
 export const SUBMISSION_STATUS_OPTIONS: FacetOption[] = (
   [
@@ -25,6 +26,17 @@ export const SUBMISSION_STATUS_OPTIONS: FacetOption[] = (
   ] satisfies [SubmissionStatus, string][]
 ).map(([value, label]) => ({ value, label }))
 
+/** "reddit.com" + the last useful bit of the path, so two links to one subreddit still look different. */
+function proofParts(url: string) {
+  try {
+    const u = new URL(url)
+    const segs = u.pathname.split('/').filter(Boolean)
+    return { host: u.hostname.replace(/^www\./, ''), tail: segs.at(-1) ?? '' }
+  } catch {
+    return { host: url, tail: '' }
+  }
+}
+
 const proof: ColumnDef<QueueRow, unknown> = {
   id: 'proof',
   header: () => 'Proof',
@@ -37,10 +49,14 @@ const proof: ColumnDef<QueueRow, unknown> = {
           target="_blank"
           rel="noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex max-w-48 items-center gap-1 truncate hover:text-foreground"
+          title={row.original.proofUrl}
+          className="inline-flex max-w-52 items-center gap-1 rounded-sm text-ink underline-offset-2 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
         >
           <ExternalLink className="size-3.5 shrink-0" />
-          <span className="truncate">{row.original.proofUrl.replace(/^https?:\/\/(www\.)?/, '')}</span>
+          <span className="shrink-0">{proofParts(row.original.proofUrl).host}</span>
+          {proofParts(row.original.proofUrl).tail ? (
+            <span className="truncate text-muted-foreground">/{proofParts(row.original.proofUrl).tail}</span>
+          ) : null}
         </a>
       ) : (
         <span>—</span>
@@ -70,7 +86,16 @@ const payout: ColumnDef<QueueRow, unknown> = {
   id: 'payout',
   header: 'Payout',
   meta: { sortKey: 'payout', label: 'Payout', className: 'text-right', headerClassName: 'text-right' },
-  cell: ({ row }) => <Money paise={row.original.payoutAmount} />,
+  cell: ({ row }) => (
+    <Money
+      paise={row.original.payoutAmount}
+      className={cn(
+        'font-display font-bold',
+        (row.original.status === 'rejected' || row.original.status === 'expired' || row.original.status === 'withdrawn') &&
+          'ledger-struck text-muted-foreground',
+      )}
+    />
+  ),
 }
 
 const submitted: ColumnDef<QueueRow, unknown> = {
@@ -117,7 +142,7 @@ const gigCol: ColumnDef<QueueRow, unknown> = {
     <div className="flex min-w-0 items-center gap-2">
       <PlatformIcon platform={row.original.platform} />
       <div className="min-w-0">
-        <div className="max-w-72 truncate font-medium">{row.original.gigTitle}</div>
+        <div className="max-w-64 truncate font-medium xl:max-w-80">{row.original.gigTitle}</div>
         {row.original.community ? <div className="truncate text-xs text-muted-foreground">{row.original.community}</div> : null}
       </div>
     </div>
@@ -135,10 +160,8 @@ export const postLogColumns: ColumnDef<QueueRow, unknown>[] = [
     meta: { sortKey: 'submittedAt' },
     cell: ({ row }) => (
       <div className="whitespace-nowrap">
-        <RelativeTime date={row.original.submittedAt} />
-        {row.original.submittedAt ? (
-          <div className="text-xs text-muted-foreground tabular">{formatDateTime(row.original.submittedAt)}</div>
-        ) : null}
+        {row.original.submittedAt ? <div className="tabular">{formatDateTime(row.original.submittedAt)}</div> : null}
+        <RelativeTime date={row.original.submittedAt} className="text-xs text-muted-foreground" />
       </div>
     ),
   },
@@ -150,11 +173,13 @@ export const postLogColumns: ColumnDef<QueueRow, unknown>[] = [
     cell: ({ row }) => (
       <div className="min-w-0">
         <div className="truncate font-medium">{row.original.workerName}</div>
-        <div className="truncate text-xs text-muted-foreground">u/{row.original.redditUsername}</div>
+        {row.original.platform === 'reddit' ? (
+          <div className="truncate text-xs text-muted-foreground">u/{row.original.redditUsername}</div>
+        ) : null}
       </div>
     ),
   },
-  proof,
   status,
+  proof,
   payout,
 ]

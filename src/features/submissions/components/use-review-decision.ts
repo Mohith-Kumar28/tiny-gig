@@ -29,7 +29,7 @@ export function useReviewDecision(opts: { onDone?: (vars: DecisionVars) => void 
       }
       if (!r.ok) return null
       const liveCheck = r.results.some((x) => x.status === 'live_check')
-      if (v.ids.length === 1) return liveCheck ? 'Passed review → live check started' : VERB[v.decision]
+      if (v.ids.length === 1) return liveCheck ? 'Approved. Live check started' : VERB[v.decision]
       return `${VERB[v.decision]}: ${r.ok} submission${r.ok === 1 ? '' : 's'}`
     },
     invalidate: [['admin']],

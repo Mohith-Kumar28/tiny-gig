@@ -75,7 +75,7 @@ export function PasswordLogin({ redirectTo }: { redirectTo?: string }) {
 
   if (sentTo) {
     return (
-      <div className="space-y-4 rounded-xl border bg-card p-5 text-center">
+      <div className="space-y-4 rounded-lg border bg-card p-5 text-center">
         <MailCheck className="mx-auto size-8 text-primary" />
         <div className="space-y-1">
           <p className="font-medium">Check your inbox</p>

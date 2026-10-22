@@ -3,64 +3,46 @@ import { Container } from './container'
 import { Logo } from './logo'
 import { ThemeToggle } from './theme-toggle'
 
-const COLUMNS = [
-  {
-    title: 'TinyGig',
-    links: [
-      { href: '/how-it-works', label: 'How it works' },
-      { href: '/faq', label: 'FAQ' },
-      { href: '/login', label: 'Apply now' },
-    ],
-  },
-  {
-    title: 'Legal',
-    links: [
-      { href: '/privacy', label: 'Privacy policy' },
-      { href: '/terms', label: 'Terms of service' },
-    ],
-  },
+const LINKS = [
+  { href: '/how-it-works', label: 'How it works' },
+  { href: '/faq', label: 'FAQ' },
+  { href: '/login', label: 'Apply now' },
+  { href: '/privacy', label: 'Privacy' },
+  { href: '/terms', label: 'Terms' },
 ]
 
 export function SiteFooter() {
   return (
-    <footer className="border-t bg-card/40">
-      <Container className="grid grid-cols-2 gap-x-6 gap-y-12 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
-        <div className="col-span-2 max-w-sm space-y-4 md:col-span-1">
+    <footer className="border-t-[3px] border-double border-foreground/70">
+      <Container className="flex flex-col gap-8 py-10 md:flex-row md:items-start md:justify-between">
+        <div className="max-w-sm space-y-3">
           <Logo />
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Small paid social media gigs for people in India. Reviewed by humans, paid by UPI.
+            Small paid posting gigs for people in India. Reviewed by people, paid by UPI.
           </p>
-          <p className="text-sm">
-            <a
-              href={`mailto:${SITE.email}`}
-              className="font-medium underline decoration-primary/40 underline-offset-4 hover:decoration-primary"
-            >
-              {SITE.email}
-            </a>
-          </p>
+          <a href={`mailto:${SITE.email}`} className="inline-block text-sm font-semibold text-ink underline decoration-ink/40 underline-offset-4 hover:decoration-ink">
+            {SITE.email}
+          </a>
         </div>
-        {COLUMNS.map((col) => (
-          <nav key={col.title} aria-label={col.title}>
-            <h2 className="mb-4 text-sm font-semibold">{col.title}</h2>
-            <ul className="space-y-3">
-              {col.links.map((link) => (
-                <li key={link.href}>
-                  <a href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        ))}
+        <nav aria-label="Footer">
+          <ul className="grid grid-cols-2 gap-x-10 gap-y-2.5 sm:grid-cols-3">
+            {LINKS.map((link) => (
+              <li key={link.href}>
+                <a href={link.href} className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
       </Container>
       <Container>
         <div className="flex flex-col gap-4 border-t py-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-2xl leading-relaxed">
-          © {new Date().getFullYear()} {SITE.name}. Not affiliated with Reddit, X, LinkedIn, Meta or any other platform
-          mentioned on this site. Platform names are trademarks of their owners.
-        </p>
-        <ThemeToggle />
+          <p className="max-w-2xl leading-relaxed">
+            © {new Date().getFullYear()} {SITE.name}. Not affiliated with Reddit, X, LinkedIn, Meta or any other platform named
+            here. Platform names are trademarks of their owners.
+          </p>
+          <ThemeToggle />
         </div>
       </Container>
     </footer>

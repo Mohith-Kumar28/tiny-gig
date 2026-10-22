@@ -5,18 +5,20 @@ import { Logo } from './logo'
 
 const NAV = [
   { href: '/how-it-works', label: 'How it works' },
+  { href: '/#rules', label: 'The rules' },
   { href: '/faq', label: 'FAQ' },
 ]
 
 const linkClass =
-  'rounded-full px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60'
+  'rounded-md px-3 py-2 text-sm font-medium text-cloth-foreground/80 transition-colors hover:bg-cloth-foreground/10 hover:text-cloth-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cloth-foreground/50'
 
+/** The red cloth band: the cover of the khata. */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/70">
-      <Container className="flex h-16 items-center justify-between gap-4">
-        <a href="/" aria-label="TinyGig home" className="rounded-lg focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60">
-          <Logo />
+    <header className="sticky top-0 z-40 bg-cloth text-cloth-foreground shadow-[0_1px_0_oklch(0.25_0.08_22)]">
+      <Container className="flex h-15 items-center justify-between gap-4">
+        <a href="/" aria-label="TinyGig home" className="rounded-md focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cloth-foreground/50">
+          <Logo inverse />
         </a>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -33,16 +35,16 @@ export function SiteHeader() {
           <details className="group relative md:hidden">
             <summary
               aria-label="Open menu"
-              className="flex size-10 cursor-pointer list-none items-center justify-center rounded-full text-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60 [&::-webkit-details-marker]:hidden"
+              className="flex size-10 cursor-pointer list-none items-center justify-center rounded-md hover:bg-cloth-foreground/10 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cloth-foreground/50 [&::-webkit-details-marker]:hidden"
             >
               <Menu className="size-5" aria-hidden />
             </summary>
             <nav
               aria-label="Mobile"
-              className="absolute right-0 top-12 flex w-52 flex-col rounded-2xl border bg-popover p-2 text-popover-foreground shadow-[0_20px_50px_-20px_oklch(0.3_0.05_50/0.35)]"
+              className="absolute right-0 top-12 flex w-52 flex-col rounded-md border bg-popover p-1.5 text-popover-foreground shadow-[0_18px_40px_-18px_oklch(0.25_0.06_262/0.45)]"
             >
               {NAV.map((item) => (
-                <a key={item.href} href={item.href} className="rounded-xl px-3 py-2.5 text-sm font-medium hover:bg-accent">
+                <a key={item.href} href={item.href} className="rounded-[4px] px-3 py-2.5 text-sm font-medium hover:bg-accent">
                   {item.label}
                 </a>
               ))}
