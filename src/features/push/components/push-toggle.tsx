@@ -8,6 +8,17 @@ import { sendTestPush } from '../server/push'
 import { isIos, usePush } from '../use-push'
 
 /** How to undo a block, by browser. People often hit "Block" by reflex; this is the way back. */
+/** The push left our server fine; if nothing appears, the OS or browser is hiding it. */
+function nothingShowedHint() {
+  if (typeof navigator === 'undefined') return ''
+  const ua = navigator.userAgent
+  if (isIos()) return 'Nothing showed? Check iPhone Settings → Notifications → TinyGig, and that Focus is off.'
+  if (/Android/.test(ua)) return 'Nothing showed? Check Android Settings → Apps → your browser → Notifications.'
+  if (/Mac OS X/.test(ua))
+    return 'Nothing showed? Open Mac System Settings → Notifications → your browser (Chrome, Brave…) and allow notifications, and turn off Focus / Do Not Disturb. The browser must stay running; closing the tab is fine.'
+  return 'Nothing showed? Check your system notification settings for this browser, and that Do Not Disturb is off. The browser must stay running; closing the tab is fine.'
+}
+
 function unblockHint() {
   if (typeof navigator === 'undefined') return ''
   const ua = navigator.userAgent
@@ -57,8 +68,18 @@ export function PushToggle({ className, audience = 'worker' }: { className?: str
     setTesting(true)
     try {
       const r = await sendTestPush()
-      if (r.devices) toast.success('Test sent. It should pop up in a few seconds.')
-      else toast.error('No device is set up yet. Turn alerts on first.')
+      if (!r.devices) toast.error('No device is set up yet. Turn alerts on first.')
+      else if (!r.configured) toast.error('Push is not set up on the server yet (VAPID keys missing).')
+      else if (r.sent)
+        toast.success(`Test sent to ${r.sent} device${r.sent === 1 ? '' : 's'}. It should pop up in a few seconds.`, {
+          duration: 15000,
+          description: nothingShowedHint(),
+        })
+      else
+        toast.error('The push service refused the test', {
+          duration: 15000,
+          description: `${r.failed[0]?.status ?? ''} ${r.failed[0]?.detail ?? ''}`.trim() || 'Turn alerts off and on again, then retry.',
+        })
     } catch {
       toast.error('Could not send the test')
     } finally {

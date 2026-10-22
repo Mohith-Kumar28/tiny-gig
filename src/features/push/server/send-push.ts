@@ -11,12 +11,22 @@ function vapid() {
   return { subject, publicKey: e.VAPID_PUBLIC_KEY, privateKey: e.VAPID_PRIVATE_KEY }
 }
 
+export type PushResult = { sent: number; failed: { status: number; detail: string }[]; configured: boolean }
+
 /** Sends to every device each user subscribed. Dead subscriptions (404/410) are dropped. Never throws. */
-export async function sendPush(db: Db, items: { userId: string; title: string; body?: string; href?: string }[]) {
+export async function sendPush(
+  db: Db,
+  items: { userId: string; title: string; body?: string; href?: string }[],
+): Promise<PushResult> {
+  const result: PushResult = { sent: 0, failed: [], configured: true }
   const keys = vapid()
-  if (!keys || !items.length) return
+  if (!keys) {
+    console.error('[push] VAPID keys are not set; push is off')
+    return { ...result, configured: false }
+  }
+  if (!items.length) return result
   const subs = await db.select().from(pushSubscription).where(inArray(pushSubscription.userId, [...new Set(items.map((i) => i.userId))]))
-  if (!subs.length) return
+  if (!subs.length) return result
   const byUser = new Map<string, typeof subs>()
   for (const s of subs) byUser.set(s.userId, [...(byUser.get(s.userId) ?? []), s])
   const dead: string[] = []
@@ -30,12 +40,21 @@ export async function sendPush(db: Db, items: { userId: string; title: string; b
             keys,
           )
           const res = await fetch(s.endpoint, payload)
+          if (res.ok) {
+            result.sent++
+            return
+          }
+          const detail = (await res.text().catch(() => '')).slice(0, 200)
+          result.failed.push({ status: res.status, detail })
+          console.error('[push] rejected', res.status, new URL(s.endpoint).host, detail)
           if (res.status === 404 || res.status === 410) dead.push(s.endpoint)
         } catch (err) {
+          result.failed.push({ status: 0, detail: err instanceof Error ? err.message : String(err) })
           console.error('[push] failed', err)
         }
       }),
     ),
   )
   if (dead.length) await db.delete(pushSubscription).where(inArray(pushSubscription.endpoint, dead))
+  return result
 }

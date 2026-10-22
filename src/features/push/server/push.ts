@@ -40,6 +40,8 @@ export const sendTestPush = createServerFn({ method: 'POST' })
     const subs = await context.db.select({ endpoint: pushSubscription.endpoint }).from(pushSubscription).where(eq(pushSubscription.userId, context.user.id))
     if (!subs.length) return { devices: 0 }
     const href = context.user.role === 'admin' ? '/admin' : '/w'
-    await sendPush(context.db, [{ userId: context.user.id, title: 'TinyGig alerts are on', body: 'This is how new gigs and updates will reach you.', href }])
-    return { devices: subs.length }
+    const r = await sendPush(context.db, [
+      { userId: context.user.id, title: 'TinyGig alerts are on', body: 'This is how new gigs and updates will reach you.', href },
+    ])
+    return { devices: subs.length, sent: r.sent, configured: r.configured, failed: r.failed }
   })
