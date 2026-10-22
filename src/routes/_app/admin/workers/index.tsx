@@ -28,9 +28,11 @@ export const Route = createFileRoute('/_app/admin/workers/')({
   head: () => ({ meta: [{ title: 'Workers · TinyGig Admin' }] }),
   validateSearch: workersSearchSchema,
   loaderDeps: ({ search }) => search,
-  loader: ({ context, deps }) => context.queryClient.ensureQueryData(workersQuery(deps)),
+  loader: ({ context, deps }) => context.queryClient.ensureQueryData(workersQuery({ ...deps, status: deps.status ?? DEFAULT_STATUS })),
   component: WorkersPage,
 })
+
+const DEFAULT_STATUS: ('approved' | 'suspended')[] = ['approved', 'suspended']
 
 type Bulk = { status: 'suspended' | 'approved'; rows: WorkerRow[]; clear: () => void }
 
@@ -38,7 +40,9 @@ function WorkersPage() {
   const search = Route.useSearch()
   const navigate = Route.useNavigate()
   const onSearchChange = useTableSearch(navigate as never)
-  const { data, isFetching } = useQuery({ ...workersQuery(search), placeholderData: keepPreviousData })
+  // The directory of people who work (or worked) for us; applicants live on their own page.
+  const effective = { ...search, status: search.status ?? DEFAULT_STATUS }
+  const { data, isFetching } = useQuery({ ...workersQuery(effective), placeholderData: keepPreviousData })
   const { data: counts } = useQuery(workerStatusCountsQuery())
   const [suspending, setSuspending] = useState<Bulk | null>(null)
 
@@ -84,7 +88,7 @@ function WorkersPage() {
             <DataTableFacetedFilter
               title="Status"
               options={STATUS_OPTIONS}
-              value={search.status}
+              value={effective.status}
               counts={counts}
               onChange={(v) => onSearchChange({ status: v })}
             />
