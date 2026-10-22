@@ -81,7 +81,7 @@ export function LedgerSample({ className }: { className?: string }) {
         {/* the settled stamp */}
         <span
           aria-hidden
-          className="mk-settle pointer-events-none absolute right-24 bottom-14 rounded-[3px] border-[3px] border-double border-success/70 px-2 py-0.5 text-[0.72rem] font-bold tracking-[0.08em] text-success/80 uppercase [font-stretch:80%] [transform:rotate(-4deg)]"
+          className="mk-settle pointer-events-none absolute right-24 bottom-14 rounded-md border-[3px] border-double border-success/70 px-2 py-0.5 text-[0.72rem] font-bold tracking-[0.08em] text-success/80 uppercase [transform:rotate(-4deg)]"
           style={{ '--i': ENTRIES.length + 1 } as CSSProperties}
         >
           Paid

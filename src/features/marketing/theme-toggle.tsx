@@ -21,7 +21,7 @@ export function ThemeToggle() {
           aria-label={`${label} theme`}
           onClick={() => setTheme(value)}
           className={cn(
-            'flex size-8 items-center justify-center rounded-[4px] text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60',
+            'flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/60',
             theme === value && 'bg-accent text-foreground',
           )}
         >

@@ -153,6 +153,8 @@ components:
     textColor: "{colors.khata-red}"
 ---
 
+> **Note (2026-10-23):** The visual theme was reverted to the warm tangerine shadcn look (see src/styles.css). Colour, font and radius rules below are out of date; the content and behaviour rules still apply.
+
 # Design System: TinyGig
 
 ## Overview

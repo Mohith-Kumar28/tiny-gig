@@ -11,7 +11,7 @@ import { describeProgram, TRIGGER_LABELS } from '../rules'
 import type { ProgramRow } from './program-form-values'
 import { ProgramStateBadge, programState } from './program-state-badge'
 
-const TAG = 'inline-flex h-5.5 items-center rounded-[3px] border bg-muted/40 px-1.5 text-xs whitespace-nowrap'
+const TAG = 'inline-flex h-5.5 items-center rounded-md border bg-muted/40 px-1.5 text-xs whitespace-nowrap'
 
 export function ProgramCard({
   program: p,

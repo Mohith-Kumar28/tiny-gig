@@ -14,8 +14,9 @@ import { cn } from '@/lib/utils'
 import { accountHistoryQuery } from '../queries'
 import { accountAgeDays, accountLabel, communityLabel, formatAge, levelFor } from '../rules'
 import { LevelBadge, platformIconFor } from './account-columns'
-import { STANDING_LABELS, StandingSelect } from './account-editors'
+import { ClientsEditor, STANDING_LABELS, StandingSelect } from './account-editors'
 import { AssignToOpportunity } from '@/features/opportunities/components/assign-to-opportunity'
+import { clientsQuery } from '@/features/clients/queries'
 import { ClientChip } from './client-chip'
 
 const FIELD_LABELS: Record<string, string> = {
@@ -25,6 +26,7 @@ const FIELD_LABELS: Record<string, string> = {
   createdOn: 'Creation date',
   createdOnConfirmed: 'Creation date confirmed',
   created: 'Account added',
+  clients: 'Clients',
 }
 
 function describeValue(field: string | undefined, v: unknown) {
@@ -38,6 +40,7 @@ function describeValue(field: string | undefined, v: unknown) {
 /** Full history of one account (R2): every task, client, community, link and outcome, plus who changed what (R7). */
 export function AccountSheet({ accountId, onOpenChange }: { accountId: string | null; onOpenChange: (open: boolean) => void }) {
   const { data, isLoading } = useQuery({ ...accountHistoryQuery(accountId ?? ''), enabled: !!accountId })
+  const { data: clients } = useQuery({ ...clientsQuery(), enabled: !!accountId })
   const a = data?.account
   return (
     <Sheet open={!!accountId} onOpenChange={onOpenChange}>
@@ -92,6 +95,13 @@ export function AccountSheet({ accountId, onOpenChange }: { accountId: string | 
                   </dd>
                 </div>
               </dl>
+              <div className="flex items-start gap-3 rounded-lg border px-3 py-2.5">
+                <span className="ledger-label pt-1">Clients</span>
+                <ClientsEditor
+                  id={a.id}
+                  value={(a.clientTagIds ?? []).flatMap((id) => clients?.find((c) => c.id === id) ?? [])}
+                />
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <AssignToOpportunity accountId={a.id} />
                 {data.ownerPhone ? (

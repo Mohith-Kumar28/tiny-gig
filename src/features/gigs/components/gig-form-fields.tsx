@@ -42,7 +42,7 @@ export function StatesMultiSelect({ value, onChange, id }: { value: State[]; onC
                     <CommandItem key={s} value={s} onSelect={() => toggle(s)}>
                       <div
                         className={cn(
-                          'flex size-4 items-center justify-center rounded-[4px] border',
+                          'flex size-4 items-center justify-center rounded-md border',
                           on ? 'border-primary bg-primary text-primary-foreground' : 'border-input [&_svg]:invisible',
                         )}
                       >

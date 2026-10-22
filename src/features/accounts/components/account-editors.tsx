@@ -1,17 +1,22 @@
-import { Check, Pencil } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
+import { Check, Pencil, Plus } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { formatDate } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ACCOUNT_STANDINGS, type AccountStanding } from '@/db/schema/enums'
+import { type ClientDraft, ClientDialog } from '@/features/clients/components/clients-manager'
+import { clientsQuery } from '@/features/clients/queries'
 import { useAction } from '@/hooks/use-action'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { istDayKey } from '../rules'
 import { updateAccount } from '../server/roster'
+import { ClientChip, tagDot } from './client-chip'
 
 export const STANDING_LABELS: Record<AccountStanding, string> = {
   active: 'Active',
@@ -241,5 +246,100 @@ export function CreatedOnEditor({
         <p className="text-[11px] text-muted-foreground">Changing it never changes the rate of work already assigned.</p>
       </form>
     </EditPopover>
+  )
+}
+
+type ClientLite = { id: string; name: string; color: string }
+
+/**
+ * The clients an account is used for. One account often serves two or three, so this is a
+ * tick list rather than a single pick. "Last" is the client of its most recent work.
+ */
+export function ClientsEditor({ id, value, last }: { id: string; value: ClientLite[]; last?: ClientLite | null }) {
+  const [open, setOpen] = useState(false)
+  const [draft, setDraft] = useState<string[]>([])
+  const [creating, setCreating] = useState<ClientDraft | null>(null)
+  const { data: clients } = useQuery({ ...clientsQuery(), enabled: open })
+  const update = useUpdateAccount('Clients saved')
+  const current = value.map((c) => c.id)
+  const dirty = draft.length !== current.length || draft.some((c) => !current.includes(c))
+  const live = (clients ?? []).filter((c) => !c.archivedAt || current.includes(c.id))
+  const showLast = last && !current.includes(last.id)
+  return (
+    <>
+      <EditPopover
+        open={open}
+        onOpenChange={(o) => {
+          setOpen(o)
+          if (o) setDraft(current)
+        }}
+        title="Clients this account is used for"
+        trigger={
+          <button
+            type="button"
+            title="Edit clients"
+            className="group -my-1 -ml-1 flex max-w-56 flex-col items-start gap-1 rounded-md px-1 py-1 text-left transition-colors duration-150 hover:bg-accent focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            <span className="flex flex-wrap items-center gap-1">
+              {value.length ? (
+                value.map((c) => <ClientChip key={c.id} name={c.name} color={c.color} />)
+              ) : (
+                <span className="text-muted-foreground">—</span>
+              )}
+              <Pencil className="size-3 text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100" />
+            </span>
+            {showLast ? <span className="text-[11px] text-muted-foreground">Last: {last.name}</span> : null}
+          </button>
+        }
+      >
+        <div className="max-h-56 space-y-0.5 overflow-y-auto">
+          {live.length ? (
+            live.map((c) => {
+              const checked = draft.includes(c.id)
+              return (
+                <label key={c.id} className="flex cursor-pointer items-center gap-2 rounded-md px-1.5 py-1.5 text-sm hover:bg-accent">
+                  <Checkbox
+                    checked={checked}
+                    onCheckedChange={(v) => setDraft((d) => (v ? [...d, c.id] : d.filter((x) => x !== c.id)))}
+                  />
+                  <span className={cn('size-1.5 shrink-0 rounded-full', tagDot(c.color))} />
+                  <span className="truncate">{c.name}</span>
+                </label>
+              )
+            })
+          ) : (
+            <p className="px-1.5 py-2 text-xs text-muted-foreground">{clients ? 'No clients yet.' : 'Loading…'}</p>
+          )}
+        </div>
+        <div className="flex items-center justify-between gap-2 border-t pt-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="h-8 px-2 text-xs"
+            onClick={() => {
+              setOpen(false)
+              setCreating({ name: '', color: 'blue' })
+            }}
+          >
+            <Plus /> New client
+          </Button>
+          <Button
+            type="button"
+            size="sm"
+            className="h-8"
+            disabled={!dirty || update.isPending}
+            onClick={() => update.mutate({ id, clientTagIds: draft }, { onSuccess: () => setOpen(false) })}
+          >
+            Save
+          </Button>
+        </div>
+      </EditPopover>
+      <ClientDialog
+        value={creating}
+        onOpenChange={(o) => !o && setCreating(null)}
+        onSaved={(newId) => update.mutate({ id, clientTagIds: [...(open ? draft : current), newId] })}
+      />
+    </>
   )
 }

@@ -1,127 +1,118 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "@daveyplate/better-auth-ui/css";
-@import "@fontsource-variable/archivo/wdth.css";
+@import "@fontsource-variable/geist";
 @import "@fontsource-variable/geist-mono";
+@import "@fontsource-variable/bricolage-grotesque";
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
-/*
- * TinyGig "khata" system. The product is a register of accounts and money owed,
- * so the palette is a bahi-khata: red ledger cloth, cool ledger paper, ballpoint
- * blue ink and carbon type. See DESIGN.md.
- */
 :root {
-  --radius: 0.375rem;
+  --radius: 0.625rem;
 
-  /* paper + carbon */
-  --background: oklch(0.986 0.004 250);
-  --foreground: oklch(0.2 0.02 265);
-  --card: oklch(0.997 0.002 250);
-  --card-foreground: oklch(0.2 0.02 265);
-  --popover: oklch(0.997 0.002 250);
-  --popover-foreground: oklch(0.2 0.02 265);
+  --background: oklch(0.985 0.006 85);
+  --foreground: oklch(0.2 0.015 60);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.015 60);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.015 60);
+  --primary: oklch(0.64 0.2 38);
+  --primary-foreground: oklch(0.99 0.01 80);
+  --secondary: oklch(0.955 0.01 80);
+  --secondary-foreground: oklch(0.25 0.015 60);
+  --muted: oklch(0.955 0.008 80);
+  --muted-foreground: oklch(0.5 0.015 60);
+  --accent: oklch(0.95 0.022 60);
+  --accent-foreground: oklch(0.25 0.015 60);
+  --destructive: oklch(0.58 0.22 27);
+  --border: oklch(0.91 0.01 80);
+  --input: oklch(0.89 0.01 80);
+  --ring: oklch(0.64 0.2 38);
 
-  /* khata red: primary actions and brand */
-  --primary: oklch(0.5 0.19 25);
-  --primary-foreground: oklch(0.985 0.01 30);
-  /* deep cloth: the app shell and full-strength red fields */
-  --cloth: oklch(0.36 0.12 22);
-  --cloth-foreground: oklch(0.96 0.02 40);
-  /* ballpoint ink: links, selection, focus, handwritten entries */
-  --ink: oklch(0.46 0.2 264);
-  --ink-foreground: oklch(0.985 0.005 260);
-  /* faint ledger ruling */
-  --ruling: oklch(0.6 0.12 255 / 0.16);
+  --success: oklch(0.58 0.14 150);
+  --success-foreground: oklch(0.99 0.01 150);
+  --warning: oklch(0.76 0.15 75);
+  --warning-foreground: oklch(0.25 0.05 60);
+  --info: oklch(0.58 0.13 245);
+  --info-foreground: oklch(0.99 0.01 245);
 
-  --secondary: oklch(0.955 0.007 255);
-  --secondary-foreground: oklch(0.24 0.02 265);
-  --muted: oklch(0.958 0.006 255);
-  --muted-foreground: oklch(0.47 0.02 262);
-  --accent: oklch(0.948 0.012 258);
-  --accent-foreground: oklch(0.22 0.02 265);
-  --destructive: oklch(0.55 0.22 30);
-  --border: oklch(0.895 0.01 258);
-  --input: oklch(0.86 0.012 258);
-  --ring: oklch(0.46 0.2 264);
+  --chart-1: oklch(0.64 0.2 38);
+  --chart-2: oklch(0.6 0.11 185);
+  --chart-3: oklch(0.52 0.13 260);
+  --chart-4: oklch(0.78 0.15 85);
+  --chart-5: oklch(0.6 0.13 330);
 
-  --success: oklch(0.5 0.13 155);
-  --success-foreground: oklch(0.985 0.01 155);
-  --warning: oklch(0.76 0.15 78);
-  --warning-foreground: oklch(0.26 0.06 65);
-  --info: oklch(0.46 0.2 264);
-  --info-foreground: oklch(0.985 0.005 260);
+  /* Brand fields (balance plate, headers) and link ink. Kept as names so components stay put. */
+  --cloth: oklch(0.975 0.007 80);
+  --cloth-foreground: oklch(0.2 0.015 60);
+  --ink: oklch(0.6 0.2 38);
+  --ink-foreground: oklch(0.99 0.01 80);
+  --ruling: oklch(0.91 0.01 80);
 
-  --chart-1: oklch(0.5 0.19 25);
-  --chart-2: oklch(0.46 0.2 264);
-  --chart-3: oklch(0.55 0.12 160);
-  --chart-4: oklch(0.76 0.15 78);
-  --chart-5: oklch(0.55 0.04 262);
-
-  --sidebar: oklch(0.34 0.115 22);
-  --sidebar-foreground: oklch(0.93 0.025 35);
-  --sidebar-primary: oklch(0.985 0.01 30);
-  --sidebar-primary-foreground: oklch(0.36 0.12 22);
-  --sidebar-accent: oklch(0.41 0.13 23);
-  --sidebar-accent-foreground: oklch(0.99 0.008 40);
-  --sidebar-border: oklch(1 0 0 / 11%);
-  --sidebar-ring: oklch(0.85 0.06 40);
+  --sidebar: oklch(0.975 0.007 80);
+  --sidebar-foreground: oklch(0.25 0.015 60);
+  --sidebar-primary: oklch(0.64 0.2 38);
+  --sidebar-primary-foreground: oklch(0.99 0.01 80);
+  --sidebar-accent: oklch(0.94 0.012 70);
+  --sidebar-accent-foreground: oklch(0.2 0.015 60);
+  --sidebar-border: oklch(0.91 0.01 80);
+  --sidebar-ring: oklch(0.64 0.2 38);
 }
 
 .dark {
-  /* the ledger at night: ink-black paper, the same cloth */
-  --background: oklch(0.175 0.018 262);
-  --foreground: oklch(0.94 0.008 250);
-  --card: oklch(0.21 0.02 262);
-  --card-foreground: oklch(0.94 0.008 250);
-  --popover: oklch(0.225 0.02 262);
-  --popover-foreground: oklch(0.94 0.008 250);
-  --primary: oklch(0.66 0.18 26);
-  --primary-foreground: oklch(0.17 0.03 25);
-  --cloth: oklch(0.3 0.09 22);
-  --cloth-foreground: oklch(0.95 0.02 40);
-  --ink: oklch(0.74 0.13 262);
-  --ink-foreground: oklch(0.17 0.03 262);
-  --ruling: oklch(0.75 0.08 255 / 0.08);
-  --secondary: oklch(0.255 0.02 262);
-  --secondary-foreground: oklch(0.94 0.008 250);
-  --muted: oklch(0.245 0.02 262);
-  --muted-foreground: oklch(0.71 0.018 258);
-  --accent: oklch(0.27 0.025 262);
-  --accent-foreground: oklch(0.95 0.008 250);
-  --destructive: oklch(0.66 0.2 28);
+  --background: oklch(0.165 0.008 60);
+  --foreground: oklch(0.95 0.008 80);
+  --card: oklch(0.2 0.009 60);
+  --card-foreground: oklch(0.95 0.008 80);
+  --popover: oklch(0.21 0.009 60);
+  --popover-foreground: oklch(0.95 0.008 80);
+  --primary: oklch(0.7 0.19 42);
+  --primary-foreground: oklch(0.18 0.02 50);
+  --secondary: oklch(0.26 0.01 60);
+  --secondary-foreground: oklch(0.95 0.008 80);
+  --muted: oklch(0.25 0.01 60);
+  --muted-foreground: oklch(0.7 0.012 70);
+  --accent: oklch(0.28 0.015 55);
+  --accent-foreground: oklch(0.95 0.008 80);
+  --destructive: oklch(0.65 0.2 25);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.74 0.13 262);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.7 0.19 42);
 
-  --success: oklch(0.7 0.14 155);
-  --success-foreground: oklch(0.17 0.03 155);
-  --warning: oklch(0.8 0.14 80);
-  --warning-foreground: oklch(0.2 0.04 65);
-  --info: oklch(0.74 0.13 262);
-  --info-foreground: oklch(0.17 0.03 262);
+  --success: oklch(0.68 0.14 150);
+  --success-foreground: oklch(0.18 0.03 150);
+  --warning: oklch(0.8 0.14 78);
+  --warning-foreground: oklch(0.2 0.04 60);
+  --info: oklch(0.68 0.12 245);
+  --info-foreground: oklch(0.18 0.03 245);
 
-  --chart-1: oklch(0.66 0.18 26);
-  --chart-2: oklch(0.74 0.13 262);
-  --chart-3: oklch(0.7 0.13 160);
-  --chart-4: oklch(0.8 0.14 80);
-  --chart-5: oklch(0.6 0.03 262);
+  --chart-1: oklch(0.7 0.19 42);
+  --chart-2: oklch(0.7 0.11 185);
+  --chart-3: oklch(0.65 0.13 260);
+  --chart-4: oklch(0.8 0.14 85);
+  --chart-5: oklch(0.68 0.13 330);
 
-  --sidebar: oklch(0.205 0.045 20);
-  --sidebar-foreground: oklch(0.9 0.02 35);
-  --sidebar-primary: oklch(0.66 0.18 26);
-  --sidebar-primary-foreground: oklch(0.17 0.03 25);
-  --sidebar-accent: oklch(0.27 0.06 22);
-  --sidebar-accent-foreground: oklch(0.97 0.01 40);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.74 0.13 262);
+  --cloth: oklch(0.2 0.009 60);
+  --cloth-foreground: oklch(0.95 0.008 80);
+  --ink: oklch(0.72 0.17 42);
+  --ink-foreground: oklch(0.18 0.02 50);
+  --ruling: oklch(1 0 0 / 10%);
+
+  --sidebar: oklch(0.185 0.008 60);
+  --sidebar-foreground: oklch(0.92 0.008 80);
+  --sidebar-primary: oklch(0.7 0.19 42);
+  --sidebar-primary-foreground: oklch(0.18 0.02 50);
+  --sidebar-accent: oklch(0.26 0.012 60);
+  --sidebar-accent-foreground: oklch(0.95 0.008 80);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.7 0.19 42);
 }
 
 @theme inline {
-  --font-sans: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "Geist Mono Variable", ui-monospace, monospace;
-  --font-display: "Archivo Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Geist Variable", ui-sans-serif, sans-serif;
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -183,8 +174,7 @@
   }
   body {
     @apply bg-background text-foreground font-sans antialiased;
-    font-variant-numeric: lining-nums;
-    caret-color: var(--ink);
+    font-feature-settings: "ss01", "cv11";
   }
   ::selection {
     background: color-mix(in oklch, var(--ink) 22%, transparent);
@@ -199,25 +189,17 @@
   h3 {
     text-wrap: balance;
   }
-  /* Display voice: the same Archivo, opened up and heavy, like a printed ledger title. */
-  .font-display {
-    font-stretch: 112%;
-    letter-spacing: -0.025em;
-  }
   .tabular {
     font-variant-numeric: tabular-nums lining-nums;
   }
 }
 
 @layer components {
-  /* Column-head voice: condensed caps, as printed on a khata's ruled header. */
+  /* Small label for column heads and stat captions. */
   .ledger-label {
-    font-stretch: 78%;
-    font-weight: 600;
-    font-size: 0.72rem;
+    font-weight: 500;
+    font-size: 0.75rem;
     line-height: 1rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
     color: var(--muted-foreground);
   }
   /* A settled total: the accountant's double rule. */
@@ -232,13 +214,11 @@
     text-decoration-color: color-mix(in oklch, var(--destructive) 70%, transparent);
     text-decoration-thickness: 1.5px;
   }
-  /* Ruled ledger paper with a red margin rule. --margin sets where the rule sits. */
+  /* Plain page surface (formerly ruled paper). */
   .ledger-paper {
     background-color: var(--background);
-    background-image:
-      linear-gradient(to right, transparent calc(var(--margin, 4.5rem) - 1px), color-mix(in oklch, var(--primary) 55%, transparent) calc(var(--margin, 4.5rem) - 1px), color-mix(in oklch, var(--primary) 55%, transparent) calc(var(--margin, 4.5rem) + 1px), transparent calc(var(--margin, 4.5rem) + 1px)),
-      repeating-linear-gradient(to bottom, transparent 0, transparent calc(var(--line, 2rem) - 1px), var(--ruling) calc(var(--line, 2rem) - 1px), var(--ruling) var(--line, 2rem));
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -67,7 +67,7 @@ function MyWorkPage() {
               >
                 {TAB_LABELS[t]}
                 {counts && counts[t] > 0 ? (
-                  <span className="rounded-[3px] bg-foreground/8 px-1 text-[11px] leading-4 font-semibold tabular">
+                  <span className="rounded-md bg-foreground/8 px-1 text-[11px] leading-4 font-semibold tabular">
                     {counts[t]}
                   </span>
                 ) : null}

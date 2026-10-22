@@ -1,7 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { Archive, ArchiveRestore, Pencil, Plus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { Link } from '@tanstack/react-router'
 import { EmptyState } from '@/components/shared/empty-state'
+import { PageHeader } from '@/components/shared/page-header'
 import { Money } from '@/components/shared/money'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -9,7 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
-import { SettingsSection } from '@/features/settings/components/settings-section'
 import { ClientChip, TAG_COLORS, type TagColor, tagDot } from '@/features/accounts/components/client-chip'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
@@ -98,15 +99,16 @@ export function ClientsManager() {
     invalidate: [['admin', 'clients']],
   })
   return (
-    <SettingsSection
-      title="Clients"
-      description="Tag work with the client it was for. Drives the same-client cooldowns and the roster’s Last client column. Workers never see client names."
-      actions={
-        <Button size="sm" variant="outline" onClick={() => setEditing({ name: '', color: 'blue' })}>
-          <Plus /> New client
-        </Button>
-      }
-    >
+    <div className="max-w-5xl space-y-6">
+      <PageHeader
+        title="Clients"
+        description="Who the work is for. Tag gigs and posts with a client, and tick the clients each account is used for on the Accounts roster. Drives the same-client cooldowns. Workers never see client names."
+        actions={
+          <Button size="sm" onClick={() => setEditing({ name: '', color: 'blue' })}>
+            <Plus /> New client
+          </Button>
+        }
+      />
       {isLoading ? (
         <Skeleton className="h-32 rounded-lg" />
       ) : !data?.length ? (
@@ -117,9 +119,10 @@ export function ClientsManager() {
             <thead className="border-b bg-muted/45">
               <tr>
                 <th className="ledger-label px-4 py-2 text-left">Client</th>
+                <th className="ledger-label px-3 py-2 text-right">Accounts</th>
                 <th className="ledger-label px-3 py-2 text-right">Posts 7d</th>
                 <th className="ledger-label px-3 py-2 text-right">Posts 30d</th>
-                <th className="ledger-label px-3 py-2 text-right">Accounts 30d</th>
+                <th className="ledger-label px-3 py-2 text-right">Used 30d</th>
                 <th className="ledger-label px-3 py-2 text-right">Approved</th>
                 <th className="ledger-label px-3 py-2 text-right">Spend</th>
                 <th className="w-20" />
@@ -131,6 +134,11 @@ export function ClientsManager() {
                   <td className="px-4 py-2.5">
                     <ClientChip name={c.name} color={c.color} />
                     {c.archivedAt ? <span className="ml-2 text-xs text-muted-foreground">archived</span> : null}
+                  </td>
+                  <td className="px-3 py-2.5 text-right tabular">
+                    <Link to="/admin/accounts" search={{ client: [c.id] }} className="hover:underline">
+                      {c.assignedAccounts}
+                    </Link>
                   </td>
                   <td className="px-3 py-2.5 text-right tabular">{c.posts7}</td>
                   <td className="px-3 py-2.5 text-right tabular">{c.posts30}</td>
@@ -162,6 +170,6 @@ export function ClientsManager() {
         </div>
       )}
       <ClientDialog value={editing} onOpenChange={(o) => !o && setEditing(null)} />
-    </SettingsSection>
+    </div>
   )
 }

@@ -49,7 +49,7 @@ export function rewardColumns(actions: {
       cell: ({ row }) => (
         <span
           className={cn(
-            'inline-flex h-5.5 items-center rounded-[3px] border px-1.5 text-xs capitalize',
+            'inline-flex h-5.5 items-center rounded-md border px-1.5 text-xs capitalize',
             row.original.role === 'referrer' ? 'bg-muted/60' : 'border-dashed text-muted-foreground',
           )}
         >

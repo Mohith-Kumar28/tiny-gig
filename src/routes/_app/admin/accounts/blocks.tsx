@@ -67,7 +67,7 @@ const columns: ColumnDef<Row, unknown>[] = [
     header: () => 'Rule',
     cell: ({ row }) => (
       <div>
-        <span className="inline-flex h-5.5 items-center rounded-[3px] border bg-muted/60 px-1.5 text-xs font-medium whitespace-nowrap">{RULE_LABELS[row.original.rule as RuleKey] ?? row.original.rule}</span>
+        <span className="inline-flex h-5.5 items-center rounded-md border bg-muted/60 px-1.5 text-xs font-medium whitespace-nowrap">{RULE_LABELS[row.original.rule as RuleKey] ?? row.original.rule}</span>
         {row.original.detail ? <div className="mt-0.5 max-w-80 truncate text-xs text-muted-foreground">{row.original.detail}</div> : null}
       </div>
     ),

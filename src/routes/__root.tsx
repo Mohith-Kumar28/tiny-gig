@@ -17,7 +17,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
       { title: SITE.title },
       { name: 'description', content: SITE.description },
-      { name: 'theme-color', content: '#6f181e' },
+      { name: 'theme-color', content: '#e2561f' },
       { name: 'apple-mobile-web-app-capable', content: 'yes' },
       { name: 'apple-mobile-web-app-title', content: 'TinyGig' },
       { property: 'og:site_name', content: SITE.name },

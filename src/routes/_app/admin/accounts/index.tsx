@@ -57,6 +57,7 @@ function exportCsv(rows: RosterRow[]) {
     { header: 'Standing', value: (r) => (r.cooling ? 'cooling down' : r.standing) },
     { header: 'In use', value: (r) => (r.inUse ? 'yes' : 'no') },
     { header: 'Last activity', value: (r) => (r.lastActivityAt ? formatDate(r.lastActivityAt) : '') },
+    { header: 'Clients', value: (r) => r.clients.map((c) => c.name).join('; ') },
     { header: 'Last client', value: (r) => r.lastClient?.name ?? '' },
     { header: 'Days since client work', value: (r) => r.daysSinceClientWork ?? '' },
     { header: 'Communities', value: (r) => r.communities.map((c) => communityLabel(c.name)).join(' ') },
@@ -188,7 +189,7 @@ function AccountsPage() {
               onChange={(v) => onSearchChange({ level: v })}
             />
             <DataTableFacetedFilter
-              title="Last client"
+              title="Client"
               options={(data?.tags ?? []).map((t) => ({ value: t.id, label: t.name }))}
               value={search.client}
               onChange={(v) => onSearchChange({ client: v })}

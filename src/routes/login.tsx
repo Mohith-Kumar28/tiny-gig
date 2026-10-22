@@ -30,9 +30,9 @@ function LoginPage() {
   const { redirect: redirectTo } = Route.useSearch()
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,560px)]">
-      {/* Desktop: the red cloth cover of the khata. */}
-      <aside className="relative hidden flex-col justify-between bg-cloth p-10 text-cloth-foreground lg:flex">
-        <Logo inverse />
+      {/* Desktop: brand panel. */}
+      <aside className="relative hidden flex-col justify-between border-r bg-cloth p-10 text-cloth-foreground lg:flex">
+        <Logo />
         <div className="max-w-md space-y-6">
           <p className="font-display text-[2.6rem] leading-[1.05] font-extrabold">Small tasks. Real UPI payouts.</p>
           <ol className="border-t border-cloth-foreground/20 text-sm">
@@ -48,9 +48,9 @@ function LoginPage() {
       </aside>
 
       <div className="flex min-h-dvh flex-col">
-        {/* Phone: the cloth band, as on the public site. */}
-        <header className="bg-cloth px-5 pt-3.5 pb-5 text-cloth-foreground lg:hidden">
-          <Logo inverse />
+        {/* Phone: brand band. */}
+        <header className="border-b bg-cloth px-5 pt-3.5 pb-5 text-cloth-foreground lg:hidden">
+          <Logo />
           <p className="mt-4 font-display text-[1.35rem] leading-tight font-extrabold">Small tasks. Real UPI payouts.</p>
         </header>
         <main className="ledger-paper flex flex-1 flex-col px-4 py-8 [--line:2.25rem] [--margin:0.85rem] sm:px-10 sm:[--margin:1.6rem]">

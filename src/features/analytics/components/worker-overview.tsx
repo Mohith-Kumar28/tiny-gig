@@ -53,7 +53,7 @@ export function WorkerOverview({ overview, earnings }: { overview: Overview; ear
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:items-start">
         {/* The balance plate: a full field of khata red, the one place the worker app commits to it. */}
-        <section aria-labelledby="balance-title" className="overflow-hidden rounded-lg bg-cloth text-cloth-foreground">
+        <section aria-labelledby="balance-title" className="overflow-hidden rounded-xl border bg-cloth text-cloth-foreground">
           <Link to="/w/payments" className="block px-5 pt-4 pb-5 transition-colors hover:bg-white/[0.04]">
             <h2 id="balance-title" className="ledger-label text-cloth-foreground/70">
               Your balance

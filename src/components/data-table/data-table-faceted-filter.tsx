@@ -34,7 +34,7 @@ export function DataTableFacetedFilter({
     else next.add(v)
     onChange(next.size ? [...next] : undefined)
   }
-  const chip = 'rounded-[3px] bg-ink/10 px-1 text-xs font-medium text-ink'
+  const chip = 'rounded-md bg-ink/10 px-1 text-xs font-medium text-ink'
   return (
     <Popover>
       <PopoverTrigger asChild>
@@ -83,7 +83,7 @@ export function DataTableFacetedFilter({
                   <CommandItem key={o.value} onSelect={() => toggle(o.value)}>
                     <div
                       className={cn(
-                        'flex size-4 items-center justify-center rounded-[3px] border transition-colors duration-150',
+                        'flex size-4 items-center justify-center rounded-md border transition-colors duration-150',
                         isSelected ? 'border-ink bg-ink text-ink-foreground' : 'border-input [&_svg]:invisible',
                       )}
                     >

@@ -25,15 +25,15 @@ export type BaseEmailProps = {
   appUrl: string
 }
 
-/** The app's khata palette, flattened to hex for email clients. */
+/** The app palette, flattened to hex for email clients. */
 const colors = {
-  ink: '#12161f',
-  muted: '#555b66',
-  line: '#d8dde3',
-  paper: '#f3f6f9',
-  primary: '#b71824',
-  cloth: '#6f181e',
-  clothInk: '#ffeee8',
+  ink: '#221c17',
+  muted: '#6b625b',
+  line: '#e9e4dd',
+  paper: '#faf8f5',
+  primary: '#e2561f',
+  cloth: '#e2561f',
+  clothInk: '#fffaf3',
 }
 
 export function BaseEmail({

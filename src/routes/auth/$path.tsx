@@ -20,7 +20,7 @@ function AuthPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <header className="bg-cloth px-5 py-3.5 text-cloth-foreground sm:px-10">
-        <Logo inverse />
+        <Logo />
       </header>
       <main className="ledger-paper flex flex-1 items-start justify-center px-4 py-10 [--line:2.25rem] [--margin:0.85rem] sm:items-center sm:[--margin:1.6rem]">
         <AuthView pathname={`/auth/${path}`} redirectTo="/app" classNames={{ base: 'w-full max-w-sm shadow-none' }} />

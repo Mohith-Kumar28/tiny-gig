@@ -4,7 +4,7 @@ import { getCookie } from '@tanstack/react-start/server'
 import { and, eq } from 'drizzle-orm'
 import { socialAccount, user, workerProfile } from '@/db/schema'
 import { queueEmail } from '@/emails/send-email'
-import { createReferralCode } from '@/lib/id'
+import { referralCodeForName } from '@/features/referrals/server/codes'
 import { AppError, userMiddleware } from '@/lib/server/middleware'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { attributeReferral } from '@/features/referrals/server/engine'
@@ -76,7 +76,7 @@ export const submitApplication = createServerFn({ method: 'POST' })
     if (existing) {
       await db.update(workerProfile).set(values).where(eq(workerProfile.userId, me.id))
     } else {
-      await db.insert(workerProfile).values({ ...values, userId: me.id, ownReferralCode: createReferralCode() })
+      await db.insert(workerProfile).values({ ...values, userId: me.id, ownReferralCode: await referralCodeForName(db, data.fullName) })
     }
     if (me.name !== data.fullName) await db.update(user).set({ name: data.fullName }).where(eq(user.id, me.id))
 

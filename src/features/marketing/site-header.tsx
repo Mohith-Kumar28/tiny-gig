@@ -12,13 +12,13 @@ const NAV = [
 const linkClass =
   'rounded-md px-3 py-2 text-sm font-medium text-cloth-foreground/80 transition-colors hover:bg-cloth-foreground/10 hover:text-cloth-foreground focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cloth-foreground/50'
 
-/** The red cloth band: the cover of the khata. */
+/** Sticky site header. */
 export function SiteHeader() {
   return (
-    <header className="sticky top-0 z-40 bg-cloth text-cloth-foreground shadow-[0_1px_0_oklch(0.25_0.08_22)]">
+    <header className="sticky top-0 z-40 bg-cloth text-cloth-foreground border-b">
       <Container className="flex h-15 items-center justify-between gap-4">
         <a href="/" aria-label="TinyGig home" className="rounded-md focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-cloth-foreground/50">
-          <Logo inverse />
+          <Logo />
         </a>
 
         <nav aria-label="Main" className="hidden items-center gap-1 md:flex">
@@ -41,10 +41,10 @@ export function SiteHeader() {
             </summary>
             <nav
               aria-label="Mobile"
-              className="absolute right-0 top-12 flex w-52 flex-col rounded-md border bg-popover p-1.5 text-popover-foreground shadow-[0_18px_40px_-18px_oklch(0.25_0.06_262/0.45)]"
+              className="absolute right-0 top-12 flex w-52 flex-col rounded-md border bg-popover p-1.5 text-popover-foreground shadow-lg"
             >
               {NAV.map((item) => (
-                <a key={item.href} href={item.href} className="rounded-[4px] px-3 py-2.5 text-sm font-medium hover:bg-accent">
+                <a key={item.href} href={item.href} className="rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent">
                   {item.label}
                 </a>
               ))}

@@ -361,7 +361,7 @@ function TabCount({ tab, count }: { tab: ReviewTab; count?: number }) {
   return (
     <span
       className={cn(
-        'rounded-[3px] px-1.5 text-[11px] leading-4 tabular',
+        'rounded-md px-1.5 text-[11px] leading-4 tabular',
         urgent ? 'bg-primary text-primary-foreground' : 'bg-muted-foreground/15 text-muted-foreground',
       )}
     >

@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm'
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { createdAt, id, timestamp, updatedAt } from './_helpers'
 import { user } from './auth'
@@ -27,6 +28,11 @@ export const socialAccount = sqliteTable(
     karmaUpdatedAt: timestamp('karma_updated_at'),
     standing: text('standing', { enum: ACCOUNT_STANDINGS }).notNull().default('active'),
     standingNote: text('standing_note'),
+    /** Clients this account is used for. One account can serve two or three. Admin-only. */
+    clientTagIds: text('client_tag_ids', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .default(sql`'[]'`),
     addedBy: userRef('added_by'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

@@ -112,7 +112,7 @@ function ReferralsPage() {
           <TabsTrigger value="rewards">
             Rewards queue
             {stats?.pendingReview ? (
-              <span className="ml-1 rounded-[3px] bg-primary/10 px-1 text-xs font-medium text-primary tabular">{stats.pendingReview}</span>
+              <span className="ml-1 rounded-md bg-primary/10 px-1 text-xs font-medium text-primary tabular">{stats.pendingReview}</span>
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="referrals">Referrals</TabsTrigger>

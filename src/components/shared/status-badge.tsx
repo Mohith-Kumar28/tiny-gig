@@ -2,16 +2,14 @@ import { cn } from '@/lib/utils'
 
 type Tone = 'neutral' | 'info' | 'warning' | 'success' | 'danger' | 'primary' | 'muted'
 
-/** Office-stamp tags. Settled states get the ledger's double rule as their border. */
 const TONES: Record<Tone, string> = {
-  neutral: 'bg-secondary text-secondary-foreground border-border',
-  muted: 'bg-transparent text-muted-foreground border-border',
-  info: 'bg-ink/6 text-ink border-ink/35',
-  warning: 'bg-warning/15 text-warning-foreground border-warning/60 dark:text-warning',
-  success: 'bg-success/8 text-success border-success/55 border-double border-[3px] px-1',
-  danger: 'bg-destructive/7 text-destructive border-destructive/40',
-  // Carbon stamp: with staff, nothing wrong. Red stays for real trouble.
-  primary: 'bg-card text-foreground border-foreground/45',
+  neutral: 'bg-secondary text-secondary-foreground ring-border',
+  muted: 'bg-muted text-muted-foreground ring-border',
+  info: 'bg-info/12 text-info ring-info/25',
+  warning: 'bg-warning/18 text-warning-foreground dark:text-warning ring-warning/35',
+  success: 'bg-success/12 text-success ring-success/25',
+  danger: 'bg-destructive/10 text-destructive ring-destructive/25',
+  primary: 'bg-primary/12 text-primary ring-primary/25',
 }
 
 const STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
@@ -63,11 +61,12 @@ export function StatusBadge({ status, label, className }: { status: string; labe
   return (
     <span
       className={cn(
-        'inline-flex h-5.5 shrink-0 items-center rounded-[3px] border px-1.5 text-[0.7rem] leading-none font-semibold tracking-[0.04em] whitespace-nowrap uppercase [font-stretch:82%]',
+        'inline-flex h-5.5 shrink-0 items-center gap-1.5 rounded-full px-2 text-xs font-medium whitespace-nowrap ring-1 ring-inset',
         TONES[s.tone],
         className,
       )}
     >
+      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-80" />
       {label ?? s.label}
     </span>
   )

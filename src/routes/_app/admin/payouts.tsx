@@ -72,7 +72,7 @@ function PayoutsPage() {
           <TabsTrigger value="to_pay">
             To pay
             {balances?.length ? (
-              <span className="ml-1 rounded-[3px] bg-muted px-1 text-xs text-muted-foreground tabular">{balances.length}</span>
+              <span className="ml-1 rounded-md bg-muted px-1 text-xs text-muted-foreground tabular">{balances.length}</span>
             ) : null}
           </TabsTrigger>
           <TabsTrigger value="payouts">Payouts</TabsTrigger>

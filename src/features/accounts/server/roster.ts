@@ -47,6 +47,7 @@ async function buildRoster(db: Parameters<typeof loadWork>[0], now: Date) {
         karmaUpdatedAt: socialAccount.karmaUpdatedAt,
         standing: socialAccount.standing,
         standingNote: socialAccount.standingNote,
+        clientTagIds: socialAccount.clientTagIds,
         ownerName: workerProfile.fullName,
         ownerPhone: workerProfile.phone,
         ownerStatus: workerProfile.status,
@@ -97,6 +98,7 @@ async function buildRoster(db: Parameters<typeof loadWork>[0], now: Date) {
       coolingReason: cooling ? (ready.blocks[0]?.message ?? null) : null,
       free: a.standing === 'active' && !cooling && !inUse && level !== 'warmup' && (a.platform !== 'reddit' || a.createdOn != null),
       lastActivityAt: items[0]?.at ?? null,
+      clients: (a.clientTagIds ?? []).flatMap((id) => tagById.get(id) ?? []),
       lastClient: last?.clientTagId ? (tagById.get(last.clientTagId) ?? null) : null,
       daysSinceClientWork: last ? Math.floor((now.getTime() - last.at.getTime()) / DAY_MS) : null,
       communities: [...communities].map(([name, at]) => ({ name, at })),
@@ -117,7 +119,7 @@ const SORTS: Record<string, (r: Row) => string | number | null> = {
   standing: (r) => (r.cooling ? 'active-cooling' : r.standing),
   inUse: (r) => (r.inUse ? 1 : 0),
   lastActivity: (r) => r.lastActivityAt?.getTime() ?? null,
-  lastClient: (r) => r.lastClient?.name.toLowerCase() ?? null,
+  lastClient: (r) => (r.clients[0] ?? r.lastClient)?.name.toLowerCase() ?? null,
   daysSince: (r) => r.daysSinceClientWork,
   communities: (r) => r.communities.length,
   done: (r) => r.totalDone,
@@ -162,7 +164,11 @@ export const listAccounts = createServerFn({ method: 'GET' })
     const filtered = inPlatform.filter((r) => {
       if (data.standing?.length && !data.standing.some((s) => (s === 'cooling_down' ? r.cooling : r.standing === s))) return false
       if (data.level?.length && !(r.level && data.level.includes(r.level))) return false
-      if (data.client?.length && !(r.lastClient && data.client.includes(r.lastClient.id))) return false
+      if (
+        data.client?.length &&
+        !data.client.some((c) => r.lastClient?.id === c || r.clientTagIds.includes(c))
+      )
+        return false
       if (data.inUse && !r.inUse) return false
       if (data.free && !r.free) return false
       if (data.unconfirmed && r.createdOnConfirmedAt) return false
@@ -256,6 +262,8 @@ export const updateAccount = createServerFn({ method: 'POST' })
       /** Epoch ms of the account's creation date. */
       createdOn: z.number().int().positive().optional(),
       confirmCreatedOn: z.boolean().optional(),
+      /** The clients this account is used for. */
+      clientTagIds: z.array(z.string()).max(20).optional(),
     }),
   )
   .handler(async ({ data, context }) => {
@@ -292,6 +300,18 @@ export const updateAccount = createServerFn({ method: 'POST' })
     } else if (data.createdOn !== undefined) {
       patch.createdOnConfirmedAt = now
       patch.createdOnConfirmedBy = me.id
+    }
+    if (data.clientTagIds !== undefined) {
+      const next = [...new Set(data.clientTagIds)]
+      const before = current.clientTagIds ?? []
+      if (next.length !== before.length || next.some((id) => !before.includes(id))) {
+        const tags = await db.select({ id: clientTag.id, name: clientTag.name }).from(clientTag)
+        const names = (ids: string[]) =>
+          ids.map((id) => tags.find((t) => t.id === id)?.name).filter(Boolean).join(', ') || null
+        if (next.some((id) => !tags.some((t) => t.id === id))) throw new AppError('BAD_REQUEST', 'Unknown client.')
+        patch.clientTagIds = next
+        changed.push({ field: 'clients', from: names(before), to: names(next) })
+      }
     }
     if (!changed.length) return { ok: true, changed: 0 }
     await db.update(socialAccount).set(patch).where(eq(socialAccount.id, data.id))

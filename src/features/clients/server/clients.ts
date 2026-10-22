@@ -14,7 +14,8 @@ export const listClients = createServerFn({ method: 'GET' })
     const d7 = now - 7 * 86_400_000
     const d30 = now - 30 * 86_400_000
     const posted = sql`coalesce(${submission.firstSubmittedAt}, 0)`
-    return context.db
+    const [rows, assigned] = await Promise.all([
+      context.db
       .select({
         id: clientTag.id,
         name: clientTag.name,
@@ -29,7 +30,14 @@ export const listClients = createServerFn({ method: 'GET' })
       .from(clientTag)
       .leftJoin(submission, eq(submission.clientTagId, clientTag.id))
       .groupBy(clientTag.id)
-      .orderBy(sql`${clientTag.archivedAt} is not null`, asc(clientTag.name))
+      .orderBy(sql`${clientTag.archivedAt} is not null`, asc(clientTag.name)),
+      // Accounts tagged as used for each client (one account can serve several).
+      context.db.all<{ id: string; n: number }>(
+        sql`select j.value as id, count(*) as n from social_account, json_each(social_account.client_tag_ids) j group by j.value`,
+      ),
+    ])
+    const byId = new Map(assigned.map((a) => [a.id, Number(a.n)]))
+    return rows.map((r) => ({ ...r, assignedAccounts: byId.get(r.id) ?? 0 }))
   })
 
 export const saveClient = createServerFn({ method: 'POST' })

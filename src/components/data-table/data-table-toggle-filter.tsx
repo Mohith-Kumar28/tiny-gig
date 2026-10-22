@@ -30,7 +30,7 @@ export function DataTableToggleFilter({
     >
       {children}
       {count != null ? (
-        <span className={cn('rounded-[3px] px-1 text-xs tabular', active ? 'bg-ink/10' : 'bg-muted text-muted-foreground')}>
+        <span className={cn('rounded-md px-1 text-xs tabular', active ? 'bg-ink/10' : 'bg-muted text-muted-foreground')}>
           {count}
         </span>
       ) : null}

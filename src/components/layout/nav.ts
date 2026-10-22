@@ -2,6 +2,7 @@ import type { LucideIcon } from 'lucide-react'
 import {
   AtSign,
   Briefcase,
+  Building2,
   CircleUserRound,
   ClipboardCheck,
   Gift,
@@ -63,6 +64,7 @@ export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
       { to: '/admin/accounts', label: 'Accounts', icon: AtSign },
       { to: '/admin/review', label: 'Review inbox', icon: Inbox, badgeKey: 'needs_review' },
       { to: '/admin/gigs', label: 'Gigs', icon: Briefcase, badgeKey: 'to_select' },
+      { to: '/admin/clients', label: 'Clients', icon: Building2 },
       { to: '/admin/posts', label: 'Post log', icon: Newspaper },
       { to: '/admin/warmup', label: 'Warm-up', icon: Sprout },
     ],

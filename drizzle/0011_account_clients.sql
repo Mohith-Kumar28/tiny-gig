@@ -1,0 +1,1 @@
+ALTER TABLE `social_account` ADD `client_tag_ids` text DEFAULT '[]' NOT NULL;

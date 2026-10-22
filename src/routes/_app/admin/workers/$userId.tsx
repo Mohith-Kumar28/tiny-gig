@@ -171,7 +171,7 @@ function WorkerDetailPage() {
                   key={s}
                   type="button"
                   title={`Show ${statusLabel(s).toLowerCase()} submissions`}
-                  className="rounded-[3px] transition-opacity duration-150 hover:opacity-75 focus-visible:outline-2 focus-visible:outline-ring"
+                  className="rounded-md transition-opacity duration-150 hover:opacity-75 focus-visible:outline-2 focus-visible:outline-ring"
                   onClick={() => onSearchChange({ tab: undefined, status: [s] })}
                 >
                   <StatusBadge status={s} label={`${statusLabel(s)} · ${n}`} />

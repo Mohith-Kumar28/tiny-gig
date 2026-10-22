@@ -30,13 +30,13 @@ export function UserMenu({ viewer }: { viewer: Viewer }) {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <SidebarMenuButton size="lg" className="data-[state=open]:bg-sidebar-accent">
-              <Avatar className="size-8 rounded-md">
+              <Avatar className="size-8 rounded-lg">
                 {viewer.user.image ? <AvatarImage src={viewer.user.image} alt="" /> : null}
-                <AvatarFallback className="rounded-md bg-cloth-foreground/15 text-xs font-semibold text-sidebar-foreground">{initials(viewer.user.name || viewer.user.email)}</AvatarFallback>
+                <AvatarFallback className="rounded-lg text-xs">{initials(viewer.user.name || viewer.user.email)}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{viewer.user.name}</span>
-                <span className="truncate text-xs text-sidebar-foreground/65">{viewer.user.email}</span>
+                <span className="truncate text-xs text-muted-foreground">{viewer.user.email}</span>
               </div>
             </SidebarMenuButton>
           </DropdownMenuTrigger>

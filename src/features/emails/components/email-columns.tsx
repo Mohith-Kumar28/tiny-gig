@@ -37,7 +37,7 @@ export const emailColumns: ColumnDef<EmailRow, unknown>[] = [
     header: () => 'Template',
     meta: { label: 'Template' },
     cell: ({ row }) => (
-      <span className="inline-flex h-5.5 items-center rounded-[3px] border bg-muted/50 px-1.5 text-xs whitespace-nowrap text-muted-foreground">
+      <span className="inline-flex h-5.5 items-center rounded-md border bg-muted/50 px-1.5 text-xs whitespace-nowrap text-muted-foreground">
         {templateLabel(row.original.template)}
       </span>
     ),

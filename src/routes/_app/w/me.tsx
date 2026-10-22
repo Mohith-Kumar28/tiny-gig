@@ -109,7 +109,7 @@ function MePage() {
           label="Notifications"
           hint={
             notes?.unread ? (
-              <span className="rounded-[3px] bg-primary px-1.5 text-xs leading-5 font-semibold text-primary-foreground tabular">
+              <span className="rounded-md bg-primary px-1.5 text-xs leading-5 font-semibold text-primary-foreground tabular">
                 {notes.unread}
               </span>
             ) : null

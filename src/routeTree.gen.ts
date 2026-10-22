@@ -32,6 +32,7 @@ import { Route as AppAccountIndexRouteImport } from './routes/_app/account/index
 import { Route as AppAccountPathRouteImport } from './routes/_app/account/$path'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
+import { Route as AppAdminClientsRouteImport } from './routes/_app/admin/clients'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
 import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts'
 import { Route as AppAdminPostsRouteImport } from './routes/_app/admin/posts'
@@ -179,6 +180,11 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
 const AppAdminApplicantsRoute = AppAdminApplicantsRouteImport.update({
   id: '/applicants',
   path: '/applicants',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminClientsRoute = AppAdminClientsRouteImport.update({
+  id: '/clients',
+  path: '/clients',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminEmailsRoute = AppAdminEmailsRouteImport.update({
@@ -374,6 +380,7 @@ export interface FileRoutesByFullPath {
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
+  '/admin/clients': typeof AppAdminClientsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
   '/admin/posts': typeof AppAdminPostsRoute
@@ -430,6 +437,7 @@ export interface FileRoutesByTo {
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
+  '/admin/clients': typeof AppAdminClientsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
   '/admin/posts': typeof AppAdminPostsRoute
@@ -490,6 +498,7 @@ export interface FileRoutesById {
   '/r/$code': typeof RCodeRoute
   '/_app/account/$path': typeof AppAccountPathRoute
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
+  '/_app/admin/clients': typeof AppAdminClientsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
   '/_app/admin/posts': typeof AppAdminPostsRoute
@@ -550,6 +559,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/account/$path'
     | '/admin/applicants'
+    | '/admin/clients'
     | '/admin/emails'
     | '/admin/payouts'
     | '/admin/posts'
@@ -606,6 +616,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/account/$path'
     | '/admin/applicants'
+    | '/admin/clients'
     | '/admin/emails'
     | '/admin/payouts'
     | '/admin/posts'
@@ -665,6 +676,7 @@ export interface FileRouteTypes {
     | '/r/$code'
     | '/_app/account/$path'
     | '/_app/admin/applicants'
+    | '/_app/admin/clients'
     | '/_app/admin/emails'
     | '/_app/admin/payouts'
     | '/_app/admin/posts'
@@ -886,6 +898,13 @@ declare module '@tanstack/react-router' {
       path: '/applicants'
       fullPath: '/admin/applicants'
       preLoaderRoute: typeof AppAdminApplicantsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/clients': {
+      id: '/_app/admin/clients'
+      path: '/clients'
+      fullPath: '/admin/clients'
+      preLoaderRoute: typeof AppAdminClientsRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/emails': {
@@ -1131,6 +1150,7 @@ declare module '@tanstack/react-router' {
 
 interface AppAdminRouteChildren {
   AppAdminApplicantsRoute: typeof AppAdminApplicantsRoute
+  AppAdminClientsRoute: typeof AppAdminClientsRoute
   AppAdminEmailsRoute: typeof AppAdminEmailsRoute
   AppAdminPayoutsRoute: typeof AppAdminPayoutsRoute
   AppAdminPostsRoute: typeof AppAdminPostsRoute
@@ -1153,6 +1173,7 @@ interface AppAdminRouteChildren {
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminApplicantsRoute: AppAdminApplicantsRoute,
+  AppAdminClientsRoute: AppAdminClientsRoute,
   AppAdminEmailsRoute: AppAdminEmailsRoute,
   AppAdminPayoutsRoute: AppAdminPayoutsRoute,
   AppAdminPostsRoute: AppAdminPostsRoute,

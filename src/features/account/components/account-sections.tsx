@@ -3,7 +3,7 @@ import { PushToggle } from '@/features/push/components/push-toggle'
 import { SettingsSection } from '@/features/settings/components/settings-section'
 import { SignInMethods } from './sign-in-methods'
 
-// Better Auth UI paints card footers with the sidebar colour, which is cloth red here; keep them paper.
+// Better Auth UI paints card footers with the sidebar colour; keep them muted instead.
 const card = {
   base: 'shadow-none',
   header: 'pb-4',

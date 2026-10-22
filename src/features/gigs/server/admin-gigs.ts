@@ -3,7 +3,7 @@ import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-
 import { z } from 'zod'
 import type { Db } from '@/db/client'
 import { clientTag, gig, gigInterest, submission, workerProfile } from '@/db/schema'
-import { GIG_STATUSES, PLATFORMS, SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
+import { GIG_STATUSES, PLATFORMS, type SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
 import { queueBulkEmail } from '@/emails/send-email'
 import { formatMoney, rupeesToPaise } from '@/lib/format'
 import { audit, notify } from '@/lib/server/activity'

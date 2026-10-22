@@ -205,7 +205,7 @@ export function WorkerGigDetail({ data }: { data: GigDetailData }) {
           <header className="space-y-2.5">
             <div className="flex flex-wrap items-center gap-2 text-muted-foreground">
               <PlatformLabel platform={gig.platform} community={gig.community} />
-              <span className="ledger-label rounded-[3px] border px-1 py-px text-[0.62rem]">
+              <span className="ledger-label rounded-md border px-1 py-px text-[0.62rem]">
                 {TASK_TYPE_LABELS[gig.taskType]}
               </span>
               {gig.status !== 'live' ? <StatusBadge status={gig.status} /> : null}

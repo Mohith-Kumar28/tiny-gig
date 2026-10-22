@@ -80,7 +80,7 @@ function WarmupAdminPage() {
               {it.links.length ? (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {it.links.map((l) => (
-                    <a key={l} href={l} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-[3px] border px-1.5 py-0.5 text-xs text-ink transition-colors duration-150 hover:border-ink/40 hover:bg-ink/[0.04]">
+                    <a key={l} href={l} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-xs text-ink transition-colors duration-150 hover:border-ink/40 hover:bg-ink/[0.04]">
                       {l.replace(/^https?:\/\/(www\.)?reddit\.com\//, '')} <ExternalLink className="size-3" />
                     </a>
                   ))}

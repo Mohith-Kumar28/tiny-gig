@@ -10,8 +10,7 @@ import type { Platform } from '@/db/schema/enums'
 import { cn } from '@/lib/utils'
 import { accountLabel, communityLabel, formatAge, LEVEL_LABELS } from '../rules'
 import type { RosterRow } from '../server/roster'
-import { CreatedOnEditor, KarmaEditor, StandingSelect } from './account-editors'
-import { ClientChip } from './client-chip'
+import { ClientsEditor, CreatedOnEditor, KarmaEditor, StandingSelect } from './account-editors'
 
 export function platformIconFor(platform: string): Platform {
   return platform === 'facebook' ? 'other' : (platform as Platform)
@@ -22,7 +21,7 @@ export function LevelBadge({ level, className }: { level: string | null; classNa
   return (
     <span
       className={cn(
-        'inline-flex h-5 shrink-0 items-center rounded-[3px] border px-1 text-[0.7rem] leading-none font-semibold tracking-[0.04em] tabular uppercase [font-stretch:82%]',
+        'inline-flex h-5 shrink-0 items-center rounded-md border px-1 text-[0.7rem] leading-none font-semibold tracking-[0.04em] tabular uppercase',
         level === 'warmup'
           ? 'border-dashed border-muted-foreground/50 text-muted-foreground'
           : 'border-foreground/30 bg-card text-foreground',
@@ -156,14 +155,9 @@ export const accountColumns: ColumnDef<RosterRow, unknown>[] = [
   },
   {
     id: 'lastClient',
-    header: 'Last client',
-    meta: { sortKey: 'lastClient', label: 'Last client' },
-    cell: ({ row }) =>
-      row.original.lastClient ? (
-        <ClientChip name={row.original.lastClient.name} color={row.original.lastClient.color} />
-      ) : (
-        <span className="text-muted-foreground">—</span>
-      ),
+    header: 'Clients',
+    meta: { sortKey: 'lastClient', label: 'Clients' },
+    cell: ({ row }) => <ClientsEditor id={row.original.id} value={row.original.clients} last={row.original.lastClient} />,
   },
   {
     id: 'daysSince',
