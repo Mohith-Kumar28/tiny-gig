@@ -30,6 +30,8 @@ export function useAction<TVars, TResult>(
       if (msg) toast.success(msg)
       await Promise.all((opts.invalidate ?? []).map((k) => qc.invalidateQueries({ queryKey: k })))
       await opts.onSuccess?.(r, v)
+      // Role or profile status may have changed; the next guard check refetches it.
+      qc.invalidateQueries({ queryKey: ['viewer'], refetchType: 'none' })
       router.invalidate()
     },
     onError: (err) => {
