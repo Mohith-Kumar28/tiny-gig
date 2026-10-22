@@ -61,3 +61,40 @@ INSERT OR IGNORE INTO referral (id, referrer_id, referee_id, code, attributed_at
  ('seed_r2','seed_w1','seed_w3','AARAV01',(strftime('%s','now')-86400*19)*1000,0,NULL,(strftime('%s','now')-86400*18)*1000,NULL,0,0,(strftime('%s','now'))*1000,(strftime('%s','now'))*1000),
  ('seed_r3','seed_w2','seed_w4','DIYA002',(strftime('%s','now')-86400*2)*1000,0,NULL,NULL,NULL,0,0,(strftime('%s','now'))*1000,(strftime('%s','now'))*1000),
  ('seed_r4','seed_w1','seed_w6','AARAV01',(strftime('%s','now')-3600*5)*1000,1,'Possible duplicate: same phone',NULL,NULL,0,0,(strftime('%s','now'))*1000,(strftime('%s','now'))*1000);
+
+-- ── Accounts register (conditions spec v0.3) ───────────────────────────────
+-- One row per account. Aarav has a second account still warming up; Kabir has a lost one.
+INSERT OR IGNORE INTO social_account (id, worker_id, platform, handle, url, created_on, created_on_confirmed_at, karma, karma_updated_at, standing, standing_note, created_at, updated_at) VALUES
+ ('seed_a1','seed_w1','reddit','aarav_codes','https://www.reddit.com/user/aarav_codes',(strftime('%s','now')-86400*1460)*1000,(strftime('%s','now')-86400*30)*1000,15200,(strftime('%s','now')-86400*3)*1000,'active',NULL,(strftime('%s','now')-86400*40)*1000,(strftime('%s','now'))*1000),
+ ('seed_a1b','seed_w1','reddit','aarav_alt','https://www.reddit.com/user/aarav_alt',(strftime('%s','now')-86400*8)*1000,NULL,40,(strftime('%s','now')-86400*1)*1000,'active',NULL,(strftime('%s','now')-86400*8)*1000,(strftime('%s','now'))*1000),
+ ('seed_a1x','seed_w1','x','aarav_tweets','https://x.com/aarav_tweets',NULL,NULL,NULL,NULL,'active',NULL,(strftime('%s','now')-86400*40)*1000,(strftime('%s','now'))*1000),
+ ('seed_a2','seed_w2','reddit','diya_reads','https://www.reddit.com/user/diya_reads',(strftime('%s','now')-86400*912)*1000,(strftime('%s','now')-86400*30)*1000,6400,(strftime('%s','now')-86400*60)*1000,'active',NULL,(strftime('%s','now')-86400*35)*1000,(strftime('%s','now'))*1000),
+ ('seed_a3','seed_w3','reddit','kabir_rides','https://www.reddit.com/user/kabir_rides',(strftime('%s','now')-86400*425)*1000,(strftime('%s','now')-86400*20)*1000,2100,(strftime('%s','now')-86400*10)*1000,'warned','Post removed by r/india mods last month',(strftime('%s','now')-86400*20)*1000,(strftime('%s','now'))*1000),
+ ('seed_a3b','seed_w3','reddit','kabir_old','https://www.reddit.com/user/kabir_old',(strftime('%s','now')-86400*900)*1000,(strftime('%s','now')-86400*20)*1000,8800,(strftime('%s','now')-86400*120)*1000,'banned','Sitewide suspension',(strftime('%s','now')-86400*20)*1000,(strftime('%s','now'))*1000),
+ ('seed_a4','seed_w4','reddit','ananya_bakes','https://www.reddit.com/user/ananya_bakes',(strftime('%s','now')-86400*790)*1000,NULL,3900,(strftime('%s','now')-86400*3)*1000,'active',NULL,(strftime('%s','now')-86400*3)*1000,(strftime('%s','now'))*1000),
+ ('seed_a5','seed_w5','reddit','rohan_fc','https://www.reddit.com/user/rohan_fc',(strftime('%s','now')-86400*95)*1000,NULL,120,(strftime('%s','now')-86400*2)*1000,'active',NULL,(strftime('%s','now')-86400*2)*1000,(strftime('%s','now'))*1000),
+ ('seed_a6','seed_w6','reddit','meera_m','https://www.reddit.com/user/meera_m',(strftime('%s','now')-86400*275)*1000,NULL,800,(strftime('%s','now')-86400*1)*1000,'active',NULL,(strftime('%s','now')-86400*1)*1000,(strftime('%s','now'))*1000);
+
+INSERT OR IGNORE INTO client_tag (id, name, color, created_at) VALUES
+ ('seed_c1','Acme Audio','blue',(strftime('%s','now')-86400*60)*1000),
+ ('seed_c2','Brightdesk','green',(strftime('%s','now')-86400*60)*1000),
+ ('seed_c3','Chaiwala Co','amber',(strftime('%s','now')-86400*60)*1000);
+
+-- Link existing seed work to accounts and clients, with first-submitted times (cooldowns count from these).
+UPDATE submission SET account_id = (SELECT id FROM social_account a WHERE a.worker_id = submission.worker_id AND a.platform = 'reddit' ORDER BY a.created_at LIMIT 1),
+  first_submitted_at = submitted_at,
+  community = (SELECT lower(replace(g.community, 'r/', '')) FROM gig g WHERE g.id = submission.gig_id)
+ WHERE id LIKE 'seed_s%' AND account_id IS NULL;
+UPDATE gig SET client_tag_id = 'seed_c1' WHERE id = 'seed_g1' AND client_tag_id IS NULL;
+UPDATE gig SET client_tag_id = 'seed_c2' WHERE id = 'seed_g2' AND client_tag_id IS NULL;
+UPDATE submission SET client_tag_id = (SELECT client_tag_id FROM gig g WHERE g.id = submission.gig_id) WHERE id LIKE 'seed_s%' AND client_tag_id IS NULL;
+
+-- A level-priced opportunity taking interest right now, with one worker already in the running.
+INSERT OR IGNORE INTO gig (id, title, slug, platform, task_type, brief, community, review_checklist, min_karma, min_account_age_months, allowed_states, payout_amount, pay_mode, total_slots, claimed_slots, claim_window_hours, interest_window_minutes, interest_closes_at, live_hold_hours, status, priority, published_at, client_tag_id, created_at, updated_at) VALUES
+ ('seed_g6','Post your study setup in r/IndianStudents','study-setup-indianstudents','reddit','post','Share your real study desk and one habit that helps you focus. No brand names in the title.','r/IndianStudents','["Posted in the right community","Follows the brief","Link opens and post is public","Replied to comments on the post"]',100,0,'[]',10000,'levels',3,0,24,10,(strftime('%s','now')+600)*1000,24,'live',8,(strftime('%s','now'))*1000,'seed_c3',(strftime('%s','now'))*1000,(strftime('%s','now'))*1000);
+
+INSERT OR IGNORE INTO gig_interest (id, gig_id, worker_id, account_ids, status, created_at, updated_at) VALUES
+ ('seed_i1','seed_g6','seed_w2','["seed_a2"]','interested',(strftime('%s','now'))*1000,(strftime('%s','now'))*1000);
+
+INSERT OR IGNORE INTO warmup_item (id, title, instructions, links, audience, created_at) VALUES
+ ('seed_wu1','Join 3 Indian subs and comment for a week','Join, read each sub''s rules, and leave 2–3 genuine comments a day. No links, no promotion. Write in your own words.','["https://www.reddit.com/r/india","https://www.reddit.com/r/bangalore","https://www.reddit.com/r/IndianGaming"]','{"type":"filter","maxKarma":300}',(strftime('%s','now')-86400)*1000);

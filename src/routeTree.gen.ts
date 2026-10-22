@@ -37,6 +37,7 @@ import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts
 import { Route as AppAdminPostsRouteImport } from './routes/_app/admin/posts'
 import { Route as AppAdminReviewRouteImport } from './routes/_app/admin/review'
 import { Route as AppAdminSettingsRouteImport } from './routes/_app/admin/settings'
+import { Route as AppAdminWarmupRouteImport } from './routes/_app/admin/warmup'
 import { Route as AppWIndexRouteImport } from './routes/_app/w/index'
 import { Route as AppWAccountsRouteImport } from './routes/_app/w/accounts'
 import { Route as AppWMeRouteImport } from './routes/_app/w/me'
@@ -44,6 +45,7 @@ import { Route as AppWNotificationsRouteImport } from './routes/_app/w/notificat
 import { Route as AppWPaymentsRouteImport } from './routes/_app/w/payments'
 import { Route as AppWProfileRouteImport } from './routes/_app/w/profile'
 import { Route as AppWReferralsRouteImport } from './routes/_app/w/referrals'
+import { Route as AppWWarmupRouteImport } from './routes/_app/w/warmup'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as ApiAvatarsIndexRouteImport } from './routes/api/avatars/index'
 import { Route as ApiAvatarsSplatRouteImport } from './routes/api/avatars/$'
@@ -204,6 +206,11 @@ const AppAdminSettingsRoute = AppAdminSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AppAdminRoute,
 } as any)
+const AppAdminWarmupRoute = AppAdminWarmupRouteImport.update({
+  id: '/warmup',
+  path: '/warmup',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppWIndexRoute = AppWIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -237,6 +244,11 @@ const AppWProfileRoute = AppWProfileRouteImport.update({
 const AppWReferralsRoute = AppWReferralsRouteImport.update({
   id: '/referrals',
   path: '/referrals',
+  getParentRoute: () => AppWRoute,
+} as any)
+const AppWWarmupRoute = AppWWarmupRouteImport.update({
+  id: '/warmup',
+  path: '/warmup',
   getParentRoute: () => AppWRoute,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -367,12 +379,14 @@ export interface FileRoutesByFullPath {
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
+  '/admin/warmup': typeof AppAdminWarmupRoute
   '/w/accounts': typeof AppWAccountsRoute
   '/w/me': typeof AppWMeRoute
   '/w/notifications': typeof AppWNotificationsRoute
   '/w/payments': typeof AppWPaymentsRoute
   '/w/profile': typeof AppWProfileRoute
   '/w/referrals': typeof AppWReferralsRoute
+  '/w/warmup': typeof AppWWarmupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
@@ -421,12 +435,14 @@ export interface FileRoutesByTo {
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
+  '/admin/warmup': typeof AppAdminWarmupRoute
   '/w/accounts': typeof AppWAccountsRoute
   '/w/me': typeof AppWMeRoute
   '/w/notifications': typeof AppWNotificationsRoute
   '/w/payments': typeof AppWPaymentsRoute
   '/w/profile': typeof AppWProfileRoute
   '/w/referrals': typeof AppWReferralsRoute
+  '/w/warmup': typeof AppWWarmupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
@@ -479,12 +495,14 @@ export interface FileRoutesById {
   '/_app/admin/posts': typeof AppAdminPostsRoute
   '/_app/admin/review': typeof AppAdminReviewRoute
   '/_app/admin/settings': typeof AppAdminSettingsRoute
+  '/_app/admin/warmup': typeof AppAdminWarmupRoute
   '/_app/w/accounts': typeof AppWAccountsRoute
   '/_app/w/me': typeof AppWMeRoute
   '/_app/w/notifications': typeof AppWNotificationsRoute
   '/_app/w/payments': typeof AppWPaymentsRoute
   '/_app/w/profile': typeof AppWProfileRoute
   '/_app/w/referrals': typeof AppWReferralsRoute
+  '/_app/w/warmup': typeof AppWWarmupRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/api/avatars/$': typeof ApiAvatarsSplatRoute
   '/api/uploads/$': typeof ApiUploadsSplatRoute
@@ -537,12 +555,14 @@ export interface FileRouteTypes {
     | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
+    | '/admin/warmup'
     | '/w/accounts'
     | '/w/me'
     | '/w/notifications'
     | '/w/payments'
     | '/w/profile'
     | '/w/referrals'
+    | '/w/warmup'
     | '/api/auth/$'
     | '/api/avatars/$'
     | '/api/uploads/$'
@@ -591,12 +611,14 @@ export interface FileRouteTypes {
     | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
+    | '/admin/warmup'
     | '/w/accounts'
     | '/w/me'
     | '/w/notifications'
     | '/w/payments'
     | '/w/profile'
     | '/w/referrals'
+    | '/w/warmup'
     | '/api/auth/$'
     | '/api/avatars/$'
     | '/api/uploads/$'
@@ -648,12 +670,14 @@ export interface FileRouteTypes {
     | '/_app/admin/posts'
     | '/_app/admin/review'
     | '/_app/admin/settings'
+    | '/_app/admin/warmup'
     | '/_app/w/accounts'
     | '/_app/w/me'
     | '/_app/w/notifications'
     | '/_app/w/payments'
     | '/_app/w/profile'
     | '/_app/w/referrals'
+    | '/_app/w/warmup'
     | '/api/auth/$'
     | '/api/avatars/$'
     | '/api/uploads/$'
@@ -899,6 +923,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminSettingsRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/warmup': {
+      id: '/_app/admin/warmup'
+      path: '/warmup'
+      fullPath: '/admin/warmup'
+      preLoaderRoute: typeof AppAdminWarmupRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/w/': {
       id: '/_app/w/'
       path: '/'
@@ -946,6 +977,13 @@ declare module '@tanstack/react-router' {
       path: '/referrals'
       fullPath: '/w/referrals'
       preLoaderRoute: typeof AppWReferralsRouteImport
+      parentRoute: typeof AppWRoute
+    }
+    '/_app/w/warmup': {
+      id: '/_app/w/warmup'
+      path: '/warmup'
+      fullPath: '/w/warmup'
+      preLoaderRoute: typeof AppWWarmupRouteImport
       parentRoute: typeof AppWRoute
     }
     '/api/auth/$': {
@@ -1098,6 +1136,7 @@ interface AppAdminRouteChildren {
   AppAdminPostsRoute: typeof AppAdminPostsRoute
   AppAdminReviewRoute: typeof AppAdminReviewRoute
   AppAdminSettingsRoute: typeof AppAdminSettingsRoute
+  AppAdminWarmupRoute: typeof AppAdminWarmupRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
   AppAdminAccountsBlocksRoute: typeof AppAdminAccountsBlocksRoute
   AppAdminGigsNewRoute: typeof AppAdminGigsNewRoute
@@ -1119,6 +1158,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminPostsRoute: AppAdminPostsRoute,
   AppAdminReviewRoute: AppAdminReviewRoute,
   AppAdminSettingsRoute: AppAdminSettingsRoute,
+  AppAdminWarmupRoute: AppAdminWarmupRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
   AppAdminAccountsBlocksRoute: AppAdminAccountsBlocksRoute,
   AppAdminGigsNewRoute: AppAdminGigsNewRoute,
@@ -1144,6 +1184,7 @@ interface AppWRouteChildren {
   AppWPaymentsRoute: typeof AppWPaymentsRoute
   AppWProfileRoute: typeof AppWProfileRoute
   AppWReferralsRoute: typeof AppWReferralsRoute
+  AppWWarmupRoute: typeof AppWWarmupRoute
   AppWIndexRoute: typeof AppWIndexRoute
   AppWGigsGigIdRoute: typeof AppWGigsGigIdRoute
   AppWWorkSubmissionIdRoute: typeof AppWWorkSubmissionIdRoute
@@ -1158,6 +1199,7 @@ const AppWRouteChildren: AppWRouteChildren = {
   AppWPaymentsRoute: AppWPaymentsRoute,
   AppWProfileRoute: AppWProfileRoute,
   AppWReferralsRoute: AppWReferralsRoute,
+  AppWWarmupRoute: AppWWarmupRoute,
   AppWIndexRoute: AppWIndexRoute,
   AppWGigsGigIdRoute: AppWGigsGigIdRoute,
   AppWWorkSubmissionIdRoute: AppWWorkSubmissionIdRoute,

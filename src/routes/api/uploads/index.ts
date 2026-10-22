@@ -20,7 +20,11 @@ export const Route = createFileRoute('/api/uploads/')({
           return Response.json({ error: 'Only PNG, JPG, WEBP or GIF images are allowed.' }, { status: 415 })
         }
         if (file.size > MAX_UPLOAD_BYTES) return Response.json({ error: 'Max file size is 5 MB.' }, { status: 413 })
-        const key = `proofs/${session.user.id}/${createId()}.${EXT[file.type]}`
+        // Staff uploading on a worker's behalf (R39) store under the worker's prefix so the worker can see it too.
+        const forUser = form.get('forUser')
+        const owner = typeof forUser === 'string' && forUser && (session.user as { role?: string }).role === 'admin' ? forUser : session.user.id
+        if (!/^[A-Za-z0-9_-]{1,64}$/.test(owner)) return Response.json({ error: 'Bad owner' }, { status: 400 })
+        const key = `proofs/${owner}/${createId()}.${EXT[file.type]}`
         await env.UPLOADS.put(key, file.stream(), { httpMetadata: { contentType: file.type } })
         return Response.json({ key })
       },

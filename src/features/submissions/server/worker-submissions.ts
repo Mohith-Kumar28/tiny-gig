@@ -110,10 +110,12 @@ export const getMySubmission = createServerFn({ method: 'GET' })
       submission: workerSafeSubmission(row.sub),
       gig: workerSafeGig(row.gig),
       account: account ? { label: accountLabel(account.platform, account.handle) } : null,
-      events: events.map((e) => ({
-        ...e.event,
-        actorName: e.event.actorRole === 'admin' ? 'TinyGig reviewer' : e.actorName,
-      })),
+      events: events.map((e) => {
+        // Staff acting on the worker's behalf is internal (R41): to the worker it reads as their own step.
+        const onBehalf = e.event.actorRole === 'admin' && ['submitted', 'resubmitted', 'insights_submitted'].includes(e.event.action)
+        if (onBehalf) return { ...e.event, actorRole: 'worker' as const, actorId: context.user.id, actorName: null, comment: null }
+        return { ...e.event, actorName: e.event.actorRole === 'admin' ? 'TinyGig reviewer' : e.actorName }
+      }),
     }
   })
 

@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { AtSign, Bell, ChevronRight, CircleUserRound, Gift, LogOut, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
+import { AtSign, Bell, Sprout, ChevronRight, CircleUserRound, Gift, LogOut, Moon, ShieldCheck, Sun, UserRound } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useTheme } from '@/components/shared/theme-provider'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -55,6 +55,7 @@ function MePage() {
 
       <div className="divide-y overflow-hidden rounded-2xl border bg-card">
         <Row to="/w/accounts" icon={<AtSign />} label="My accounts" />
+        <Row to="/w/warmup" icon={<Sprout />} label="Warm-up" />
         <Row to="/w/referrals" icon={<Gift />} label="Invite & earn" />
         <Row
           to="/w/notifications"

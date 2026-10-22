@@ -49,8 +49,8 @@ export async function applyProof(
   const t = workerSubmitTransition(sub.status, { twoStep: isTwoStep(sub), liveHoldHours: g.liveHoldHours, now })
   if (!t.ok) throw new AppError('CONFLICT', t.error)
   if (args.actor.role === 'worker' && sub.dueAt < now) throw new AppError('CONFLICT', 'The deadline for this task has passed.')
-  const ownKeys = args.screenshotKeys.filter((k) => k.startsWith(`proofs/${sub.workerId}/`) || args.actor.role === 'admin')
   const onBehalf = args.actor.role === 'admin'
+  const ownKeys = args.screenshotKeys.filter((k) => k.startsWith(`proofs/${sub.workerId}/`))
   await db.batch([
     db
       .update(submission)
@@ -58,7 +58,8 @@ export async function applyProof(
         status: t.status,
         proofUrl: args.proofUrl,
         screenshotKeys: ownKeys,
-        workerNote: args.note || null,
+        // A staff note is internal: it lives on the (masked) event, never in the worker's own note.
+        workerNote: onBehalf ? sub.workerNote : args.note || null,
         submittedAt: now,
         // The post exists on the platform from this moment on — cooldowns count from here (R18).
         firstSubmittedAt: sub.firstSubmittedAt ?? now,
@@ -92,7 +93,7 @@ export async function applyInsights(
   const now = new Date()
   const t = insightsTransition(sub.status, sub.liveCheckAt, now)
   if (!t.ok) throw new AppError('CONFLICT', t.error)
-  const keys = args.insightsKeys.filter((k) => k.startsWith(`proofs/${sub.workerId}/`) || args.actor.role === 'admin')
+  const keys = args.insightsKeys.filter((k) => k.startsWith(`proofs/${sub.workerId}/`))
   if (!keys.length) throw new AppError('BAD_REQUEST', 'Add a screenshot of the post’s insights.')
   const onBehalf = args.actor.role === 'admin'
   const updateSub = db

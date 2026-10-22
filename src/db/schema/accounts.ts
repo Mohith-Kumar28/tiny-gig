@@ -93,3 +93,44 @@ export const blockLog = sqliteTable(
     index('block_log_rule_idx').on(t.rule),
   ],
 )
+
+export type WarmupAudience =
+  | { type: 'all' }
+  | { type: 'workers'; workerIds: string[] }
+  /** Workers with at least one Reddit account matching every given limit. */
+  | { type: 'filter'; maxKarma?: number; maxAgeDays?: number }
+
+/** Unpaid warm-up tasks staff push to new accounts (§11): subs to join and how to behave there. */
+export const warmupItem = sqliteTable(
+  'warmup_item',
+  {
+    id: id(),
+    title: text('title').notNull(),
+    instructions: text('instructions').notNull(),
+    links: text('links', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .$defaultFn(() => []),
+    audience: text('audience', { mode: 'json' }).$type<WarmupAudience>().notNull(),
+    createdBy: userRef('created_by'),
+    createdAt: createdAt(),
+    archivedAt: timestamp('archived_at'),
+  },
+  (t) => [index('warmup_item_created_idx').on(t.createdAt)],
+)
+
+/** Self-reported (R57) — not gated on, yet. */
+export const warmupCompletion = sqliteTable(
+  'warmup_completion',
+  {
+    id: id(),
+    itemId: text('item_id')
+      .notNull()
+      .references(() => warmupItem.id, { onDelete: 'cascade' }),
+    workerId: text('worker_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    doneAt: timestamp('done_at').notNull(),
+  },
+  (t) => [uniqueIndex('warmup_completion_uq').on(t.itemId, t.workerId)],
+)

@@ -7,7 +7,7 @@ import { ALLOWED_UPLOAD_TYPES, MAX_SCREENSHOTS, MAX_UPLOAD_BYTES } from '../sche
 
 type Pending = { id: string; name: string; preview: string; progress: number }
 
-function uploadFile(file: File, onProgress: (pct: number) => void) {
+function uploadFile(file: File, onProgress: (pct: number) => void, forUser?: string) {
   return new Promise<string>((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('POST', '/api/uploads/')
@@ -27,6 +27,7 @@ function uploadFile(file: File, onProgress: (pct: number) => void) {
     xhr.onerror = () => reject(new Error('Network error while uploading. Check your connection.'))
     const form = new FormData()
     form.append('file', file)
+    if (forUser) form.append('forUser', forUser)
     xhr.send(form)
   })
 }
@@ -37,11 +38,14 @@ export function ScreenshotUploader({
   onChange,
   onUploadingChange,
   disabled,
+  forUser,
 }: {
   value: string[]
   onChange: (keys: string[]) => void
   onUploadingChange?: (uploading: boolean) => void
   disabled?: boolean
+  /** Staff only: store under this worker's prefix. */
+  forUser?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [pending, setPending] = useState<Pending[]>([])
@@ -70,7 +74,7 @@ export function ScreenshotUploader({
       const id = crypto.randomUUID()
       const preview = URL.createObjectURL(file)
       setPending((p) => [...p, { id, name: file.name, preview, progress: 0 }])
-      uploadFile(file, (pct) => setPending((p) => p.map((x) => (x.id === id ? { ...x, progress: pct } : x))))
+      uploadFile(file, (pct) => setPending((p) => p.map((x) => (x.id === id ? { ...x, progress: pct } : x))), forUser)
         .then((key) => {
           // Update the ref eagerly so parallel uploads finishing together don't drop keys.
           valueRef.current = [...valueRef.current, key]

@@ -3,9 +3,10 @@ import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, or, type SQL,
 import { z } from 'zod'
 import { gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
 import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
-import { notify } from '@/lib/server/activity'
+import { audit, notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
+import { applyInsights, applyProof } from './proof-service'
 import { decideOne } from './review-service'
 
 export const REVIEW_TABS = ['needs_review', 'on_hold', 'insights_overdue', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
@@ -172,7 +173,7 @@ export const getSubmissionDetail = createServerFn({ method: 'GET' })
       .where(eq(submission.id, data.id))
       .get()
     if (!row) throw new AppError('NOT_FOUND', 'Submission not found.')
-    const [events, history, account] = await Promise.all([
+    const [events, history, account, onBehalf] = await Promise.all([
       db
         .select({ event: submissionEvent, actorName: user.name })
         .from(submissionEvent)
@@ -185,12 +186,14 @@ export const getSubmissionDetail = createServerFn({ method: 'GET' })
         .where(eq(submission.workerId, row.sub.workerId))
         .groupBy(submission.status),
       row.sub.accountId ? db.select().from(socialAccount).where(eq(socialAccount.id, row.sub.accountId)).get() : Promise.resolve(undefined),
+      row.sub.onBehalfBy ? db.select({ name: user.name }).from(user).where(eq(user.id, row.sub.onBehalfBy)).get() : Promise.resolve(undefined),
     ])
     return {
       submission: row.sub,
       gig: row.gig,
       worker: { ...row.worker, image: row.image },
       account: account ?? null,
+      onBehalfName: onBehalf?.name ?? null,
       workerHistory: Object.fromEntries(history.map((h) => [h.status, h.n])) as Record<string, number>,
       events: events.map((e) => ({ ...e.event, actorName: e.actorName })),
     }
@@ -244,4 +247,43 @@ export const addSubmissionComment = createServerFn({ method: 'POST' })
       { userId: row.workerId, title: `New comment on ${row.title}`, body: data.comment, href: `/w/work/${data.id}` },
     ])
     return { ok: true }
+  })
+
+/** Staff submit the link for a worker who posted outside the system (R39). Recorded as on-behalf (R40). */
+export const adminSubmitLink = createServerFn({ method: 'POST' })
+  .middleware([adminMiddleware])
+  .validator(z.object({ submissionId: z.string(), proofUrl: z.url().max(1000), note: z.string().trim().max(500).optional() }))
+  .handler(async ({ data, context }) => {
+    const r = await applyProof(context.db, {
+      submissionId: data.submissionId,
+      actor: { id: context.user.id, role: 'admin' },
+      proofUrl: data.proofUrl,
+      screenshotKeys: [],
+      note: data.note,
+    })
+    await audit(context.db, { actorId: context.user.id, action: 'submission.link_on_behalf', entityType: 'submission', entityId: data.submissionId })
+    return { status: r.status, warning: r.warning }
+  })
+
+/** Staff upload the insights screenshot for a worker (R39). */
+export const adminSubmitInsights = createServerFn({ method: 'POST' })
+  .middleware([adminMiddleware])
+  .validator(
+    z.object({
+      submissionId: z.string(),
+      insightsKeys: z.array(z.string().max(200)).min(1).max(5),
+      karma: z.number().int().min(0).max(100_000_000).optional(),
+      note: z.string().trim().max(500).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const r = await applyInsights(context.db, {
+      submissionId: data.submissionId,
+      actor: { id: context.user.id, role: 'admin' },
+      insightsKeys: data.insightsKeys,
+      karma: data.karma,
+      note: data.note,
+    })
+    await audit(context.db, { actorId: context.user.id, action: 'submission.insights_on_behalf', entityType: 'submission', entityId: data.submissionId })
+    return { status: r.status }
   })

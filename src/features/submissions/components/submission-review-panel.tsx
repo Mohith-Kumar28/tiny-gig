@@ -19,6 +19,7 @@ import { DecisionDialog } from '@/features/workers/components/decision-dialog'
 import { useAction } from '@/hooks/use-action'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { accountLabel } from '@/features/accounts/rules'
+import { OnBehalfActions } from './on-behalf-actions'
 import { SubmissionClientSelect } from '@/features/clients/components/client-select'
 import { cn } from '@/lib/utils'
 import { submissionDetailQuery } from '../queries'
@@ -193,7 +194,17 @@ export function SubmissionReviewPanel({
               <ReviewScreenshots keys={sub.insightsKeys} />
             </div>
           ) : null}
-          {sub.onBehalfBy ? <p className="text-xs text-muted-foreground">Added by staff on the worker’s behalf.</p> : null}
+          {sub.onBehalfBy ? (
+            <p className="text-xs text-muted-foreground">
+              Added by {data.onBehalfName ?? 'staff'} on behalf of {data.account ? accountLabel(data.account.platform, data.account.handle) : 'the worker'}.
+            </p>
+          ) : null}
+          <OnBehalfActions
+            submissionId={sub.id}
+            workerId={sub.workerId}
+            status={sub.status}
+            accountLabel={data.account ? accountLabel(data.account.platform, data.account.handle) : undefined}
+          />
           {sub.workerNote ? (
             <p className="rounded-lg bg-muted/60 px-3 py-2 text-sm whitespace-pre-wrap">
               <span className="text-muted-foreground">Worker note: </span>
