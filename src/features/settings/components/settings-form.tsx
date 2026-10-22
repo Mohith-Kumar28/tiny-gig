@@ -228,11 +228,25 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             {num('defaultLiveHoldHours', 'Keep live for', '0 = no live check', 'hours')}
           </div>
         </Group>
-        <Group title="Account register" description="How the accounts roster judges freshness and availability.">
+        <Group title="Account register" description="How the accounts roster judges freshness.">
+          {num('karmaStaleDays', 'Karma goes stale after', 'Older figures are greyed out in the roster.', 'days')}
+        </Group>
+        <Group
+          title="Cooldowns"
+          description="The rules that keep accounts alive. Workers see the rule and the unlock date; staff can override at selection with a reason."
+        >
           <div className="grid items-start gap-5 sm:grid-cols-2">
-            {num('karmaStaleDays', 'Karma goes stale after', 'Older figures are greyed out in the roster.', 'days')}
-            {num('anyClientGapDays', 'Gap between any two client jobs', 'Per account, even for different clients.', 'days')}
+            {num('sameCommunityDays', 'Same community', 'Per person, across all their accounts.', 'days apart')}
+            {num('anyClientGapDays', 'Any two client jobs', 'Per account, even for different clients.', 'days apart')}
+            {num('sameClientMaxPerWeek', 'Same client', 'Per account, rolling 7 days.', 'times a week max')}
+            {num('sameClientMinGapDays', 'Same client gap', 'Per account.', 'days apart')}
+            {num('perDayLimit', 'Daily limit', 'Per person, Indian calendar day.', 'pieces a day')}
+            {num('maxOpenAssignments', 'Open assignments', 'Per person, not yet finished.', 'at once')}
+            {num('afterRejectionDays', 'Pause after a rejection', 'Per person.', 'days')}
           </div>
+        </Group>
+        <Group title="Opportunities">
+          {num('interestWindowMinutes', 'Interest window', 'How long workers have to say they’re interested before you pick.', 'minutes')}
         </Group>
         <div className="flex items-center justify-end gap-3 border-t pt-4">
           {form.formState.isDirty ? <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span> : null}

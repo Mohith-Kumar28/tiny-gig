@@ -16,6 +16,8 @@ export const gigFormSchema = z.object({
     .optional()
     .or(z.literal('')),
   community: z.string().trim().max(120).optional().or(z.literal('')),
+  /** Internal client tag ('' = untagged). Never shown to workers. */
+  clientTagId: z.string().max(40).optional().or(z.literal('')),
   contentGuidelines: z.string().trim().max(5000).optional().or(z.literal('')),
   sampleContent: z.string().trim().max(5000).optional().or(z.literal('')),
   reviewChecklist: z.array(z.string().trim().min(1).max(200)).max(20),
@@ -42,6 +44,7 @@ export const GIG_FORM_DEFAULTS: GigFormInput = {
   brief: '',
   targetUrl: '',
   community: '',
+  clientTagId: '',
   contentGuidelines: '',
   sampleContent: '',
   reviewChecklist: ['Posted in the right community', 'Follows the brief', 'Link opens and post is public'],

@@ -31,7 +31,6 @@ import { Route as RCodeRouteImport } from './routes/r/$code'
 import { Route as AppAccountIndexRouteImport } from './routes/_app/account/index'
 import { Route as AppAccountPathRouteImport } from './routes/_app/account/$path'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
-import { Route as AppAdminAccountsRouteImport } from './routes/_app/admin/accounts'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
 import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts'
@@ -50,6 +49,8 @@ import { Route as ApiAvatarsIndexRouteImport } from './routes/api/avatars/index'
 import { Route as ApiAvatarsSplatRouteImport } from './routes/api/avatars/$'
 import { Route as ApiUploadsIndexRouteImport } from './routes/api/uploads/index'
 import { Route as ApiUploadsSplatRouteImport } from './routes/api/uploads/$'
+import { Route as AppAdminAccountsIndexRouteImport } from './routes/_app/admin/accounts/index'
+import { Route as AppAdminAccountsBlocksRouteImport } from './routes/_app/admin/accounts/blocks'
 import { Route as AppAdminGigsIndexRouteImport } from './routes/_app/admin/gigs/index'
 import { Route as AppAdminGigsNewRouteImport } from './routes/_app/admin/gigs/new'
 import { Route as AppAdminReferralsIndexRouteImport } from './routes/_app/admin/referrals/index'
@@ -172,11 +173,6 @@ const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppAdminRoute,
 } as any)
-const AppAdminAccountsRoute = AppAdminAccountsRouteImport.update({
-  id: '/accounts',
-  path: '/accounts',
-  getParentRoute: () => AppAdminRoute,
-} as any)
 const AppAdminApplicantsRoute = AppAdminApplicantsRouteImport.update({
   id: '/applicants',
   path: '/applicants',
@@ -267,6 +263,16 @@ const ApiUploadsSplatRoute = ApiUploadsSplatRouteImport.update({
   path: '/api/uploads/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppAdminAccountsIndexRoute = AppAdminAccountsIndexRouteImport.update({
+  id: '/accounts/',
+  path: '/accounts/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminAccountsBlocksRoute = AppAdminAccountsBlocksRouteImport.update({
+  id: '/accounts/blocks',
+  path: '/accounts/blocks',
+  getParentRoute: () => AppAdminRoute,
+} as any)
 const AppAdminGigsIndexRoute = AppAdminGigsIndexRouteImport.update({
   id: '/gigs/',
   path: '/gigs/',
@@ -349,7 +355,6 @@ export interface FileRoutesByFullPath {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
-  '/admin/accounts': typeof AppAdminAccountsRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -370,11 +375,13 @@ export interface FileRoutesByFullPath {
   '/w/': typeof AppWIndexRoute
   '/api/avatars/': typeof ApiAvatarsIndexRoute
   '/api/uploads/': typeof ApiUploadsIndexRoute
+  '/admin/accounts/blocks': typeof AppAdminAccountsBlocksRoute
   '/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
   '/admin/workers/$userId': typeof AppAdminWorkersUserIdRoute
   '/w/gigs/$gigId': typeof AppWGigsGigIdRoute
   '/w/work/$submissionId': typeof AppWWorkSubmissionIdRoute
+  '/admin/accounts/': typeof AppAdminAccountsIndexRoute
   '/admin/gigs/': typeof AppAdminGigsIndexRoute
   '/admin/referrals/': typeof AppAdminReferralsIndexRoute
   '/admin/workers/': typeof AppAdminWorkersIndexRoute
@@ -401,7 +408,6 @@ export interface FileRoutesByTo {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
-  '/admin/accounts': typeof AppAdminAccountsRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -422,11 +428,13 @@ export interface FileRoutesByTo {
   '/w': typeof AppWIndexRoute
   '/api/avatars': typeof ApiAvatarsIndexRoute
   '/api/uploads': typeof ApiUploadsIndexRoute
+  '/admin/accounts/blocks': typeof AppAdminAccountsBlocksRoute
   '/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
   '/admin/workers/$userId': typeof AppAdminWorkersUserIdRoute
   '/w/gigs/$gigId': typeof AppWGigsGigIdRoute
   '/w/work/$submissionId': typeof AppWWorkSubmissionIdRoute
+  '/admin/accounts': typeof AppAdminAccountsIndexRoute
   '/admin/gigs': typeof AppAdminGigsIndexRoute
   '/admin/referrals': typeof AppAdminReferralsIndexRoute
   '/admin/workers': typeof AppAdminWorkersIndexRoute
@@ -457,7 +465,6 @@ export interface FileRoutesById {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/_app/account/$path': typeof AppAccountPathRoute
-  '/_app/admin/accounts': typeof AppAdminAccountsRoute
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
@@ -478,11 +485,13 @@ export interface FileRoutesById {
   '/_app/w/': typeof AppWIndexRoute
   '/api/avatars/': typeof ApiAvatarsIndexRoute
   '/api/uploads/': typeof ApiUploadsIndexRoute
+  '/_app/admin/accounts/blocks': typeof AppAdminAccountsBlocksRoute
   '/_app/admin/gigs/new': typeof AppAdminGigsNewRoute
   '/_app/admin/referrals/programs': typeof AppAdminReferralsProgramsRoute
   '/_app/admin/workers/$userId': typeof AppAdminWorkersUserIdRoute
   '/_app/w/gigs/$gigId': typeof AppWGigsGigIdRoute
   '/_app/w/work/$submissionId': typeof AppWWorkSubmissionIdRoute
+  '/_app/admin/accounts/': typeof AppAdminAccountsIndexRoute
   '/_app/admin/gigs/': typeof AppAdminGigsIndexRoute
   '/_app/admin/referrals/': typeof AppAdminReferralsIndexRoute
   '/_app/admin/workers/': typeof AppAdminWorkersIndexRoute
@@ -513,7 +522,6 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/account/$path'
-    | '/admin/accounts'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -534,11 +542,13 @@ export interface FileRouteTypes {
     | '/w/'
     | '/api/avatars/'
     | '/api/uploads/'
+    | '/admin/accounts/blocks'
     | '/admin/gigs/new'
     | '/admin/referrals/programs'
     | '/admin/workers/$userId'
     | '/w/gigs/$gigId'
     | '/w/work/$submissionId'
+    | '/admin/accounts/'
     | '/admin/gigs/'
     | '/admin/referrals/'
     | '/admin/workers/'
@@ -565,7 +575,6 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/account/$path'
-    | '/admin/accounts'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -586,11 +595,13 @@ export interface FileRouteTypes {
     | '/w'
     | '/api/avatars'
     | '/api/uploads'
+    | '/admin/accounts/blocks'
     | '/admin/gigs/new'
     | '/admin/referrals/programs'
     | '/admin/workers/$userId'
     | '/w/gigs/$gigId'
     | '/w/work/$submissionId'
+    | '/admin/accounts'
     | '/admin/gigs'
     | '/admin/referrals'
     | '/admin/workers'
@@ -620,7 +631,6 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/_app/account/$path'
-    | '/_app/admin/accounts'
     | '/_app/admin/applicants'
     | '/_app/admin/emails'
     | '/_app/admin/payouts'
@@ -641,11 +651,13 @@ export interface FileRouteTypes {
     | '/_app/w/'
     | '/api/avatars/'
     | '/api/uploads/'
+    | '/_app/admin/accounts/blocks'
     | '/_app/admin/gigs/new'
     | '/_app/admin/referrals/programs'
     | '/_app/admin/workers/$userId'
     | '/_app/w/gigs/$gigId'
     | '/_app/w/work/$submissionId'
+    | '/_app/admin/accounts/'
     | '/_app/admin/gigs/'
     | '/_app/admin/referrals/'
     | '/_app/admin/workers/'
@@ -833,13 +845,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
-    '/_app/admin/accounts': {
-      id: '/_app/admin/accounts'
-      path: '/accounts'
-      fullPath: '/admin/accounts'
-      preLoaderRoute: typeof AppAdminAccountsRouteImport
-      parentRoute: typeof AppAdminRoute
-    }
     '/_app/admin/applicants': {
       id: '/_app/admin/applicants'
       path: '/applicants'
@@ -966,6 +971,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiUploadsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_app/admin/accounts/': {
+      id: '/_app/admin/accounts/'
+      path: '/accounts'
+      fullPath: '/admin/accounts/'
+      preLoaderRoute: typeof AppAdminAccountsIndexRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/accounts/blocks': {
+      id: '/_app/admin/accounts/blocks'
+      path: '/accounts/blocks'
+      fullPath: '/admin/accounts/blocks'
+      preLoaderRoute: typeof AppAdminAccountsBlocksRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/gigs/': {
       id: '/_app/admin/gigs/'
       path: '/gigs'
@@ -1054,7 +1073,6 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppAdminRouteChildren {
-  AppAdminAccountsRoute: typeof AppAdminAccountsRoute
   AppAdminApplicantsRoute: typeof AppAdminApplicantsRoute
   AppAdminEmailsRoute: typeof AppAdminEmailsRoute
   AppAdminPayoutsRoute: typeof AppAdminPayoutsRoute
@@ -1062,9 +1080,11 @@ interface AppAdminRouteChildren {
   AppAdminReviewRoute: typeof AppAdminReviewRoute
   AppAdminSettingsRoute: typeof AppAdminSettingsRoute
   AppAdminIndexRoute: typeof AppAdminIndexRoute
+  AppAdminAccountsBlocksRoute: typeof AppAdminAccountsBlocksRoute
   AppAdminGigsNewRoute: typeof AppAdminGigsNewRoute
   AppAdminReferralsProgramsRoute: typeof AppAdminReferralsProgramsRoute
   AppAdminWorkersUserIdRoute: typeof AppAdminWorkersUserIdRoute
+  AppAdminAccountsIndexRoute: typeof AppAdminAccountsIndexRoute
   AppAdminGigsIndexRoute: typeof AppAdminGigsIndexRoute
   AppAdminReferralsIndexRoute: typeof AppAdminReferralsIndexRoute
   AppAdminWorkersIndexRoute: typeof AppAdminWorkersIndexRoute
@@ -1073,7 +1093,6 @@ interface AppAdminRouteChildren {
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
-  AppAdminAccountsRoute: AppAdminAccountsRoute,
   AppAdminApplicantsRoute: AppAdminApplicantsRoute,
   AppAdminEmailsRoute: AppAdminEmailsRoute,
   AppAdminPayoutsRoute: AppAdminPayoutsRoute,
@@ -1081,9 +1100,11 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminReviewRoute: AppAdminReviewRoute,
   AppAdminSettingsRoute: AppAdminSettingsRoute,
   AppAdminIndexRoute: AppAdminIndexRoute,
+  AppAdminAccountsBlocksRoute: AppAdminAccountsBlocksRoute,
   AppAdminGigsNewRoute: AppAdminGigsNewRoute,
   AppAdminReferralsProgramsRoute: AppAdminReferralsProgramsRoute,
   AppAdminWorkersUserIdRoute: AppAdminWorkersUserIdRoute,
+  AppAdminAccountsIndexRoute: AppAdminAccountsIndexRoute,
   AppAdminGigsIndexRoute: AppAdminGigsIndexRoute,
   AppAdminReferralsIndexRoute: AppAdminReferralsIndexRoute,
   AppAdminWorkersIndexRoute: AppAdminWorkersIndexRoute,

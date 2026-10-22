@@ -1,12 +1,14 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, gte, inArray, like, or, type SQL, sql } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Db } from '@/db/client'
 import { gig, submission, workerProfile } from '@/db/schema'
 import { GIG_STATUSES, PLATFORMS, SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
 import { queueBulkEmail } from '@/emails/send-email'
 import { rupeesToPaise } from '@/lib/format'
-import { audit } from '@/lib/server/activity'
+import { audit, notify } from '@/lib/server/activity'
+import { workerBlockReason } from '@/features/accounts/cooldowns'
+import { evaluateWorker, gigFacts, loadEligibility, logBlocks } from '@/features/accounts/server/eligibility'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { slugify } from '@/lib/slug'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
@@ -107,6 +109,7 @@ function toRow(v: GigFormValues) {
     brief: v.brief,
     targetUrl: v.targetUrl || null,
     community: v.community || null,
+    clientTagId: v.clientTagId || null,
     contentGuidelines: v.contentGuidelines || null,
     sampleContent: v.sampleContent || null,
     reviewChecklist: v.reviewChecklist,
@@ -124,22 +127,44 @@ function toRow(v: GigFormValues) {
   }
 }
 
-/** Emails approved workers who meet the requirements and opted into new-gig emails. */
+/**
+ * Tells every approved worker who has an account that passes the rules (§5), in-app and by email
+ * (if they opted in). Workers kept out by a cooldown are logged with the rule (R20).
+ */
 async function announceGig(db: Db, g: typeof gig.$inferSelect) {
-  const filters: SQL[] = [
-    eq(workerProfile.status, 'approved'),
-    gte(workerProfile.karma, g.minKarma),
-    gte(workerProfile.accountAgeMonths, g.minAccountAgeMonths),
-    sql`json_extract(${workerProfile.emailPrefs}, '$.newGigs') = 1`,
-  ]
-  if (g.allowedStates.length) filters.push(inArray(workerProfile.state, g.allowedStates))
-  const recipients = await db.select({ email: workerProfile.email }).from(workerProfile).where(and(...filters))
+  const workers = await db
+    .select({ userId: workerProfile.userId, email: workerProfile.email, emailPrefs: workerProfile.emailPrefs })
+    .from(workerProfile)
+    .where(eq(workerProfile.status, 'approved'))
+  const now = new Date()
+  const facts = gigFacts(g)
+  const ctx = await loadEligibility(db, workers.map((w) => w.userId))
+  const eligible: typeof workers = []
+  const blocked: Parameters<typeof logBlocks>[3] = []
+  for (const w of workers) {
+    const evals = evaluateWorker(ctx, w.userId, facts, now)
+    const reason = workerBlockReason(evals, now)
+    if (!reason) {
+      eligible.push(w)
+      continue
+    }
+    // Missing platform/state isn't a cooldown — not worth a log line per worker.
+    if (reason.rule === 'platform' || reason.rule === 'state') continue
+    const ev = evals.find((e) => [...e.hard, ...e.soft].some((b) => b.rule === reason.rule))
+    const b = ev && [...ev.hard, ...ev.soft].find((x) => x.rule === reason.rule)
+    if (b) blocked.push({ workerId: w.userId, accountId: ev.accountId, block: b })
+  }
+  await logBlocks(db, 'broadcast', g.id, blocked)
+  await notify(
+    db,
+    eligible.map((w) => ({ userId: w.userId, title: `New gig: ${g.title}`, body: 'Open it to say you’re interested.', href: `/w/gigs/${g.id}` })),
+  )
   queueBulkEmail({
-    to: recipients.map((r) => r.email),
+    to: eligible.filter((w) => w.emailPrefs?.newGigs !== false).map((w) => w.email),
     template: 'newGig',
     data: { title: g.title, platform: g.platform, payout: g.payoutAmount, gigId: g.id },
   })
-  return recipients.length
+  return eligible.length
 }
 
 export const saveGig = createServerFn({ method: 'POST' })

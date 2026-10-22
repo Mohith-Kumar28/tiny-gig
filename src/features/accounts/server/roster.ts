@@ -8,6 +8,7 @@ import { OPEN_ASSIGNMENT } from '@/features/submissions/state'
 import { audit } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, paginated, pageArgs, tableSearchSchema } from '@/lib/table-query'
+import { readiness } from '../cooldowns'
 import { accountAgeDays, DAY_MS, isKarmaStale, LEVELS, levelFor } from '../rules'
 import { createAccount } from './account-service'
 import { countsAsClientWork, loadWork } from './history'
@@ -67,11 +68,11 @@ async function buildRoster(db: Parameters<typeof loadWork>[0], now: Date) {
   const tagById = new Map(tags.map((t) => [t.id, t]))
   const changeById = new Map(changes.map((c) => [c.entityId, { at: new Date(Number(c.at)), by: c.by }]))
   const workByAccount = new Map<string, typeof work>()
+  const workByWorker = new Map<string, typeof work>()
   for (const w of work) {
+    workByWorker.set(w.workerId, [...(workByWorker.get(w.workerId) ?? []), w])
     if (!w.accountId) continue
-    const list = workByAccount.get(w.accountId) ?? []
-    list.push(w)
-    workByAccount.set(w.accountId, list)
+    workByAccount.set(w.accountId, [...(workByAccount.get(w.accountId) ?? []), w])
   }
 
   const rows = accounts.map((a) => {
@@ -81,17 +82,20 @@ async function buildRoster(db: Parameters<typeof loadWork>[0], now: Date) {
     const inUse = items.some((w) => OPEN_ASSIGNMENT.includes(w.status))
     const communities = new Map<string, Date>()
     for (const w of items) if (w.community && w.posted && !communities.has(w.community)) communities.set(w.community, w.at)
-    const coolingUntil = last ? new Date(last.at.getTime() + settings.anyClientGapDays * DAY_MS) : null
-    const cooling = a.standing === 'active' && coolingUntil != null && coolingUntil > now
+    // Person-level and account-level gaps, without a specific gig in mind.
+    const ready = readiness(a.id, workByWorker.get(a.workerId) ?? [], settings, now)
+    const cooling = a.standing === 'active' && ready.cooling
+    const level = levelFor(a.createdOn, now)
     return {
       ...a,
       ageDays: accountAgeDays(a.createdOn, now),
-      level: levelFor(a.createdOn, now),
+      level,
       karmaStale: a.karma == null || isKarmaStale(a.karmaUpdatedAt, settings.karmaStaleDays, now),
       inUse,
       cooling,
-      coolingUntil: cooling ? coolingUntil : null,
-      free: a.standing === 'active' && !cooling && !inUse,
+      coolingUntil: cooling ? ready.until : null,
+      coolingReason: cooling ? (ready.blocks[0]?.message ?? null) : null,
+      free: a.standing === 'active' && !cooling && !inUse && level !== 'warmup' && (a.platform !== 'reddit' || a.createdOn != null),
       lastActivityAt: items[0]?.at ?? null,
       lastClient: last?.clientTagId ? (tagById.get(last.clientTagId) ?? null) : null,
       daysSinceClientWork: last ? Math.floor((now.getTime() - last.at.getTime()) / DAY_MS) : null,

@@ -1,22 +1,9 @@
 import { and, inArray, isNotNull, type SQL } from 'drizzle-orm'
 import type { Db } from '@/db/client'
 import { submission } from '@/db/schema'
-import type { SubmissionStatus } from '@/db/schema/enums'
+import type { WorkRow } from '../cooldowns'
 
-/** One piece of work, reduced to what the register and the cooldown rules need. */
-export type WorkRow = {
-  id: string
-  gigId: string
-  workerId: string
-  accountId: string | null
-  clientTagId: string | null
-  community: string | null
-  status: SubmissionStatus
-  /** When it became visible (first submit), else when it was assigned. */
-  at: Date
-  posted: boolean
-  decidedAt: Date | null
-}
+export type { WorkRow }
 
 export async function loadWork(db: Db, scope: { workerIds?: string[]; accountIds?: string[] } = {}): Promise<WorkRow[]> {
   const filters: SQL[] = [isNotNull(submission.accountId)]
@@ -58,7 +45,4 @@ export async function loadWork(db: Db, scope: { workerIds?: string[]; accountIds
   }))
 }
 
-/** Work that counts as "client work" for gaps: posted, or assigned and not abandoned. */
-export function countsAsClientWork(w: WorkRow) {
-  return w.posted || !['expired', 'withdrawn'].includes(w.status)
-}
+export { countsAsWork as countsAsClientWork } from '../cooldowns'

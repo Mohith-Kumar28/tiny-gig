@@ -116,8 +116,13 @@ export const accountColumns: ColumnDef<RosterRow, unknown>[] = [
       return (
         <div className="flex flex-col items-start gap-0.5">
           <StandingSelect id={r.id} value={r.standing} />
-          {r.coolingUntil ? (
-            <span className="text-[11px] text-info">Cooling until {formatDate(r.coolingUntil)}</span>
+          {r.cooling ? (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="text-[11px] text-info">{r.coolingUntil ? `Cooling until ${formatDate(r.coolingUntil)}` : 'Cooling down'}</span>
+              </TooltipTrigger>
+              {r.coolingReason ? <TooltipContent>{r.coolingReason}</TooltipContent> : null}
+            </Tooltip>
           ) : r.lastChange ? (
             <span className="text-[11px] text-muted-foreground">
               {r.lastChange.by ?? 'System'} · <RelativeTime date={r.lastChange.at} />

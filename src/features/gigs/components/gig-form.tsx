@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from '@tanstack/react-router'
 import { format } from 'date-fns'
 import { CalendarClock, Clock, MapPin, Save, Send, ShieldCheck, Users } from 'lucide-react'
@@ -16,6 +17,8 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { type GigStatus, PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
+import { tagDot } from '@/features/accounts/components/client-chip'
+import { clientsQuery } from '@/features/clients/queries'
 import { useAction } from '@/hooks/use-action'
 import { formatMoney, formatNumber, rupeesToPaise } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -38,6 +41,7 @@ export function gigToFormInput(g: AdminGig): GigFormInput {
     brief: g.brief,
     targetUrl: g.targetUrl ?? '',
     community: g.community ?? '',
+    clientTagId: g.clientTagId ?? '',
     contentGuidelines: g.contentGuidelines ?? '',
     sampleContent: g.sampleContent ?? '',
     reviewChecklist: g.reviewChecklist,
@@ -89,6 +93,7 @@ export function GigForm({
   claimedSlots?: number
 }) {
   const navigate = useNavigate()
+  const { data: clients } = useQuery(clientsQuery())
   const form = useForm<GigFormInput, unknown, GigFormValues>({
     resolver: zodResolver(gigFormSchema),
     defaultValues: { ...GIG_FORM_DEFAULTS, ...initial },
@@ -201,6 +206,35 @@ export function GigForm({
                   <FormControl>
                     <Input placeholder={hint.placeholder} {...field} value={field.value ?? ''} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="clientTagId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Client</FormLabel>
+                  <Select value={field.value || 'none'} onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">No client</SelectItem>
+                      {(clients ?? [])
+                        .filter((c) => !c.archivedAt || c.id === field.value)
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>
+                            <span className={cn('size-1.5 rounded-full', tagDot(c.color))} />
+                            {c.name}
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                  <FormDescription>Internal only. Drives same-client cooldowns.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

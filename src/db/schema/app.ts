@@ -100,6 +100,8 @@ export const gig = sqliteTable(
     startsAt: timestamp('starts_at'),
     endsAt: timestamp('ends_at'),
     status: text('status', { enum: GIG_STATUSES }).notNull().default('draft'),
+    /** Internal client this work is for (admin-only). Copied onto each assignment. */
+    clientTagId: text('client_tag_id').references(() => clientTag.id, { onDelete: 'set null' }),
     priority: integer('priority').notNull().default(0),
     publishedAt: timestamp('published_at'),
     createdBy: userRef('created_by'),

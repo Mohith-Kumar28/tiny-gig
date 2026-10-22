@@ -13,5 +13,9 @@ export function notify(
   entries: { userId: string; title: string; body?: string; href?: string }[],
 ) {
   if (!entries.length) return Promise.resolve()
-  return db.insert(schema.notification).values(entries)
+  // D1 limits bound parameters per statement, so large fan-outs go in chunks.
+  if (entries.length <= 15) return db.insert(schema.notification).values(entries)
+  return (async () => {
+    for (let i = 0; i < entries.length; i += 15) await db.insert(schema.notification).values(entries.slice(i, i + 15))
+  })()
 }

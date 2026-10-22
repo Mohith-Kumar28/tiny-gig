@@ -29,6 +29,13 @@
       "when": 1792663532316,
       "tag": "0003_consent",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1792663965293,
+      "tag": "0004_cooldowns",
+      "breakpoints": true
     }
   ]
 }

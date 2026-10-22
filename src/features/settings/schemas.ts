@@ -12,6 +12,20 @@ export const settingsSchema = z.object({
   karmaStaleDays: z.coerce.number<string | number>().int().min(1).max(365),
   /** Minimum gap between any two pieces of client work on one account (R13). */
   anyClientGapDays: z.coerce.number<string | number>().int().min(0).max(60),
+  /** No second post or comment in the same community within N days — per person, across all accounts (R14). */
+  sameCommunityDays: z.coerce.number<string | number>().int().min(0).max(90),
+  /** An account carries the same client's content at most N times in a rolling week (R15). */
+  sameClientMaxPerWeek: z.coerce.number<string | number>().int().min(1).max(14),
+  /** …with at least this many days between two pieces for the same client. */
+  sameClientMinGapDays: z.coerce.number<string | number>().int().min(0).max(30),
+  /** Pieces of client work per person per Indian calendar day. */
+  perDayLimit: z.coerce.number<string | number>().int().min(1).max(10),
+  /** Unfinished assignments a person can hold at once. */
+  maxOpenAssignments: z.coerce.number<string | number>().int().min(1).max(20),
+  /** Pause after a rejection before the person is eligible again. */
+  afterRejectionDays: z.coerce.number<string | number>().int().min(0).max(30),
+  /** How long workers have to say they're interested before selection starts (R12). */
+  interestWindowMinutes: z.coerce.number<string | number>().int().min(1).max(24 * 60),
 })
 export type AppSettings = z.output<typeof settingsSchema>
 export type AppSettingsInput = z.input<typeof settingsSchema>
@@ -26,6 +40,13 @@ export const DEFAULT_SETTINGS: AppSettings = {
   defaultLiveHoldHours: 24,
   karmaStaleDays: 30,
   anyClientGapDays: 5,
+  sameCommunityDays: 7,
+  sameClientMaxPerWeek: 2,
+  sameClientMinGapDays: 3,
+  perDayLimit: 1,
+  maxOpenAssignments: 2,
+  afterRejectionDays: 3,
+  interestWindowMinutes: 10,
 }
 
 export const reviewTemplateSchema = z.object({

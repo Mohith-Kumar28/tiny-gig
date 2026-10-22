@@ -22,10 +22,12 @@ export function DisclaimerGate() {
           <DialogTitle>Before you continue</DialogTitle>
           <DialogDescription>Please read this and confirm. We’ll ask again only if the wording changes.</DialogDescription>
         </DialogHeader>
-        <label className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/[0.07] p-4 text-sm">
-          <Checkbox checked={ticked} onCheckedChange={(v) => setTicked(v === true)} className="mt-0.5" />
-          <span className="font-medium">{ACCOUNT_LOSS.text}</span>
-        </label>
+        <div className="flex items-start gap-3 rounded-lg border border-warning/40 bg-warning/[0.07] p-4 text-sm">
+          <Checkbox id="accept-account-loss" checked={ticked} onCheckedChange={(v) => setTicked(v === true)} className="mt-0.5" />
+          <label htmlFor="accept-account-loss" className="font-medium">
+            {ACCOUNT_LOSS.text}
+          </label>
+        </div>
         <DialogFooter>
           <Button disabled={!ticked || accept.isPending} onClick={() => accept.mutate()}>
             {accept.isPending ? <Spinner /> : null}I understand

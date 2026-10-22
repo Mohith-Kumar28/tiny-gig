@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { createFileRoute } from '@tanstack/react-router'
-import { AtSign, Download, Plus } from 'lucide-react'
+import { createFileRoute, Link } from '@tanstack/react-router'
+import { AtSign, Download, Plus, ShieldOff } from 'lucide-react'
 import { useState } from 'react'
 import { downloadCsv } from '@/components/data-table/csv'
 import { DataTable } from '@/components/data-table/data-table'
@@ -36,7 +36,7 @@ const PLATFORM_LABEL: Record<string, string> = {
   facebook: 'Facebook',
 }
 
-export const Route = createFileRoute('/_app/admin/accounts')({
+export const Route = createFileRoute('/_app/admin/accounts/')({
   head: () => ({ meta: [{ title: 'Accounts · TinyGig Admin' }] }),
   validateSearch: rosterSearchSchema,
   loaderDeps: ({ search }) => search,
@@ -104,6 +104,11 @@ function AccountsPage() {
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => exportCsv(data?.rows ?? [])} disabled={!data?.rows.length}>
               <Download /> Export page
+            </Button>
+            <Button asChild variant="outline" size="sm">
+              <Link to="/admin/accounts/blocks">
+                <ShieldOff /> Block log
+              </Link>
             </Button>
             <Button size="sm" onClick={() => setAdding(true)}>
               <Plus /> Add account

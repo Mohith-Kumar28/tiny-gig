@@ -1,10 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
-import { submission, submissionEvent, gig, workerProfile, user } from '@/db/schema'
+import { gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
 import { audit } from '@/lib/server/activity'
+import { accountLabel } from '@/features/accounts/rules'
+import { workerSafeGig, workerSafeSubmission } from '../worker-safe'
 import { AppError, workerMiddleware } from '@/lib/server/middleware'
 import { rateLimit } from '@/lib/server/rate-limit'
 import { alertRecipients, loadSettings } from '@/features/settings/server/settings-store'
@@ -87,9 +89,13 @@ export const getMySubmission = createServerFn({ method: 'GET' })
       .leftJoin(user, eq(user.id, submissionEvent.actorId))
       .where(eq(submissionEvent.submissionId, data.id))
       .orderBy(asc(submissionEvent.createdAt))
+    const account = row.sub.accountId
+      ? await db.select({ platform: socialAccount.platform, handle: socialAccount.handle }).from(socialAccount).where(eq(socialAccount.id, row.sub.accountId)).get()
+      : null
     return {
-      submission: row.sub,
-      gig: row.gig,
+      submission: workerSafeSubmission(row.sub),
+      gig: workerSafeGig(row.gig),
+      account: account ? { label: accountLabel(account.platform, account.handle) } : null,
       events: events.map((e) => ({
         ...e.event,
         actorName: e.event.actorRole === 'admin' ? 'TinyGig reviewer' : e.actorName,
@@ -125,6 +131,8 @@ export const submitProof = createServerFn({ method: 'POST' })
           screenshotKeys: ownKeys,
           workerNote: data.workerNote || null,
           submittedAt: now,
+          // The post exists on the platform from this moment on — cooldowns count from here (R18).
+          firstSubmittedAt: row.sub.firstSubmittedAt ?? now,
           revision: row.sub.revision + 1,
         })
         .where(eq(submission.id, row.sub.id)),

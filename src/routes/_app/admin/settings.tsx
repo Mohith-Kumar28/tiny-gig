@@ -1,6 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PageHeader } from '@/components/shared/page-header'
+import { ClientsManager } from '@/features/clients/components/clients-manager'
+import { clientsQuery } from '@/features/clients/queries'
 import { AdminTeam } from '@/features/settings/components/admin-team'
 import { ReviewTemplatesManager } from '@/features/settings/components/review-templates-manager'
 import { SettingsForm } from '@/features/settings/components/settings-form'
@@ -13,6 +15,7 @@ export const Route = createFileRoute('/_app/admin/settings')({
       context.queryClient.ensureQueryData(settingsQuery()),
       context.queryClient.ensureQueryData(reviewTemplatesQuery()),
       context.queryClient.ensureQueryData(adminsQuery()),
+      context.queryClient.ensureQueryData(clientsQuery()),
     ])
   },
   component: SettingsPage,
@@ -26,6 +29,7 @@ function SettingsPage() {
         <PageHeader title="Settings" />
         <SettingsForm initial={settings} />
       </div>
+      <ClientsManager />
       <AdminTeam />
       <ReviewTemplatesManager />
     </div>

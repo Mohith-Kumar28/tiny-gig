@@ -66,3 +66,30 @@ export const consent = sqliteTable(
   },
   (t) => [index('consent_user_idx').on(t.userId, t.kind, t.acceptedAt)],
 )
+
+/**
+ * Every time a cooldown or overlap rule kept a worker from an opportunity (R20).
+ * One row per (gig, worker, rule) so a busy gig doesn't flood it.
+ */
+export const blockLog = sqliteTable(
+  'block_log',
+  {
+    id: id(),
+    gigId: text('gig_id').notNull(),
+    workerId: text('worker_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    accountId: text('account_id'),
+    rule: text('rule').notNull(),
+    detail: text('detail'),
+    unlockAt: timestamp('unlock_at'),
+    /** Where it was hit: broadcast (excluded from the alert), interest (tried and was told no), selection. */
+    source: text('source', { enum: ['broadcast', 'interest', 'selection'] }).notNull(),
+    createdAt: createdAt(),
+  },
+  (t) => [
+    uniqueIndex('block_log_uq').on(t.gigId, t.workerId, t.rule),
+    index('block_log_created_idx').on(t.createdAt),
+    index('block_log_rule_idx').on(t.rule),
+  ],
+)

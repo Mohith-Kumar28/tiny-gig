@@ -18,6 +18,8 @@ import { Textarea } from '@/components/ui/textarea'
 import { DecisionDialog } from '@/features/workers/components/decision-dialog'
 import { useAction } from '@/hooks/use-action'
 import { useHotkeys } from '@/hooks/use-hotkeys'
+import { accountLabel } from '@/features/accounts/rules'
+import { SubmissionClientSelect } from '@/features/clients/components/client-select'
 import { cn } from '@/lib/utils'
 import { submissionDetailQuery } from '../queries'
 import { addSubmissionComment } from '../server/admin-review'
@@ -107,6 +109,7 @@ export function SubmissionReviewPanel({
           <div className="flex flex-wrap items-center gap-2">
             <StatusBadge status={sub.status} />
             {sub.revision > 1 ? <span className="text-xs text-muted-foreground">Revision {sub.revision}</span> : null}
+            <SubmissionClientSelect submissionId={sub.id} value={sub.clientTagId} />
             <span className="ml-auto">
               <Money paise={sub.payoutAmount} className="font-display text-lg" />
             </span>
@@ -122,6 +125,15 @@ export function SubmissionReviewPanel({
             <PlatformLabel platform={gig.platform} community={gig.community} />
             <span>·</span>
             <span className="capitalize">{gig.taskType}</span>
+            {data.account ? (
+              <>
+                <span>·</span>
+                <a href={data.account.url} target="_blank" rel="noreferrer" className="font-medium text-foreground hover:underline">
+                  {accountLabel(data.account.platform, data.account.handle)}
+                </a>
+                {sub.level ? <span>{sub.level}</span> : null}
+              </>
+            ) : null}
             {sub.submittedAt ? (
               <>
                 <span>·</span>

@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import { submission, submissionEvent, gig, workerProfile, user } from '@/db/schema'
+import { gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
 import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
@@ -167,7 +167,7 @@ export const getSubmissionDetail = createServerFn({ method: 'GET' })
       .where(eq(submission.id, data.id))
       .get()
     if (!row) throw new AppError('NOT_FOUND', 'Submission not found.')
-    const [events, history] = await Promise.all([
+    const [events, history, account] = await Promise.all([
       db
         .select({ event: submissionEvent, actorName: user.name })
         .from(submissionEvent)
@@ -179,11 +179,13 @@ export const getSubmissionDetail = createServerFn({ method: 'GET' })
         .from(submission)
         .where(eq(submission.workerId, row.sub.workerId))
         .groupBy(submission.status),
+      row.sub.accountId ? db.select().from(socialAccount).where(eq(socialAccount.id, row.sub.accountId)).get() : Promise.resolve(undefined),
     ])
     return {
       submission: row.sub,
       gig: row.gig,
       worker: { ...row.worker, image: row.image },
+      account: account ?? null,
       workerHistory: Object.fromEntries(history.map((h) => [h.status, h.n])) as Record<string, number>,
       events: events.map((e) => ({ ...e.event, actorName: e.actorName })),
     }
