@@ -1,8 +1,8 @@
-import { AccountSettingsCards, SecuritySettingsCards } from '@daveyplate/better-auth-ui'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { z } from 'zod'
 import { PageHeader } from '@/components/shared/page-header'
+import { ProfileSections, SecuritySections } from '@/features/account/components/account-sections'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ProfileForm } from '@/features/workers/components/profile-form'
 import { myProfileQuery } from '@/features/workers/queries'
@@ -16,8 +16,6 @@ export const Route = createFileRoute('/_app/w/profile')({
   loader: ({ context }) => context.queryClient.ensureQueryData(myProfileQuery()),
   component: ProfilePage,
 })
-
-const cardClass = { card: { base: 'shadow-none' } }
 
 function ProfilePage() {
   const { data: profile } = useSuspenseQuery(myProfileQuery())
@@ -35,11 +33,11 @@ function ProfilePage() {
         <TabsContent value="work" className="pt-4">
           <ProfileForm profile={profile} />
         </TabsContent>
-        <TabsContent value="account" className="pt-4">
-          <AccountSettingsCards classNames={cardClass} />
+        <TabsContent value="account" className="space-y-8 pt-4">
+          <ProfileSections />
         </TabsContent>
-        <TabsContent value="security" className="pt-4">
-          <SecuritySettingsCards classNames={cardClass} />
+        <TabsContent value="security" className="space-y-8 pt-4">
+          <SecuritySections email={profile.email} />
         </TabsContent>
       </Tabs>
     </div>

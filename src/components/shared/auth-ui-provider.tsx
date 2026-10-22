@@ -1,5 +1,5 @@
 import { AuthUIProvider } from '@daveyplate/better-auth-ui'
-import { useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useRouter } from '@tanstack/react-router'
 import type { ReactNode } from 'react'
 import { authClient } from '@/lib/auth-client'
@@ -10,6 +10,28 @@ function RouterLink({ href, className, children }: { href: string; className?: s
       {children}
     </Link>
   )
+}
+
+/**
+ * Better Auth UI 3.4 asks /account-info with the provider's account id, but Better Auth 1.7 matches its
+ * own row id, so it always answered "Account not found". Translate the id first and fail quietly.
+ */
+function useAccountInfo(params: { query?: { accountId?: string } } | undefined) {
+  const providerAccountId = params?.query?.accountId
+  const { data, isPending, isRefetching, refetch } = useQuery({
+    queryKey: ['auth', 'account-info', providerAccountId],
+    enabled: Boolean(providerAccountId),
+    staleTime: 5 * 60_000,
+    retry: false,
+    queryFn: async () => {
+      const { data: accounts } = await authClient.listAccounts()
+      const row = accounts?.find((a) => a.accountId === providerAccountId || a.id === providerAccountId)
+      if (!row) return null
+      const { data: info } = await authClient.accountInfo({ query: { accountId: row.id } })
+      return info ?? null
+    },
+  })
+  return { data: data as { user: { email?: string | null } } | null | undefined, isPending, isRefetching, error: null, refetch }
 }
 
 async function uploadAvatar(file: File) {
@@ -32,6 +54,7 @@ export function AuthUiProvider({ children, google }: { children: ReactNode; goog
   return (
     <AuthUIProvider
       authClient={authClient}
+      hooks={{ useAccountInfo: useAccountInfo as never }}
       navigate={(href) => router.navigate({ to: href })}
       replace={(href) => router.navigate({ to: href, replace: true })}
       onSessionChange={async () => {

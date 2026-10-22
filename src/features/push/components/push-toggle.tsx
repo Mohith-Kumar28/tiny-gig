@@ -1,7 +1,10 @@
-import { BellOff, BellRing, Share } from 'lucide-react'
+import { BellOff, BellRing, Send, Share } from 'lucide-react'
+import { useState } from 'react'
 import { toast } from 'sonner'
+import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import { sendTestPush } from '../server/push'
 import { isIos, usePush } from '../use-push'
 
 /** How to undo a block, by browser. People often hit "Block" by reflex; this is the way back. */
@@ -20,22 +23,60 @@ function unblockHint() {
  * The settings switch for new-gig alerts on this device (Notifications page, Me, Profile).
  * Explains blocked and iPhone-install cases instead of silently failing.
  */
-export function PushToggle({ className }: { className?: string }) {
+const COPY = {
+  worker: {
+    title: 'New-gig alerts on this device',
+    body: 'Gigs only take interest for a few minutes. Get a ping the moment one goes live.',
+  },
+  admin: {
+    title: 'Alerts on this device',
+    body: 'New applicants, proof to review, first hands on a gig and the Monday payout run.',
+  },
+}
+
+export function PushToggle({ className, audience = 'worker' }: { className?: string; audience?: keyof typeof COPY }) {
   const { state, busy, enable, disable } = usePush()
-  if (state === 'loading' || state === 'unsupported') return null
+  const [testing, setTesting] = useState(false)
+  const copy = COPY[audience]
+  if (state === 'loading') return null
+  if (state === 'unsupported') {
+    return (
+      <div className={cn('flex items-start gap-3 rounded-lg border bg-card p-4', className)}>
+        <BellOff className="mt-0.5 size-5 shrink-0 text-muted-foreground" />
+        <div className="min-w-0 flex-1 space-y-1">
+          <p className="text-sm font-medium">{copy.title}</p>
+          <p className="text-xs text-muted-foreground">
+            This browser can't show push alerts. Use Chrome, Edge or Firefox, or Safari with TinyGig added to your Home Screen.
+            You'll still see everything under the bell.
+          </p>
+        </div>
+      </div>
+    )
+  }
+  const test = async () => {
+    setTesting(true)
+    try {
+      const r = await sendTestPush()
+      if (r.devices) toast.success('Test sent. It should pop up in a few seconds.')
+      else toast.error('No device is set up yet. Turn alerts on first.')
+    } catch {
+      toast.error('Could not send the test')
+    } finally {
+      setTesting(false)
+    }
+  }
   const toggle = async (next: boolean) => {
     try {
       if (next) {
         const ok = await enable()
-        toast[ok ? 'success' : 'error'](
-          ok ? 'Alerts on for this device' : 'Notifications are blocked for TinyGig in this browser',
-        )
+        if (ok) toast.success('Alerts on for this device')
+        else toast.error('Notifications are blocked for TinyGig in this browser', { description: unblockHint() })
       } else {
         await disable()
         toast.success('Alerts off for this device')
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not change alerts')
+      toast.error('Could not turn alerts on', { description: err instanceof Error ? err.message : undefined, duration: 12_000 })
     }
   }
   return (
@@ -46,7 +87,7 @@ export function PushToggle({ className }: { className?: string }) {
         <BellRing className={cn('mt-0.5 size-5 shrink-0', state === 'on' ? 'text-ink' : 'text-muted-foreground')} />
       )}
       <div className="min-w-0 flex-1 space-y-1">
-        <p className="text-sm font-medium">New-gig alerts on this device</p>
+        <p className="text-sm font-medium">{copy.title}</p>
         {state === 'needs-install' ? (
           <p className="text-xs text-muted-foreground">
             On iPhone, alerts work once TinyGig is on your Home Screen: tap{' '}
@@ -56,13 +97,16 @@ export function PushToggle({ className }: { className?: string }) {
         ) : state === 'denied' ? (
           <p className="text-xs text-muted-foreground">Notifications are blocked for TinyGig. {unblockHint()}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">
-            Gigs only take interest for a few minutes. Get a ping the moment one goes live.
-          </p>
+          <p className="text-xs text-muted-foreground">{copy.body}</p>
         )}
+        {state === 'on' ? (
+          <Button variant="link" size="sm" className="h-auto p-0 text-xs" disabled={testing} onClick={test}>
+            <Send className="size-3.5" /> {testing ? 'Sending…' : 'Send a test alert'}
+          </Button>
+        ) : null}
       </div>
       {state === 'on' || state === 'off' ? (
-        <Switch checked={state === 'on'} disabled={busy} onCheckedChange={toggle} aria-label="New-gig alerts" />
+        <Switch checked={state === 'on'} disabled={busy} onCheckedChange={toggle} aria-label={copy.title} />
       ) : null}
     </div>
   )

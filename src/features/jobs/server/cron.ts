@@ -8,7 +8,7 @@ import { formatMoney } from '@/lib/format'
 import { evaluateAllReferrers } from '@/features/referrals/server/engine'
 import { alertRecipients, loadSettings } from '@/features/settings/server/settings-store'
 import { releaseSlotIfNeeded } from '@/features/submissions/server/review-service'
-import { notify } from '@/lib/server/activity'
+import { notify, notifyAdmins } from '@/lib/server/activity'
 
 
 const fmt = (d: Date) => d.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'medium', timeStyle: 'short' })
@@ -183,5 +183,11 @@ async function weeklyPayoutRun(db: Db, now: Date) {
   if (ist.getUTCDay() !== 1) return
   if (!(await oncePerIstDay(db, now, 'payouts:weekly:last', 8))) return
   const r = await lockBalancesIntoPayouts(db, { actorId: null, note: `Weekly payout · ${ist.toISOString().slice(0, 10)}` })
-  if (r.created) await sendEmail({ to: await alertRecipients(db), template: 'adminWeeklyPayouts', data: r })
+  if (!r.created) return
+  await notifyAdmins(db, {
+    title: 'Weekly payouts are ready',
+    body: `${r.created} payout${r.created === 1 ? '' : 's'} to send by UPI. Record each UTR when paid.`,
+    href: '/admin/payouts',
+  })
+  await sendEmail({ to: await alertRecipients(db), template: 'adminWeeklyPayouts', data: r })
 }

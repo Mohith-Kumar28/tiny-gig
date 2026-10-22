@@ -5,6 +5,7 @@ import type { ReactNode } from 'react'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
 import { PageHeader } from '@/components/shared/page-header'
+import { PushPrompt } from '@/features/push/components/push-prompt'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { Button } from '@/components/ui/button'
@@ -123,6 +124,7 @@ function AdminOverview() {
           </>
         }
       />
+      <PushPrompt audience="admin" />
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <section aria-labelledby="due-title" className="min-w-0 overflow-hidden rounded-lg border bg-card">

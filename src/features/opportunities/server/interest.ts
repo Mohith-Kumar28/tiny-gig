@@ -1,3 +1,4 @@
+import { notifyAdmins } from '@/lib/server/activity'
 import { createServerFn } from '@tanstack/react-start'
 import { and, eq } from 'drizzle-orm'
 import { z } from 'zod'
@@ -44,10 +45,19 @@ export const expressInterest = createServerFn({ method: 'POST' })
       .where(and(eq(gigInterest.gigId, g.id), eq(gigInterest.workerId, user.id)))
       .get()
     if (existing?.status === 'selected') throw new AppError('CONFLICT', 'You’ve already been selected for this gig.')
+    // First hand raised on a gig pings staff once; later hands show on the pick screen.
+    const first = !(await db.select({ w: gigInterest.workerId }).from(gigInterest).where(eq(gigInterest.gigId, g.id)).limit(1).get())
     await db
       .insert(gigInterest)
       .values({ gigId: g.id, workerId: user.id, accountIds: offered, status: 'interested' })
       .onConflictDoUpdate({ target: [gigInterest.gigId, gigInterest.workerId], set: { accountIds: offered, status: 'interested', updatedAt: now } })
+    if (first) {
+      await notifyAdmins(db, {
+        title: `Hands are going up: ${g.title}`,
+        body: 'Pick accounts once the interest window closes.',
+        href: `/admin/gigs/${g.id}/select`,
+      })
+    }
     return { ok: true, accounts: offered.length }
   })
 

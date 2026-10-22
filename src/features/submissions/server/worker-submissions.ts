@@ -4,7 +4,7 @@ import { z } from 'zod'
 import { gig, socialAccount, submission, submissionEvent, user } from '@/db/schema'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
-import { audit } from '@/lib/server/activity'
+import { audit, notifyAdmins } from '@/lib/server/activity'
 import { accountLabel } from '@/features/accounts/rules'
 import { workerSafeGig, workerSafeSubmission } from '../worker-safe'
 import { AppError, workerMiddleware } from '@/lib/server/middleware'
@@ -134,6 +134,13 @@ export const submitProof = createServerFn({ method: 'POST' })
       note: data.workerNote,
     })
     const settings = await loadSettings(db)
+    if (r.status === 'submitted' || r.status === 'resubmitted' || r.status === 'in_review') {
+      await notifyAdmins(db, {
+        title: `${r.status === 'resubmitted' ? 'Resubmitted' : 'New proof'}: ${r.gig.title}`,
+        body: `${profile.fullName} sent proof. It's in the review inbox.`,
+        href: '/admin/review',
+      })
+    }
     if (settings.submissionAlerts === 'immediate' && (r.status === 'submitted' || r.status === 'resubmitted' || r.status === 'in_review')) {
       queueEmail({
         to: await alertRecipients(db),
@@ -158,6 +165,11 @@ export const submitInsights = createServerFn({ method: 'POST' })
       insightsKeys: data.insightsKeys,
       karma: data.karma,
       note: data.workerNote,
+    })
+    await notifyAdmins(db, {
+      title: `Insights to review: ${r.gig.title}`,
+      body: `${profile.fullName} uploaded the insights screenshot.`,
+      href: '/admin/review',
     })
     const settings = await loadSettings(db)
     if (settings.submissionAlerts === 'immediate') {

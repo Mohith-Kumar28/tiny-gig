@@ -17,6 +17,23 @@ function urlBase64ToUint8Array(base64: string) {
   return Uint8Array.from(raw, (c) => c.charCodeAt(0))
 }
 
+function isBrave() {
+  return typeof navigator !== 'undefined' && 'brave' in navigator
+}
+
+/** Turns the browser's push failures into something a person can act on. */
+function pushError(err: unknown) {
+  const msg = err instanceof Error ? err.message : String(err)
+  if (/push service/i.test(msg) || (err instanceof DOMException && err.name === 'AbortError')) {
+    return new Error(
+      isBrave()
+        ? 'Brave blocks web push by default. Open brave://settings/privacy, turn on "Use Google services for push messaging", restart Brave and try again.'
+        : 'This browser could not reach its push service. Check you are online and not in a private window, then try again.',
+    )
+  }
+  return err instanceof Error ? err : new Error(msg)
+}
+
 export function isIos() {
   return typeof navigator !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent)
 }
@@ -72,9 +89,15 @@ export function usePush() {
       const perm = await Notification.requestPermission()
       setPermission(perm)
       if (perm !== 'granted') return false
-      const sub =
-        (await reg.pushManager.getSubscription()) ??
-        (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(config.publicKey) }))
+      await navigator.serviceWorker.ready
+      let sub = await reg.pushManager.getSubscription()
+      if (!sub) {
+        try {
+          sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(config.publicKey) })
+        } catch (err) {
+          throw pushError(err)
+        }
+      }
       const json = sub.toJSON()
       await savePushSubscription({ data: { endpoint: sub.endpoint, p256dh: json.keys?.p256dh ?? '', auth: json.keys?.auth ?? '' } })
       setEndpoint(sub.endpoint)

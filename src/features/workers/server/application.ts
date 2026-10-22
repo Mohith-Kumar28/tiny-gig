@@ -1,3 +1,4 @@
+import { notifyAdmins } from '@/lib/server/activity'
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie } from '@tanstack/react-start/server'
 import { and, eq } from 'drizzle-orm'
@@ -97,6 +98,11 @@ export const submitApplication = createServerFn({ method: 'POST' })
     )
 
     queueEmail({ to: data.email, template: 'applicationReceived', data: { name: data.fullName } })
+    await notifyAdmins(db, {
+      title: `New applicant: ${data.fullName}`,
+      body: `u/${redditUsername}, ${data.state}. Check the account and approve or decline.`,
+      href: '/admin/applicants',
+    })
     const settings = await loadSettings(db)
     if (settings.applicantAlerts) queueEmail({
       to: await alertRecipients(db),

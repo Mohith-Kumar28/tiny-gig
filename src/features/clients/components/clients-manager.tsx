@@ -16,9 +16,19 @@ import { cn } from '@/lib/utils'
 import { clientsQuery } from '../queries'
 import { saveClient, setClientArchived } from '../server/clients'
 
-type Draft = { id?: string; name: string; color: TagColor }
+export type ClientDraft = { id?: string; name: string; color: TagColor }
+type Draft = ClientDraft
 
-function ClientDialog({ value, onOpenChange }: { value: Draft | null; onOpenChange: (o: boolean) => void }) {
+/** Add or edit a client. Also opened from the client pickers, so new clients can be made mid-task. */
+export function ClientDialog({
+  value,
+  onOpenChange,
+  onSaved,
+}: {
+  value: Draft | null
+  onOpenChange: (o: boolean) => void
+  onSaved?: (id: string) => void
+}) {
   const [draft, setDraft] = useState<Draft>({ name: '', color: 'blue' })
   useEffect(() => {
     if (value) setDraft(value)
@@ -26,7 +36,10 @@ function ClientDialog({ value, onOpenChange }: { value: Draft | null; onOpenChan
   const save = useAction((d: Draft) => saveClient({ data: d }), {
     success: (_r, d) => (d.id ? 'Client updated' : 'Client added'),
     invalidate: [['admin', 'clients'], ['admin', 'accounts']],
-    onSuccess: () => onOpenChange(false),
+    onSuccess: (r) => {
+      if (r?.id) onSaved?.(r.id)
+      onOpenChange(false)
+    },
   })
   const valid = draft.name.trim().length > 0
   return (

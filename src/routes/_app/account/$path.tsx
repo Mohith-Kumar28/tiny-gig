@@ -1,9 +1,9 @@
-import { AccountView } from '@daveyplate/better-auth-ui'
 import { createFileRoute, redirect } from '@tanstack/react-router'
 import { AppShell } from '@/components/layout/app-shell'
 import { ADMIN_NAV } from '@/components/layout/nav'
 import { SimpleShell } from '@/components/layout/simple-shell'
 import { PageHeader } from '@/components/shared/page-header'
+import { NotificationSections, ProfileSections, SecuritySections } from '@/features/account/components/account-sections'
 
 const PATHS = ['settings', 'security'] as const
 
@@ -24,18 +24,14 @@ export const Route = createFileRoute('/_app/account/$path')({
 
 function AccountPage() {
   const { viewer } = Route.useRouteContext()
-  const { path } = Route.useParams()
+  const isAdmin = viewer.user.role === 'admin'
+  // One page for both paths: Better Auth UI links to /account/security after some flows.
   const content = (
-    <div className="space-y-6">
-      <PageHeader title="Account" />
-      <AccountView
-        pathname={`/account/${path}`}
-        classNames={{
-          base: 'gap-6 md:gap-10',
-          sidebar: { base: 'md:w-48', button: 'justify-start', buttonActive: 'bg-accent' },
-          cards: 'max-w-2xl',
-        }}
-      />
+    <div className="max-w-5xl space-y-8">
+      <PageHeader title="Account" description="Your profile, alerts on this device, and how you sign in." />
+      <ProfileSections />
+      {isAdmin ? <NotificationSections audience="admin" /> : null}
+      <SecuritySections email={viewer.user.email} />
     </div>
   )
   if (viewer.user.role === 'admin') {

@@ -17,8 +17,7 @@ import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { type GigStatus, PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
-import { tagDot } from '@/features/accounts/components/client-chip'
-import { clientsQuery } from '@/features/clients/queries'
+import { ClientPicker } from '@/features/clients/components/client-select'
 import { settingsQuery } from '@/features/settings/queries'
 import { useAction } from '@/hooks/use-action'
 import { formatMoney, formatNumber, rupeesToPaise } from '@/lib/format'
@@ -103,7 +102,6 @@ export function GigForm({
   claimedSlots?: number
 }) {
   const navigate = useNavigate()
-  const { data: clients } = useQuery(clientsQuery())
   const { data: settings } = useQuery(settingsQuery())
   const form = useForm<GigFormInput, unknown, GigFormValues>({
     resolver: zodResolver(gigFormSchemaRefined),
@@ -230,25 +228,10 @@ export function GigForm({
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
                   <FormLabel>Client</FormLabel>
-                  <Select value={field.value || 'none'} onValueChange={(v) => field.onChange(v === 'none' ? '' : v)}>
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No client</SelectItem>
-                      {(clients ?? [])
-                        .filter((c) => !c.archivedAt || c.id === field.value)
-                        .map((c) => (
-                          <SelectItem key={c.id} value={c.id}>
-                            <span className={cn('size-1.5 rounded-full', tagDot(c.color))} />
-                            {c.name}
-                          </SelectItem>
-                        ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>Internal only. Drives same-client cooldowns.</FormDescription>
+                  <FormControl>
+                    <ClientPicker value={field.value || null} onChange={(id) => field.onChange(id ?? '')} />
+                  </FormControl>
+                  <FormDescription>Internal only, never shown to workers. Drives same-client cooldowns. Add a new one from the list.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

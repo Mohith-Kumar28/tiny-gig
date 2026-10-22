@@ -96,7 +96,7 @@ export function ProgramForm({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full gap-0 p-0 sm:max-w-5xl">
-        <SheetHeader className="border-b px-6 py-4">
+        <SheetHeader className="border-b py-4 pl-6">
           <SheetTitle className="font-display text-lg">{programId ? 'Edit program' : 'New referral program'}</SheetTitle>
           <SheetDescription>Define what a referred worker has to do, and who gets paid for it.</SheetDescription>
         </SheetHeader>

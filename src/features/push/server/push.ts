@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { pushSubscription } from '@/db/schema'
 import { userMiddleware } from '@/lib/server/middleware'
 import { pushEnv } from './push-env'
+import { sendPush } from './send-push'
 
 export const getPushConfig = createServerFn({ method: 'GET' })
   .middleware([userMiddleware])
@@ -30,4 +31,15 @@ export const removePushSubscription = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     await context.db.delete(pushSubscription).where(and(eq(pushSubscription.endpoint, data.endpoint), eq(pushSubscription.userId, context.user.id)))
     return { ok: true }
+  })
+
+/** Pings every device this person turned alerts on for, so they can see it works. */
+export const sendTestPush = createServerFn({ method: 'POST' })
+  .middleware([userMiddleware])
+  .handler(async ({ context }) => {
+    const subs = await context.db.select({ endpoint: pushSubscription.endpoint }).from(pushSubscription).where(eq(pushSubscription.userId, context.user.id))
+    if (!subs.length) return { devices: 0 }
+    const href = context.user.role === 'admin' ? '/admin' : '/w'
+    await sendPush(context.db, [{ userId: context.user.id, title: 'TinyGig alerts are on', body: 'This is how new gigs and updates will reach you.', href }])
+    return { devices: subs.length }
   })

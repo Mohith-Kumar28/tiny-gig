@@ -75,7 +75,8 @@ function createAuth() {
         },
       },
     },
-    account: { accountLinking: { enabled: true, trustedProviders: ['google', 'email-otp'] } },
+    // Email codes always work, so dropping the last linked provider never locks anyone out.
+    account: { accountLinking: { enabled: true, trustedProviders: ['google', 'email-otp'], allowUnlinkingAll: true } },
     databaseHooks: {
       user: {
         update: {
