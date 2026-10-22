@@ -116,9 +116,7 @@ export const accountColumns: ColumnDef<RosterRow, unknown>[] = [
       return (
         <div className="flex flex-col items-start gap-0.5">
           <StandingSelect id={r.id} value={r.standing} />
-          {r.redditStatus && r.redditStatus !== 'ok' ? (
-            <span className="text-[11px] font-medium text-destructive">{r.redditStatus === 'suspended' ? 'Suspended on Reddit' : 'Not found on Reddit'}</span>
-          ) : r.cooling ? (
+          {r.cooling ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-[11px] text-info">{r.coolingUntil ? `Cooling until ${formatDate(r.coolingUntil)}` : 'Cooling down'}</span>

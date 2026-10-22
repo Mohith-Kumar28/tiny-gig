@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
-import { Check, ChevronDown, Clock, FastForward, MessageSquarePlus, RefreshCw, RotateCcw, ShieldCheck, X } from 'lucide-react'
+import { Check, ChevronDown, Clock, FastForward, MessageSquarePlus, RotateCcw, ShieldCheck, X } from 'lucide-react'
 import { useState } from 'react'
 import { Countdown } from '@/components/shared/countdown'
 import { Money } from '@/components/shared/money'
@@ -13,15 +13,12 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Kbd } from '@/components/ui/kbd'
 import { Label } from '@/components/ui/label'
-import { Spinner } from '@/components/ui/spinner'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Textarea } from '@/components/ui/textarea'
 import { DecisionDialog } from '@/features/workers/components/decision-dialog'
 import { useAction } from '@/hooks/use-action'
 import { useHotkeys } from '@/hooks/use-hotkeys'
 import { accountLabel } from '@/features/accounts/rules'
-import { VerifyBanner } from '@/features/reddit/components/verify-badge'
-import { recheckSubmission } from '@/features/reddit/server/reddit'
 import { OnBehalfActions } from './on-behalf-actions'
 import { SubmissionClientSelect } from '@/features/clients/components/client-select'
 import { cn } from '@/lib/utils'
@@ -74,10 +71,6 @@ export function SubmissionReviewPanel({
     onSuccess: () => setNote(''),
   })
 
-  const recheck = useAction(() => recheckSubmission({ data: { id } }), {
-    success: (r) => ('skipped' in r && r.skipped ? 'Automatic live check isn’t connected yet (Settings)' : 'Checked with Reddit'),
-    invalidate: [['admin', 'submission', id], ['admin', 'review']],
-  })
   const sub = data?.submission
   const canDecide = !!sub && REVIEWABLE.includes(sub.status)
   const isLiveCheck = sub?.status === 'live_check'
@@ -188,21 +181,6 @@ export function SubmissionReviewPanel({
               </p>
             </div>
           </div>
-        ) : null}
-
-        {gig.platform === 'reddit' && sub.proofUrl ? (
-          <VerifyBanner
-            state={sub.verifyState}
-            detail={sub.verifyDetail}
-            checkedAt={sub.verifyCheckedAt}
-            liveAt={sub.verifyLiveAt}
-            flaggedAt={sub.verifyFlaggedAt}
-            action={
-              <Button variant="ghost" size="sm" className="h-7 shrink-0" disabled={recheck.isPending} onClick={() => recheck.mutate(undefined)}>
-                {recheck.isPending ? <Spinner /> : <RefreshCw />} Re-check
-              </Button>
-            }
-          />
         ) : null}
 
         <Section title="Proof">

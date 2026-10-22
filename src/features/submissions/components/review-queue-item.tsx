@@ -3,7 +3,6 @@ import { Money } from '@/components/shared/money'
 import { PlatformIcon } from '@/components/shared/platform-icon'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { VerifyIcon } from '@/features/reddit/components/verify-badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
 import type { listReviewQueue } from '../server/admin-review'
@@ -50,7 +49,6 @@ export function ReviewQueueItem({
         <p className="mt-0.5 truncate text-sm text-muted-foreground">{row.gigTitle}</p>
         <div className="mt-1.5 flex items-center gap-2">
           <StatusBadge status={row.status} />
-          <VerifyIcon state={row.verifyState} />
           {row.revision > 1 ? <span className="text-[11px] text-muted-foreground">v{row.revision}</span> : null}
           {row.screenshotCount ? (
             <span className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground">

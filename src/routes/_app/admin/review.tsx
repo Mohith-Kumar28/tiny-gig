@@ -29,7 +29,6 @@ import { cn } from '@/lib/utils'
 
 const TAB_LABELS: Record<ReviewTab, string> = {
   needs_review: 'Needs review',
-  flagged: 'Flagged by live check',
   on_hold: 'On hold (live 24h)',
   insights_overdue: 'Insights overdue',
   live_check_due: 'Live check due (old flow)',

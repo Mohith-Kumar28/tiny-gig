@@ -47,8 +47,6 @@ async function buildRoster(db: Parameters<typeof loadWork>[0], now: Date) {
         karmaUpdatedAt: socialAccount.karmaUpdatedAt,
         standing: socialAccount.standing,
         standingNote: socialAccount.standingNote,
-        redditStatus: socialAccount.redditStatus,
-        redditCheckedAt: socialAccount.redditCheckedAt,
         ownerName: workerProfile.fullName,
         ownerPhone: workerProfile.phone,
         ownerStatus: workerProfile.status,

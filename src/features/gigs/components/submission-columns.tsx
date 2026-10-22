@@ -4,7 +4,6 @@ import { Money } from '@/components/shared/money'
 import { PlatformIcon } from '@/components/shared/platform-icon'
 import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
-import { VerifyIcon } from '@/features/reddit/components/verify-badge'
 import type { FacetOption } from '@/components/data-table/types'
 import type { SubmissionStatus } from '@/db/schema/enums'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
@@ -32,7 +31,6 @@ const proof: ColumnDef<QueueRow, unknown> = {
   meta: { label: 'Proof' },
   cell: ({ row }) => (
     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <VerifyIcon state={row.original.verifyState} />
       {row.original.proofUrl ? (
         <a
           href={row.original.proofUrl}

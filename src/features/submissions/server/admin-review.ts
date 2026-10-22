@@ -1,6 +1,4 @@
 import { createServerFn } from '@tanstack/react-start'
-import { waitUntil } from 'cloudflare:workers'
-import { verifySubmissions } from '@/features/reddit/server/verify-service'
 import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
@@ -11,7 +9,7 @@ import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/li
 import { applyInsights, applyProof } from './proof-service'
 import { decideOne } from './review-service'
 
-export const REVIEW_TABS = ['needs_review', 'flagged', 'on_hold', 'insights_overdue', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
+export const REVIEW_TABS = ['needs_review', 'on_hold', 'insights_overdue', 'live_check_due', 'live_check', 'changes_requested', 'all'] as const
 /** Insights are overdue a day after the hold ends. */
 const INSIGHTS_GRACE_MS = 24 * 3_600_000
 export type ReviewTab = (typeof REVIEW_TABS)[number]
@@ -32,12 +30,6 @@ function tabFilter(tab: ReviewTab, now: Date): SQL | undefined {
   switch (tab) {
     case 'needs_review':
       return inArray(submission.status, ['submitted', 'resubmitted', 'in_review'])
-    case 'flagged':
-      // The automatic live check found a problem on work that's still open.
-      return and(
-        inArray(submission.verifyState, ['removed', 'deleted', 'missing', 'wrong_author']),
-        inArray(submission.status, ['submitted', 'resubmitted', 'live_check', 'on_hold', 'in_review']),
-      )
     case 'on_hold':
       return eq(submission.status, 'on_hold')
     case 'insights_overdue':
@@ -117,7 +109,6 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
         decidedAt: submission.decidedAt,
         revision: submission.revision,
         updatedAt: submission.updatedAt,
-        verifyState: submission.verifyState,
         gigId: gig.id,
         gigTitle: gig.title,
         platform: gig.platform,
@@ -158,7 +149,6 @@ export const getReviewCounts = createServerFn({ method: 'GET' })
       .select({
         needs_review: sql<number>`sum(case when ${submission.status} in ('submitted','resubmitted','in_review') then 1 else 0 end)`,
         on_hold: sql<number>`sum(case when ${submission.status} = 'on_hold' then 1 else 0 end)`,
-        flagged: sql<number>`sum(case when ${submission.verifyState} in ('removed','deleted','missing','wrong_author') and ${submission.status} in ('submitted','resubmitted','live_check','on_hold','in_review') then 1 else 0 end)`,
         insights_overdue: sql<number>`sum(case when ${submission.status} = 'on_hold' and ${submission.liveCheckAt} <= ${now - INSIGHTS_GRACE_MS} then 1 else 0 end)`,
         live_check: sql<number>`sum(case when ${submission.status} = 'live_check' then 1 else 0 end)`,
         live_check_due: sql<number>`sum(case when ${submission.status} = 'live_check' and ${submission.liveCheckAt} <= ${now} then 1 else 0 end)`,
@@ -271,7 +261,6 @@ export const adminSubmitLink = createServerFn({ method: 'POST' })
       screenshotKeys: [],
       note: data.note,
     })
-    waitUntil(verifySubmissions(context.db, { ids: [data.submissionId] }).catch((err) => console.error('[reddit-verify]', err)))
     await audit(context.db, { actorId: context.user.id, action: 'submission.link_on_behalf', entityType: 'submission', entityId: data.submissionId })
     return { status: r.status, warning: r.warning }
   })

@@ -3,7 +3,6 @@ import { getDb } from '@/db/client'
 import { appSetting, gig, socialAccount, submission, submissionEvent, workerProfile } from '@/db/schema'
 import { sendEmail } from '@/emails/send-email'
 import { levelFor } from '@/features/accounts/rules'
-import { checkAccounts, verifySubmissions } from '@/features/reddit/server/verify-service'
 import { lockBalancesIntoPayouts } from '@/features/payouts/server/payout-service'
 import { formatMoney } from '@/lib/format'
 import { evaluateAllReferrers } from '@/features/referrals/server/engine'
@@ -23,9 +22,6 @@ export async function runCronJobs(now: Date) {
     ['claim-reminders', () => sendReminders(db, now, settings.reminderHoursBefore)],
     ['auto-close-gigs', () => closeEndedGigs(db, now)],
     ['insights-reminders', () => sendInsightsReminders(db, now)],
-    // Automatic live check (Reddit API): every run re-checks posts that should be up right now.
-    ['reddit-verify', () => verifySubmissions(db, { now })],
-    ['reddit-accounts', async () => ((await oncePerIstDay(db, now, 'reddit-accounts:last', 6)) ? checkAccounts(db, { now }) : null)],
     ['level-ups', () => notifyLevelUps(db, now, settings.levelRates.post)],
     ['weekly-payouts', () => (settings.weeklyPayouts ? weeklyPayoutRun(db, now) : Promise.resolve())],
     ['admin-digest', () => (settings.dailyDigest ? sendDailyDigest(db, now) : Promise.resolve())],
