@@ -7,12 +7,19 @@ self.addEventListener('push', (event) => {
     data = { title: 'TinyGig', body: event.data ? event.data.text() : '' }
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || 'TinyGig', {
-      body: data.body || '',
-      icon: '/apple-touch-icon.png',
-      badge: '/favicon.svg',
-      data: { href: data.href || '/w' },
-    }),
+    Promise.all([
+      self.registration.showNotification(data.title || 'TinyGig', {
+        body: data.body || '',
+        icon: '/apple-touch-icon.png',
+        badge: '/favicon.svg',
+        data: { href: data.href || '/w' },
+      }),
+      // Tell open TinyGig tabs the push arrived, so "Send a test alert" can tell a
+      // delivery problem apart from the operating system hiding the pop-up.
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+        for (const w of wins) w.postMessage({ type: 'tinygig-push', title: data.title || 'TinyGig' })
+      }),
+    ]),
   )
 })
 

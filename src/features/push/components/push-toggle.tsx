@@ -4,7 +4,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { pushErrorToast, showPushError, siteSettingsUrl } from '../push-errors'
+import { osNotificationSettings, pushErrorToast, showPushError, siteSettingsUrl, waitForPushArrival } from '../push-errors'
 import { sendTestPush } from '../server/push'
 import { isIos, usePush } from '../use-push'
 
@@ -68,15 +68,35 @@ export function PushToggle({ className, audience = 'worker' }: { className?: str
   const test = async () => {
     setTesting(true)
     try {
+      // Make sure the tab is listening to the latest service worker before we send.
+      await navigator.serviceWorker?.getRegistration().then((reg) => reg?.update()).catch(() => {})
+      const arrived = waitForPushArrival(20_000)
       const r = await sendTestPush()
       if (!r.devices) toast.error('No device is set up yet. Turn alerts on first.')
       else if (!r.configured) toast.error('Push is not set up on the server yet (VAPID keys missing).')
-      else if (r.sent)
-        toast.success(`Test sent to ${r.sent} device${r.sent === 1 ? '' : 's'}. It should pop up in a few seconds.`, {
-          duration: 15000,
-          description: nothingShowedHint(),
-        })
-      else
+      else if (r.sent) {
+        const id = toast.loading('Test sent. Waiting for it to reach this browser…')
+        if (await arrived) {
+          const os = osNotificationSettings()
+          toast.success('This browser received the test alert', {
+            id,
+            duration: 30_000,
+            description: os
+              ? `Didn't see a pop-up? Then your computer is hiding it, not TinyGig. In ${os.where}, allow notifications and pick Banners or Alerts, and turn off Focus / Do Not Disturb.`
+              : nothingShowedHint(),
+            action: os ? { label: os.label, onClick: () => window.location.assign(os.url) } : undefined,
+          })
+        } else {
+          toast.error('The test alert didn’t reach this browser', {
+            id,
+            duration: 30_000,
+            description:
+              r.sent > 1
+                ? 'It may have gone to another of your devices. If this one should get alerts, turn the switch off and on again here, then retry.'
+                : 'Turn the switch off and on again on this device, then retry. Alerts only arrive while the browser is running.',
+          })
+        }
+      } else
         toast.error('The push service refused the test', {
           duration: 15000,
           description: `${r.failed[0]?.status ?? ''} ${r.failed[0]?.detail ?? ''}`.trim() || 'Turn alerts off and on again, then retry.',

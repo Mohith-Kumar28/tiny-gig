@@ -47,6 +47,40 @@ export function pushErrorToast(title: string, description?: string, settingsUrl?
   })
 }
 
+/** The operating system's notification settings, which a link can open (the browser asks first). */
+export function osNotificationSettings(): { label: string; url: string; where: string } | null {
+  if (typeof navigator === 'undefined') return null
+  const ua = navigator.userAgent
+  if (/iPhone|iPad|iPod|Android/.test(ua)) return null
+  if (/Mac OS X/.test(ua))
+    return {
+      label: 'Open Mac settings',
+      url: 'x-apple.systempreferences:com.apple.Notifications-Settings.extension',
+      where: 'System Settings → Notifications → your browser',
+    }
+  if (/Windows/.test(ua)) return { label: 'Open Windows settings', url: 'ms-settings:notifications', where: 'Settings → System → Notifications' }
+  return null
+}
+
+/** Resolves true if the service worker reports a push arriving within `ms`. */
+export function waitForPushArrival(ms: number) {
+  return new Promise<boolean>((resolve) => {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return resolve(false)
+    const sw = navigator.serviceWorker
+    const done = (v: boolean) => {
+      clearTimeout(timer)
+      sw.removeEventListener('message', onMessage)
+      resolve(v)
+    }
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type === 'tinygig-push') done(true)
+    }
+    const timer = setTimeout(() => done(false), ms)
+    sw.addEventListener('message', onMessage)
+    sw.startMessages()
+  })
+}
+
 /** Toast for anything `enable()` throws. */
 export function showPushError(err: unknown) {
   pushErrorToast(
