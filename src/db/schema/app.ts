@@ -1,5 +1,6 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import { createdAt, id, timestamp, updatedAt } from './_helpers'
+import { clientTag, socialAccount } from './accounts'
 import { user } from './auth'
 import {
   GIG_STATUSES,
@@ -139,6 +140,24 @@ export const submission = sqliteTable(
     decidedBy: userRef('decided_by'),
     payoutId: text('payout_id'),
     revision: integer('revision').notNull().default(0),
+    /** The account that did (or will do) the work. Null only for legacy rows that couldn't be matched. */
+    accountId: text('account_id').references(() => socialAccount.id, { onDelete: 'set null' }),
+    clientTagId: text('client_tag_id').references(() => clientTag.id, { onDelete: 'set null' }),
+    /** Normalized community snapshot (e.g. "developersindia") — the gig's community may be edited later. */
+    community: text('community'),
+    /** When the work first became visible on the platform. Never overwritten by resubmits. */
+    firstSubmittedAt: timestamp('first_submitted_at'),
+    level: text('level'),
+    selectedAt: timestamp('selected_at'),
+    selectedBy: userRef('selected_by'),
+    overrideReason: text('override_reason'),
+    onBehalfBy: userRef('on_behalf_by'),
+    insightsKeys: text('insights_keys', { mode: 'json' })
+      .$type<string[]>()
+      .notNull()
+      .$defaultFn(() => []),
+    insightsSubmittedAt: timestamp('insights_submitted_at'),
+    insightsRemindedAt: timestamp('insights_reminded_at'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -151,6 +170,8 @@ export const submission = sqliteTable(
     index('submission_live_check_idx').on(t.liveCheckAt),
     index('submission_submitted_idx').on(t.submittedAt),
     index('submission_payout_idx').on(t.payoutId),
+    index('submission_account_idx').on(t.accountId),
+    index('submission_first_submitted_idx').on(t.firstSubmittedAt),
   ],
 )
 

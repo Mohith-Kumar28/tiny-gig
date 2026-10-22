@@ -8,6 +8,10 @@ export const settingsSchema = z.object({
   reminderHoursBefore: z.coerce.number<string | number>().int().min(0).max(72),
   defaultClaimWindowHours: z.coerce.number<string | number>().int().min(1).max(720),
   defaultLiveHoldHours: z.coerce.number<string | number>().int().min(0).max(720),
+  /** Karma older than this is shown greyed out as stale (R5). */
+  karmaStaleDays: z.coerce.number<string | number>().int().min(1).max(365),
+  /** Minimum gap between any two pieces of client work on one account (R13). */
+  anyClientGapDays: z.coerce.number<string | number>().int().min(0).max(60),
 })
 export type AppSettings = z.output<typeof settingsSchema>
 export type AppSettingsInput = z.input<typeof settingsSchema>
@@ -20,6 +24,8 @@ export const DEFAULT_SETTINGS: AppSettings = {
   reminderHoursBefore: 2,
   defaultClaimWindowHours: 24,
   defaultLiveHoldHours: 24,
+  karmaStaleDays: 30,
+  anyClientGapDays: 5,
 }
 
 export const reviewTemplateSchema = z.object({

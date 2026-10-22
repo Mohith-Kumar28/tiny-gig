@@ -1,5 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
 import {
+  AtSign,
   Briefcase,
   CircleUserRound,
   ClipboardCheck,
@@ -56,6 +57,7 @@ export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
     label: 'Work',
     items: [
       { to: '/admin', label: 'Overview', icon: LayoutDashboard, exact: true },
+      { to: '/admin/accounts', label: 'Accounts', icon: AtSign },
       { to: '/admin/review', label: 'Review inbox', icon: Inbox, badgeKey: 'needs_review' },
       { to: '/admin/gigs', label: 'Gigs', icon: Briefcase },
       { to: '/admin/posts', label: 'Post log', icon: Newspaper },

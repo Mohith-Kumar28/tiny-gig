@@ -38,6 +38,13 @@ const STATUS_MAP: Record<string, { label: string; tone: Tone }> = {
   // rewards
   pending_review: { label: 'Needs review', tone: 'warning' },
   void: { label: 'Void', tone: 'muted' },
+  // accounts
+  active: { label: 'Active', tone: 'success' },
+  warned: { label: 'Warned', tone: 'warning' },
+  banned: { label: 'Banned', tone: 'danger' },
+  lost: { label: 'Lost', tone: 'danger' },
+  retired: { label: 'Retired', tone: 'muted' },
+  cooling_down: { label: 'Cooling down', tone: 'info' },
   // email
   sent: { label: 'Sent', tone: 'success' },
   logged: { label: 'Logged (dev)', tone: 'muted' },

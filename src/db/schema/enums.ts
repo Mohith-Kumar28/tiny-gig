@@ -7,6 +7,14 @@ export type WorkerStatus = (typeof WORKER_STATUSES)[number]
 export const PLATFORMS = ['reddit', 'x', 'linkedin', 'threads', 'instagram', 'other'] as const
 export type Platform = (typeof PLATFORMS)[number]
 
+/** Platforms a worker can register an account on (a superset of gig platforms). */
+export const ACCOUNT_PLATFORMS = ['reddit', 'x', 'linkedin', 'threads', 'instagram', 'facebook'] as const
+export type AccountPlatform = (typeof ACCOUNT_PLATFORMS)[number]
+
+/** Stored standing of an account. "Cooling down" is derived from history, never stored. */
+export const ACCOUNT_STANDINGS = ['active', 'warned', 'banned', 'lost', 'retired'] as const
+export type AccountStanding = (typeof ACCOUNT_STANDINGS)[number]
+
 export const TASK_TYPES = ['post', 'comment', 'reply', 'upvote', 'other'] as const
 export type TaskType = (typeof TASK_TYPES)[number]
 
@@ -43,13 +51,7 @@ export type SubmissionAction = (typeof SUBMISSION_ACTIONS)[number]
 export const PAYOUT_STATUSES = ['pending', 'processing', 'paid', 'failed'] as const
 export type PayoutStatus = (typeof PAYOUT_STATUSES)[number]
 
-export const REFERRAL_TRIGGERS = [
-  'signed_up',
-  'approved',
-  'first_gig_approved',
-  'gigs_approved',
-  'earned_at_least',
-] as const
+export const REFERRAL_TRIGGERS = ['signed_up', 'approved', 'first_gig_approved', 'gigs_approved', 'earned_at_least'] as const
 export type ReferralTrigger = (typeof REFERRAL_TRIGGERS)[number]
 
 export const REWARD_STATUSES = ['pending_review', 'approved', 'paid', 'void'] as const

@@ -108,7 +108,7 @@ export function AppShell({
         </SidebarFooter>
         <SidebarRail />
       </Sidebar>
-      <SidebarInset>
+      <SidebarInset className="min-w-0">
         <header className="sticky top-0 z-30 flex h-13 shrink-0 items-center gap-2 border-b bg-background/85 px-4 backdrop-blur supports-[backdrop-filter]:bg-background/70 sm:px-6 lg:px-8">
           <SidebarTrigger className={mobileNav ? '-ml-2 hidden md:inline-flex' : '-ml-2'} />
           {mobileNav ? (

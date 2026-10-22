@@ -14,6 +14,8 @@ export const HOLDS_SLOT: SubmissionStatus[] = [
   'live_check',
   'approved',
 ]
+/** Unfinished assignments — the account is "in use" while one of these is open. */
+export const OPEN_ASSIGNMENT: SubmissionStatus[] = ['claimed', 'submitted', 'changes_requested', 'resubmitted', 'live_check']
 export const FINAL: SubmissionStatus[] = ['approved', 'rejected', 'expired', 'withdrawn']
 
 export const STATUS_LABELS: Record<SubmissionStatus, string> = {
@@ -28,9 +30,7 @@ export const STATUS_LABELS: Record<SubmissionStatus, string> = {
   withdrawn: 'Withdrawn',
 }
 
-type Transition =
-  | { ok: true; status: SubmissionStatus; liveCheckAt?: Date | null; final: boolean }
-  | { ok: false; error: string }
+type Transition = { ok: true; status: SubmissionStatus; liveCheckAt?: Date | null; final: boolean } | { ok: false; error: string }
 
 /**
  * Admin review transitions. A first approval on a gig with a live-hold moves
@@ -42,7 +42,10 @@ export function reviewTransition(
   opts: { liveHoldHours: number; submittedAt: Date | null; skipLiveCheck?: boolean },
 ): Transition {
   if (!REVIEWABLE.includes(current) && !(decision === 'reject' && current === 'changes_requested')) {
-    return { ok: false, error: `Can't ${decision.replace('_', ' ')} a submission that is ${STATUS_LABELS[current].toLowerCase()}.` }
+    return {
+      ok: false,
+      error: `Can't ${decision.replace('_', ' ')} a submission that is ${STATUS_LABELS[current].toLowerCase()}.`,
+    }
   }
   switch (decision) {
     case 'approve': {

@@ -104,7 +104,17 @@ function Group({ title, description, children }: { title: string; description?: 
   )
 }
 
-function SwitchRow({ label, description, checked, onChange }: { label: string; description?: string; checked: boolean; onChange: (v: boolean) => void }) {
+function SwitchRow({
+  label,
+  description,
+  checked,
+  onChange,
+}: {
+  label: string
+  description?: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
   return (
     <FormItem className="flex items-center justify-between gap-4 rounded-lg border p-3">
       <div className="space-y-0.5">
@@ -124,6 +134,8 @@ const ALERT_OPTIONS = [
   { value: 'off', label: 'Off', hint: '' },
 ] as const
 
+type NumKey = { [K in keyof AppSettings]: AppSettings[K] extends number ? K : never }[keyof AppSettings]
+
 export function SettingsForm({ initial }: { initial: AppSettings }) {
   const form = useForm<AppSettingsInput, unknown, AppSettings>({
     resolver: zodResolver(settingsSchema),
@@ -134,7 +146,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
     invalidate: [['admin', 'settings']],
     onSuccess: (r) => form.reset(r),
   })
-  const num = (name: 'reminderHoursBefore' | 'defaultClaimWindowHours' | 'defaultLiveHoldHours', label: string, description: string | null, suffix: string) => (
+  const num = (name: NumKey, label: string, description: string | null, suffix: string) => (
     <FormField
       control={form.control}
       name={name}
@@ -204,13 +216,7 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
           <FormField
             control={form.control}
             name="dailyDigest"
-            render={({ field }) => (
-              <SwitchRow
-                label="Morning summary email"
-                checked={field.value}
-                onChange={field.onChange}
-              />
-            )}
+            render={({ field }) => <SwitchRow label="Morning summary email" checked={field.value} onChange={field.onChange} />}
           />
         </Group>
         <Group title="Reminders">
@@ -222,9 +228,20 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
             {num('defaultLiveHoldHours', 'Keep live for', '0 = no live check', 'hours')}
           </div>
         </Group>
+        <Group title="Account register" description="How the accounts roster judges freshness and availability.">
+          <div className="grid items-start gap-5 sm:grid-cols-2">
+            {num('karmaStaleDays', 'Karma goes stale after', 'Older figures are greyed out in the roster.', 'days')}
+            {num('anyClientGapDays', 'Gap between any two client jobs', 'Per account, even for different clients.', 'days')}
+          </div>
+        </Group>
         <div className="flex items-center justify-end gap-3 border-t pt-4">
           {form.formState.isDirty ? <span className="mr-auto text-xs text-muted-foreground">Unsaved changes</span> : null}
-          <Button type="button" variant="ghost" disabled={!form.formState.isDirty || save.isPending} onClick={() => form.reset(initial)}>
+          <Button
+            type="button"
+            variant="ghost"
+            disabled={!form.formState.isDirty || save.isPending}
+            onClick={() => form.reset(initial)}
+          >
             Discard
           </Button>
           <Button type="submit" disabled={save.isPending || !form.formState.isDirty}>

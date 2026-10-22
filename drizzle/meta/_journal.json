@@ -15,6 +15,13 @@
       "when": 1792238556568,
       "tag": "0001_account_security",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1792663352474,
+      "tag": "0002_accounts",
+      "breakpoints": true
     }
   ]
 }

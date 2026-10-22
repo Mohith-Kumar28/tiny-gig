@@ -31,6 +31,7 @@ import { Route as RCodeRouteImport } from './routes/r/$code'
 import { Route as AppAccountIndexRouteImport } from './routes/_app/account/index'
 import { Route as AppAccountPathRouteImport } from './routes/_app/account/$path'
 import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
+import { Route as AppAdminAccountsRouteImport } from './routes/_app/admin/accounts'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
 import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts'
@@ -168,6 +169,11 @@ const AppAccountPathRoute = AppAccountPathRouteImport.update({
 const AppAdminIndexRoute = AppAdminIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminAccountsRoute = AppAdminAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminApplicantsRoute = AppAdminApplicantsRouteImport.update({
@@ -337,6 +343,7 @@ export interface FileRoutesByFullPath {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
+  '/admin/accounts': typeof AppAdminAccountsRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -387,6 +394,7 @@ export interface FileRoutesByTo {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/account/$path': typeof AppAccountPathRoute
+  '/admin/accounts': typeof AppAdminAccountsRoute
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
@@ -441,6 +449,7 @@ export interface FileRoutesById {
   '/auth/$path': typeof AuthPathRoute
   '/r/$code': typeof RCodeRoute
   '/_app/account/$path': typeof AppAccountPathRoute
+  '/_app/admin/accounts': typeof AppAdminAccountsRoute
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
@@ -495,6 +504,7 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/account/$path'
+    | '/admin/accounts'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -545,6 +555,7 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/account/$path'
+    | '/admin/accounts'
     | '/admin/applicants'
     | '/admin/emails'
     | '/admin/payouts'
@@ -598,6 +609,7 @@ export interface FileRouteTypes {
     | '/auth/$path'
     | '/r/$code'
     | '/_app/account/$path'
+    | '/_app/admin/accounts'
     | '/_app/admin/applicants'
     | '/_app/admin/emails'
     | '/_app/admin/payouts'
@@ -809,6 +821,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAdminIndexRouteImport
       parentRoute: typeof AppAdminRoute
     }
+    '/_app/admin/accounts': {
+      id: '/_app/admin/accounts'
+      path: '/accounts'
+      fullPath: '/admin/accounts'
+      preLoaderRoute: typeof AppAdminAccountsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
     '/_app/admin/applicants': {
       id: '/_app/admin/applicants'
       path: '/applicants'
@@ -1016,6 +1035,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AppAdminRouteChildren {
+  AppAdminAccountsRoute: typeof AppAdminAccountsRoute
   AppAdminApplicantsRoute: typeof AppAdminApplicantsRoute
   AppAdminEmailsRoute: typeof AppAdminEmailsRoute
   AppAdminPayoutsRoute: typeof AppAdminPayoutsRoute
@@ -1034,6 +1054,7 @@ interface AppAdminRouteChildren {
 }
 
 const AppAdminRouteChildren: AppAdminRouteChildren = {
+  AppAdminAccountsRoute: AppAdminAccountsRoute,
   AppAdminApplicantsRoute: AppAdminApplicantsRoute,
   AppAdminEmailsRoute: AppAdminEmailsRoute,
   AppAdminPayoutsRoute: AppAdminPayoutsRoute,
@@ -1129,3 +1150,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
