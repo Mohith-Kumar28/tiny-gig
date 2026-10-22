@@ -11,7 +11,7 @@ import { REFERRAL_COOKIE } from '@/features/referrals/constants'
 import { alertRecipients, loadSettings } from '@/features/settings/server/settings-store'
 import { accountAgeDays, accountUrl } from '@/features/accounts/rules'
 import { createAccount } from '@/features/accounts/server/account-service'
-import { recordAccountLossConsent } from '@/features/consent/server/consent'
+import { recordAccountLossConsent } from '@/features/consent/server/consent-service'
 import { applicationSchema, normalizePhone, parseRedditUsername } from '../schemas'
 
 
