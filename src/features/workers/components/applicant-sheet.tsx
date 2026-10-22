@@ -3,11 +3,12 @@ import { Link } from '@tanstack/react-router'
 import { AlertTriangle, Check, ExternalLink, X } from 'lucide-react'
 import { useState } from 'react'
 import { CopyButton } from '@/components/shared/copy-button'
-import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
+import { formatDate, formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
+import { accountAgeDays, formatAge } from '@/features/accounts/rules'
 import { useAction } from '@/hooks/use-action'
 import { formatNumber } from '@/lib/format'
 import { workerDetailQuery } from '../queries'
@@ -86,8 +87,19 @@ export function ApplicantSheet({
                 <Row label="Karma">
                   <span className="tabular font-medium">{formatNumber(p.karma)}</span>
                 </Row>
-                <Row label="Account age">
-                  <span className="tabular">{p.accountAgeMonths} months</span>
+                <Row label="Created on">
+                  {(() => {
+                    const a = data?.accounts.find((x) => x.platform === 'reddit')
+                    if (!a?.createdOn) return <span className="text-muted-foreground">—</span>
+                    return (
+                      <span className="flex flex-wrap items-baseline gap-x-2">
+                        <span className="tabular">{formatDate(a.createdOn)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatAge(accountAgeDays(a.createdOn))} · {a.createdOnConfirmedAt ? 'confirmed' : 'check the cake day: approving confirms it'}
+                        </span>
+                      </span>
+                    )
+                  })()}
                 </Row>
                 <Row label="Email">
                   <span className="flex items-center gap-1">

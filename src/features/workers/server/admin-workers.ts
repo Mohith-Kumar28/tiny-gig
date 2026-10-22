@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
-import { and, count, desc, eq, inArray, like, or, sql, type SQL } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, isNotNull, isNull, like, or, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
-import { workerProfile, submission, payout, referral, user } from '@/db/schema'
+import { workerProfile, submission, payout, referral, socialAccount, user } from '@/db/schema'
 import { INDIAN_STATES, WORKER_STATUSES } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
 import { audit, notify } from '@/lib/server/activity'
@@ -116,7 +116,7 @@ export const getWorkerDetail = createServerFn({ method: 'GET' })
     const { db } = context
     const profile = await db.query.workerProfile.findFirst({ where: eq(workerProfile.userId, data.userId) })
     if (!profile) throw new AppError('NOT_FOUND', 'Worker not found.')
-    const [account, statusCounts, payouts, referredBy, referrals] = await Promise.all([
+    const [account, statusCounts, payouts, referredBy, referrals, accounts] = await Promise.all([
       db.query.user.findFirst({ where: eq(user.id, data.userId) }),
       db
         .select({ status: submission.status, n: count() })
@@ -139,8 +139,10 @@ export const getWorkerDetail = createServerFn({ method: 'GET' })
         .from(referral)
         .leftJoin(workerProfile, eq(workerProfile.userId, referral.refereeId))
         .where(eq(referral.referrerId, data.userId)),
+      db.select().from(socialAccount).where(eq(socialAccount.workerId, data.userId)).orderBy(socialAccount.createdAt),
     ])
     return {
+      accounts,
       profile,
       account: account ? { banned: account.banned, createdAt: account.createdAt, image: account.image } : null,
       statusCounts: Object.fromEntries(statusCounts.map((r) => [r.status, r.n])) as Record<string, number>,
@@ -171,6 +173,19 @@ export const decideApplicants = createServerFn({ method: 'POST' })
       .update(workerProfile)
       .set({ status, reviewNote: data.note ?? null, reviewedBy: admin.id, reviewedAt: now })
       .where(inArray(workerProfile.userId, targets.map((t) => t.userId)))
+    if (status === 'approved' && targets.length) {
+      // Approving means the reviewer checked the profile's cake day by eye (R27).
+      await db
+        .update(socialAccount)
+        .set({ createdOnConfirmedAt: now, createdOnConfirmedBy: admin.id })
+        .where(
+          and(
+            inArray(socialAccount.workerId, targets.map((t) => t.userId)),
+            isNull(socialAccount.createdOnConfirmedAt),
+            isNotNull(socialAccount.createdOn),
+          ),
+        )
+    }
 
     await notify(
       db,

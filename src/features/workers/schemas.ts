@@ -1,14 +1,6 @@
 import { z } from 'zod'
 import { INDIAN_STATES } from '@/db/schema/enums'
 
-const optionalUrl = z
-  .string()
-  .trim()
-  .max(300)
-  .refine((v) => !v || /^https?:\/\//i.test(v), 'Enter a full URL starting with https://')
-  .optional()
-  .or(z.literal(''))
-
 export const REDDIT_URL_RE = /^https?:\/\/(www\.|old\.|new\.)?reddit\.com\/(u|user)\/([A-Za-z0-9_-]{3,20})\/?/i
 
 export function parseRedditUsername(url: string) {
@@ -35,7 +27,11 @@ export const applicationSchema = z.object({
     .string()
     .trim()
     .regex(REDDIT_URL_RE, 'Paste your profile link, e.g. https://www.reddit.com/user/yourname'),
-  accountAgeMonths: z.coerce.number<string | number>().int().min(0, 'Must be 0 or more').max(300),
+  /** yyyy-mm-dd, the account's cake day. Age (and so pay level) is computed from it, never stored. */
+  redditCreatedOn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Pick the date your account was created')
+    .refine((v) => Date.parse(`${v}T00:00:00+05:30`) <= Date.now(), 'The date can’t be in the future'),
   karma: z.coerce.number<string | number>().int().min(0, 'Must be 0 or more').max(10_000_000),
   upiId: z.string().trim().regex(UPI_RE, 'Enter a valid UPI ID, e.g. name@okaxis'),
   referralCode: z
@@ -45,19 +41,19 @@ export const applicationSchema = z.object({
     .max(12)
     .optional()
     .or(z.literal('')),
+  /** The separate account-loss checkbox (R59) — not folded into a general terms link. */
+  acceptAccountLoss: z.literal(true, { error: 'Please read and tick this to continue' }),
 })
 export type ApplicationInput = z.input<typeof applicationSchema>
 
-export const profileUpdateSchema = applicationSchema.omit({ referralCode: true, email: true }).extend({
-  xUrl: optionalUrl,
-  linkedinUrl: optionalUrl,
-  threadsUrl: optionalUrl,
-  instagramUrl: optionalUrl,
+/** Accounts (Reddit and other socials) are managed on the "My accounts" page, not here. */
+export const profileUpdateSchema = applicationSchema
+  .omit({ referralCode: true, email: true, redditUrl: true, redditCreatedOn: true, karma: true, acceptAccountLoss: true })
+  .extend({
   bio: z.string().trim().max(500).optional().or(z.literal('')),
   languages: z.string().trim().max(120).optional().or(z.literal('')),
   emailPrefs: z.object({ newGigs: z.boolean(), reminders: z.boolean() }),
 })
 export type ProfileUpdateInput = z.input<typeof profileUpdateSchema>
 
-/** Display buckets for account age on forms. */
 export const ACCOUNT_AGE_HINT = 'Find it on your Reddit profile under “Cake day”.'

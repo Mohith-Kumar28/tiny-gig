@@ -39,6 +39,7 @@ export const WORKER_NAV: NavItem[] = [
   { to: '/w/gigs', label: 'Find gigs', icon: Search },
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
   { to: '/w/payments', label: 'Earnings', icon: Wallet },
+  { to: '/w/accounts', label: 'My accounts', icon: AtSign },
   { to: '/w/referrals', label: 'Referrals', icon: Gift },
   { to: '/w/profile', label: 'Profile', icon: UserRound },
 ]
@@ -49,7 +50,7 @@ export const WORKER_BOTTOM_NAV: NavItem[] = [
   { to: '/w/gigs', label: 'Gigs', icon: Search },
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
   { to: '/w/payments', label: 'Earnings', icon: Wallet },
-  { to: '/w/me', label: 'Me', icon: CircleUserRound, match: ['/w/me', '/w/profile', '/w/referrals', '/w/notifications'] },
+  { to: '/w/me', label: 'Me', icon: CircleUserRound, match: ['/w/me', '/w/accounts', '/w/profile', '/w/referrals', '/w/notifications'] },
 ]
 
 export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [

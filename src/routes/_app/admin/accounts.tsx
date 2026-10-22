@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
-import { AtSign, Download } from 'lucide-react'
+import { AtSign, Download, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { downloadCsv } from '@/components/data-table/csv'
 import { DataTable } from '@/components/data-table/data-table'
@@ -14,10 +14,13 @@ import { Button } from '@/components/ui/button'
 import { ACCOUNT_PLATFORMS } from '@/db/schema/enums'
 import { accountColumns } from '@/features/accounts/components/account-columns'
 import { AccountSheet } from '@/features/accounts/components/account-sheet'
-import { STANDING_LABELS } from '@/features/accounts/components/account-editors'
+import { istDateInputToMs, STANDING_LABELS } from '@/features/accounts/components/account-editors'
+import { AddAccountDialog, type AddAccountValues } from '@/features/accounts/components/add-account-dialog'
+import { type PickedWorker, WorkerPicker } from '@/features/accounts/components/worker-picker'
 import { rosterQuery } from '@/features/accounts/queries'
 import { accountLabel, communityLabel, LEVEL_LABELS, LEVELS } from '@/features/accounts/rules'
-import { type RosterRow, rosterSearchSchema } from '@/features/accounts/server/roster'
+import { adminAddAccount, type RosterRow, rosterSearchSchema } from '@/features/accounts/server/roster'
+import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
 
 const STANDING_OPTIONS = [
@@ -67,6 +70,28 @@ function AccountsPage() {
   const onSearchChange = useTableSearch(navigate as never)
   const { data, isFetching } = useQuery({ ...rosterQuery(search), placeholderData: keepPreviousData })
   const [open, setOpen] = useState<string | null>(null)
+  const [adding, setAdding] = useState(false)
+  const [worker, setWorker] = useState<PickedWorker | null>(null)
+  const add = useAction(
+    (v: AddAccountValues) =>
+      adminAddAccount({
+        data: {
+          workerId: worker?.id ?? '',
+          platform: v.platform,
+          url: v.url,
+          createdOn: v.createdOn ? istDateInputToMs(v.createdOn) : undefined,
+          karma: v.karma === '' ? undefined : Number(v.karma),
+        },
+      }),
+    {
+      success: 'Account added',
+      invalidate: [['admin', 'accounts'], ['admin', 'worker']],
+      onSuccess: () => {
+        setAdding(false)
+        setWorker(null)
+      },
+    },
+  )
   const s = data?.summary
   const only = (patch: Record<string, unknown>) => ({ platform: search.platform, ...patch })
 
@@ -76,9 +101,14 @@ function AccountsPage() {
         title="Accounts"
         description="The live register: every account, its standing, and when it last worked."
         actions={
-          <Button variant="outline" size="sm" onClick={() => exportCsv(data?.rows ?? [])} disabled={!data?.rows.length}>
-            <Download /> Export page
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => exportCsv(data?.rows ?? [])} disabled={!data?.rows.length}>
+              <Download /> Export page
+            </Button>
+            <Button size="sm" onClick={() => setAdding(true)}>
+              <Plus /> Add account
+            </Button>
+          </div>
         }
       />
 
@@ -192,6 +222,19 @@ function AccountsPage() {
         }
       />
       <AccountSheet accountId={open} onOpenChange={(o) => !o && setOpen(null)} />
+      <AddAccountDialog
+        open={adding}
+        onOpenChange={(o) => {
+          setAdding(o)
+          if (!o) setWorker(null)
+        }}
+        title="Add an account to the register"
+        description="For accounts a worker uses but never recorded. Creation dates you enter count as confirmed."
+        pending={add.isPending}
+        onSubmit={(v) => (worker ? add.mutate(v) : undefined)}
+        extra={<WorkerPicker value={worker} onChange={setWorker} />}
+        canSubmit={!!worker}
+      />
     </div>
   )
 }

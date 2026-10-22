@@ -1,42 +1,29 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { AlertTriangle, Save } from 'lucide-react'
+import { Link } from '@tanstack/react-router'
+import { AlertTriangle, AtSign, ChevronRight, Save } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { CopyButton } from '@/components/shared/copy-button'
 import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
 import { useAction } from '@/hooks/use-action'
-import { ACCOUNT_AGE_HINT, type ProfileUpdateInput, profileUpdateSchema } from '../schemas'
+import { type ProfileUpdateInput, profileUpdateSchema } from '../schemas'
 import { type getMyProfile, updateMyProfile } from '../server/profile'
 import { FormSection } from './form-section'
 import { StateSelect } from './state-select'
 
 type Profile = Awaited<ReturnType<typeof getMyProfile>>
 
-const SOCIALS = [
-  { name: 'xUrl', label: 'X (Twitter)', placeholder: 'https://x.com/yourname' },
-  { name: 'linkedinUrl', label: 'LinkedIn', placeholder: 'https://www.linkedin.com/in/yourname' },
-  { name: 'threadsUrl', label: 'Threads', placeholder: 'https://www.threads.net/@yourname' },
-  { name: 'instagramUrl', label: 'Instagram', placeholder: 'https://www.instagram.com/yourname' },
-] as const
-
 export function ProfileForm({ profile }: { profile: Profile }) {
   const defaults: ProfileUpdateInput = {
     fullName: profile.fullName,
     phone: profile.phone.replace(/^\+91/, ''),
     state: profile.state as ProfileUpdateInput['state'],
-    redditUrl: profile.redditUrl,
-    accountAgeMonths: profile.accountAgeMonths,
-    karma: profile.karma,
     upiId: profile.upiId,
-    xUrl: profile.xUrl ?? '',
-    linkedinUrl: profile.linkedinUrl ?? '',
-    threadsUrl: profile.threadsUrl ?? '',
-    instagramUrl: profile.instagramUrl ?? '',
     bio: profile.bio ?? '',
     languages: profile.languages ?? '',
     emailPrefs: { newGigs: profile.emailPrefs?.newGigs ?? true, reminders: profile.emailPrefs?.reminders ?? true },
@@ -129,67 +116,17 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           />
         </FormSection>
 
-        <FormSection title="Reddit account">
-          <FormField
-            control={form.control}
-            name="redditUrl"
-            render={({ field }) => (
-              <FormItem className="sm:col-span-2">
-                <FormLabel>Reddit profile link</FormLabel>
-                <FormControl>
-                  <Input inputMode="url" autoCapitalize="none" placeholder="https://www.reddit.com/user/yourname" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="accountAgeMonths"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Account age (months)</FormLabel>
-                <FormControl>
-                  <Input type="number" inputMode="numeric" min={0} {...field} value={field.value as never} />
-                </FormControl>
-                <FormDescription>{ACCOUNT_AGE_HINT}</FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="karma"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Total karma</FormLabel>
-                <FormControl>
-                  <Input type="number" inputMode="numeric" min={0} {...field} value={field.value as never} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </FormSection>
-
-        <FormSection title="Other socials">
-          {SOCIALS.map((s) => (
-            <FormField
-              key={s.name}
-              control={form.control}
-              name={s.name}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{s.label}</FormLabel>
-                  <FormControl>
-                    <Input inputMode="url" autoCapitalize="none" placeholder={s.placeholder} {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-        </FormSection>
+        <Link
+          to="/w/accounts"
+          className="flex items-center gap-3 rounded-xl border bg-card p-4 transition-colors hover:bg-accent/40"
+        >
+          <AtSign className="size-5 text-muted-foreground" />
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium">Reddit and other social accounts</p>
+            <p className="text-xs text-muted-foreground">Add accounts, update karma and see each account’s pay level on My accounts.</p>
+          </div>
+          <ChevronRight className="size-4 text-muted-foreground" />
+        </Link>
 
         <div id="payments" className="scroll-mt-20">
           <FormSection title="Payments">

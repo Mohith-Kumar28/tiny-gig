@@ -3,7 +3,7 @@ import { count, eq } from 'drizzle-orm'
 import { workerProfile, referral } from '@/db/schema'
 import { appUrl } from '@/lib/env'
 import { AppError, userMiddleware, workerMiddleware } from '@/lib/server/middleware'
-import { normalizePhone, parseRedditUsername, profileUpdateSchema } from '../schemas'
+import { normalizePhone, profileUpdateSchema } from '../schemas'
 
 
 export const getMyProfile = createServerFn({ method: 'GET' })
@@ -28,23 +28,13 @@ export const updateMyProfile = createServerFn({ method: 'POST' })
   .middleware([workerMiddleware])
   .validator(profileUpdateSchema)
   .handler(async ({ data, context }) => {
-    const redditUsername = parseRedditUsername(data.redditUrl)
-    if (!redditUsername) throw new AppError('BAD_REQUEST', 'Invalid Reddit profile link.')
     await context.db
       .update(workerProfile)
       .set({
         fullName: data.fullName,
         phone: normalizePhone(data.phone),
         state: data.state,
-        redditUrl: `https://www.reddit.com/user/${redditUsername}`,
-        redditUsername,
-        accountAgeMonths: data.accountAgeMonths,
-        karma: data.karma,
         upiId: data.upiId,
-        xUrl: data.xUrl || null,
-        linkedinUrl: data.linkedinUrl || null,
-        threadsUrl: data.threadsUrl || null,
-        instagramUrl: data.instagramUrl || null,
         bio: data.bio || null,
         languages: data.languages || null,
         emailPrefs: data.emailPrefs,

@@ -39,6 +39,7 @@ import { Route as AppAdminPostsRouteImport } from './routes/_app/admin/posts'
 import { Route as AppAdminReviewRouteImport } from './routes/_app/admin/review'
 import { Route as AppAdminSettingsRouteImport } from './routes/_app/admin/settings'
 import { Route as AppWIndexRouteImport } from './routes/_app/w/index'
+import { Route as AppWAccountsRouteImport } from './routes/_app/w/accounts'
 import { Route as AppWMeRouteImport } from './routes/_app/w/me'
 import { Route as AppWNotificationsRouteImport } from './routes/_app/w/notifications'
 import { Route as AppWPaymentsRouteImport } from './routes/_app/w/payments'
@@ -211,6 +212,11 @@ const AppWIndexRoute = AppWIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AppWRoute,
 } as any)
+const AppWAccountsRoute = AppWAccountsRouteImport.update({
+  id: '/accounts',
+  path: '/accounts',
+  getParentRoute: () => AppWRoute,
+} as any)
 const AppWMeRoute = AppWMeRouteImport.update({
   id: '/me',
   path: '/me',
@@ -350,6 +356,7 @@ export interface FileRoutesByFullPath {
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
+  '/w/accounts': typeof AppWAccountsRoute
   '/w/me': typeof AppWMeRoute
   '/w/notifications': typeof AppWNotificationsRoute
   '/w/payments': typeof AppWPaymentsRoute
@@ -401,6 +408,7 @@ export interface FileRoutesByTo {
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
   '/admin/settings': typeof AppAdminSettingsRoute
+  '/w/accounts': typeof AppWAccountsRoute
   '/w/me': typeof AppWMeRoute
   '/w/notifications': typeof AppWNotificationsRoute
   '/w/payments': typeof AppWPaymentsRoute
@@ -456,6 +464,7 @@ export interface FileRoutesById {
   '/_app/admin/posts': typeof AppAdminPostsRoute
   '/_app/admin/review': typeof AppAdminReviewRoute
   '/_app/admin/settings': typeof AppAdminSettingsRoute
+  '/_app/w/accounts': typeof AppWAccountsRoute
   '/_app/w/me': typeof AppWMeRoute
   '/_app/w/notifications': typeof AppWNotificationsRoute
   '/_app/w/payments': typeof AppWPaymentsRoute
@@ -511,6 +520,7 @@ export interface FileRouteTypes {
     | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
+    | '/w/accounts'
     | '/w/me'
     | '/w/notifications'
     | '/w/payments'
@@ -562,6 +572,7 @@ export interface FileRouteTypes {
     | '/admin/posts'
     | '/admin/review'
     | '/admin/settings'
+    | '/w/accounts'
     | '/w/me'
     | '/w/notifications'
     | '/w/payments'
@@ -616,6 +627,7 @@ export interface FileRouteTypes {
     | '/_app/admin/posts'
     | '/_app/admin/review'
     | '/_app/admin/settings'
+    | '/_app/w/accounts'
     | '/_app/w/me'
     | '/_app/w/notifications'
     | '/_app/w/payments'
@@ -877,6 +889,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppWIndexRouteImport
       parentRoute: typeof AppWRoute
     }
+    '/_app/w/accounts': {
+      id: '/_app/w/accounts'
+      path: '/accounts'
+      fullPath: '/w/accounts'
+      preLoaderRoute: typeof AppWAccountsRouteImport
+      parentRoute: typeof AppWRoute
+    }
     '/_app/w/me': {
       id: '/_app/w/me'
       path: '/me'
@@ -1077,6 +1096,7 @@ const AppAdminRouteWithChildren = AppAdminRoute._addFileChildren(
 )
 
 interface AppWRouteChildren {
+  AppWAccountsRoute: typeof AppWAccountsRoute
   AppWMeRoute: typeof AppWMeRoute
   AppWNotificationsRoute: typeof AppWNotificationsRoute
   AppWPaymentsRoute: typeof AppWPaymentsRoute
@@ -1090,6 +1110,7 @@ interface AppWRouteChildren {
 }
 
 const AppWRouteChildren: AppWRouteChildren = {
+  AppWAccountsRoute: AppWAccountsRoute,
   AppWMeRoute: AppWMeRoute,
   AppWNotificationsRoute: AppWNotificationsRoute,
   AppWPaymentsRoute: AppWPaymentsRoute,

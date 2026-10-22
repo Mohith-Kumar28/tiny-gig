@@ -3,9 +3,11 @@ import { useRouter } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
+import { ACCOUNT_LOSS } from '@/features/consent/disclaimer'
 import { useAction } from '@/hooks/use-action'
 import { ACCOUNT_AGE_HINT, type ApplicationInput, applicationSchema } from '../schemas'
 import { submitApplication } from '../server/application'
@@ -21,7 +23,7 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
       email: '',
       phone: '',
       redditUrl: '',
-      accountAgeMonths: '' as unknown as number,
+      redditCreatedOn: '',
       karma: '' as unknown as number,
       upiId: '',
       referralCode: '',
@@ -110,12 +112,12 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
           />
           <FormField
             control={form.control}
-            name="accountAgeMonths"
+            name="redditCreatedOn"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Account age (months)</FormLabel>
+                <FormLabel>Account created on</FormLabel>
                 <FormControl>
-                  <Input type="number" inputMode="numeric" min={0} {...field} value={field.value as never} />
+                  <Input type="date" max={new Date().toISOString().slice(0, 10)} {...field} />
                 </FormControl>
                 <FormDescription>{ACCOUNT_AGE_HINT}</FormDescription>
                 <FormMessage />
@@ -169,6 +171,25 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
             )}
           />
         </FormSection>
+
+        <FormField
+          control={form.control}
+          name="acceptAccountLoss"
+          render={({ field }) => (
+            <FormItem className="rounded-lg border border-warning/40 bg-warning/[0.07] p-4">
+              <div className="flex items-start gap-3">
+                <FormControl>
+                  <Checkbox checked={field.value === true} onCheckedChange={(v) => field.onChange(v === true ? true : undefined)} className="mt-0.5" />
+                </FormControl>
+                <div className="space-y-1">
+                  <FormLabel className="leading-snug font-medium">{ACCOUNT_LOSS.text}</FormLabel>
+                  <FormDescription>Tick to confirm you understand. You can add more accounts after approval.</FormDescription>
+                </div>
+              </div>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex flex-col-reverse items-stretch gap-3 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">We review every application by hand, usually within 24–48 hours.</p>

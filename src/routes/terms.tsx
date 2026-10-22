@@ -35,14 +35,28 @@ function TermsPage() {
       <h2>2. Applications</h2>
       <p>
         Every application is reviewed by our team. We may approve or decline any application, and we may ask for more
-        information. Approval lets you claim gigs; it does not guarantee any amount of work or income.
+        information. Approval lets you see and express interest in gigs; it does not guarantee any amount of work or income.
       </p>
 
       <h2>3. Gigs</h2>
       <ul>
-        <li>Each gig shows its brief, payout, requirements, number of slots and the time you have to submit after claiming.</li>
-        <li>Slots are limited and given first come, first served. If you miss the claim window, the slot may be released.</li>
-        <li>You must do the work yourself, from the account you applied with, and follow the brief.</li>
+        <li>Each gig shows its brief, pay range, requirements and the time you have to post once you are selected.</li>
+        <li>
+          Expressing interest in a gig does not reserve it. Our team selects one account for each slot, and may also assign
+          work directly. If you are selected and miss the deadline, the slot may be given to someone else.
+        </li>
+        <li>
+          To protect accounts, we limit how often an account or a person can do client work (for example, one post per day
+          and gaps between posts in the same community). When a limit applies we show you the reason and when it lifts.
+        </li>
+        <li>
+          You must do the work yourself, from the account you were selected with, and follow the brief. Proof links must
+          come from that account.
+        </li>
+        <li>
+          Replying to comments on your own post or comment is part of the task and is not paid separately. Unanswered
+          threads can make the task incomplete.
+        </li>
         <li>
           You must follow the rules of each platform and community you post in. Do not use bots, fake or bought accounts,
           vote manipulation, or copied content.
@@ -52,16 +66,24 @@ function TermsPage() {
 
       <h2>4. Reviews and the live hold</h2>
       <p>
-        After you submit proof, a reviewer will approve the work, request changes, or reject it. Many gigs have a live hold:
-        the post must stay live for the period shown on the gig (for example 24 hours) before final approval. Work that is
-        rejected, or removed by you, a moderator or the platform during the hold, may not be paid. Review decisions are made
+        Proof has two steps. First, submit the link to your post or comment. It must then stay live for the hold period
+        shown on the gig (usually 24 hours). After the hold, upload a screenshot of the post’s insights. A reviewer then
+        approves the work, requests changes, or rejects it. Work that is removed by you, a moderator or the platform during
+        the hold is not paid, and we may record the removal against the account. Review decisions are made
         in good faith; if you think a decision was wrong, email {mail} within 7 days.
       </p>
 
       <h2>5. Earnings and payouts</h2>
       <ul>
+        <li>
+          Pay for Reddit posts and comments depends on the level of the account that does the task, which comes from the
+          account’s age. The rate is fixed when you are selected and does not change afterwards.
+        </li>
         <li>Approved earnings are added to your {SITE.name} balance in Indian rupees.</li>
-        <li>Payouts are sent manually by our team to the UPI ID on your profile. We email you the UTR reference for each one.</li>
+        <li>
+          Balances are paid out weekly by our team to the UPI ID on your profile, with no minimum. We email you the UTR
+          reference for each payout.
+        </li>
         <li>Please keep your UPI ID correct. We are not responsible for payouts sent to a wrong UPI ID that you provided.</li>
         <li>We may hold or reverse earnings linked to fraud, duplicate accounts or rule-breaking work.</li>
         <li>
@@ -96,8 +118,9 @@ function TermsPage() {
       <h2>10. Disclaimers and liability</h2>
       <p>
         {SITE.name} is provided “as is”. We do not control Reddit, X, LinkedIn, Threads, Instagram or any other platform,
-        and we are not affiliated with them. We are not responsible for actions those platforms or their moderators take on
-        your account. To the extent the law allows, our total liability to you is limited to the approved earnings we owe
+        and we are not affiliated with them. You run and maintain your own social media accounts. {SITE.name} is not
+        responsible if any of your accounts is suspended, shadowbanned, restricted or lost, including while doing gigs, and
+        we are not responsible for actions those platforms or their moderators take on your accounts. To the extent the law allows, our total liability to you is limited to the approved earnings we owe
         you.
       </p>
 

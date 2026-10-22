@@ -4,6 +4,7 @@ import { AppShell } from '@/components/layout/app-shell'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { WORKER_BOTTOM_NAV, WORKER_NAV } from '@/components/layout/nav'
 import { homeFor } from '@/features/auth/guards'
+import { DisclaimerGate } from '@/features/consent/components/disclaimer-gate'
 import { myWorkCountsQuery } from '@/features/submissions/queries'
 
 export const Route = createFileRoute('/_app/w')({
@@ -28,6 +29,7 @@ function WorkerLayout() {
       mobileNav={<BottomNav items={WORKER_BOTTOM_NAV} badges={{ active: counts?.active ?? 0 }} />}
     >
       <Outlet />
+      <DisclaimerGate />
     </AppShell>
   )
 }

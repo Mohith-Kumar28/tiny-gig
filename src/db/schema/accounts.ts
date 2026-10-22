@@ -46,3 +46,23 @@ export const clientTag = sqliteTable('client_tag', {
   archivedAt: timestamp('archived_at'),
   createdAt: createdAt(),
 })
+
+/**
+ * Recorded acceptances of legal wording (R59, R62). One row per acceptance —
+ * when the wording's version changes, workers are asked again and a new row is written.
+ */
+export const consent = sqliteTable(
+  'consent',
+  {
+    id: id(),
+    userId: text('user_id')
+      .notNull()
+      .references(() => user.id, { onDelete: 'cascade' }),
+    kind: text('kind', { enum: ['account_loss'] }).notNull(),
+    version: text('version').notNull(),
+    acceptedAt: timestamp('accepted_at').notNull(),
+    ip: text('ip'),
+    userAgent: text('user_agent'),
+  },
+  (t) => [index('consent_user_idx').on(t.userId, t.kind, t.acceptedAt)],
+)

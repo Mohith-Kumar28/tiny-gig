@@ -1,7 +1,7 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getCookie } from '@tanstack/react-start/server'
-import { eq } from 'drizzle-orm'
-import { workerProfile, user } from '@/db/schema'
+import { and, eq } from 'drizzle-orm'
+import { socialAccount, user, workerProfile } from '@/db/schema'
 import { queueEmail } from '@/emails/send-email'
 import { createReferralCode } from '@/lib/id'
 import { AppError, userMiddleware } from '@/lib/server/middleware'
@@ -9,6 +9,9 @@ import { rateLimit } from '@/lib/server/rate-limit'
 import { attributeReferral } from '@/features/referrals/server/engine'
 import { REFERRAL_COOKIE } from '@/features/referrals/constants'
 import { alertRecipients, loadSettings } from '@/features/settings/server/settings-store'
+import { accountAgeDays, accountUrl } from '@/features/accounts/rules'
+import { createAccount } from '@/features/accounts/server/account-service'
+import { recordAccountLossConsent } from '@/features/consent/server/consent'
 import { applicationSchema, normalizePhone, parseRedditUsername } from '../schemas'
 
 
@@ -39,17 +42,28 @@ export const submitApplication = createServerFn({ method: 'POST' })
       throw new AppError('CONFLICT', 'You have already applied.')
     }
 
-    const redditUsername = parseRedditUsername(data.redditUrl)
+    const redditUsername = parseRedditUsername(data.redditUrl)?.toLowerCase()
     if (!redditUsername) throw new AppError('BAD_REQUEST', 'Invalid Reddit profile link.')
+    // One handle, one worker, ever (R50). Checked before anything is written.
+    const owner = await db
+      .select({ workerId: socialAccount.workerId })
+      .from(socialAccount)
+      .where(and(eq(socialAccount.platform, 'reddit'), eq(socialAccount.handle, redditUsername)))
+      .get()
+    if (owner && owner.workerId !== me.id) {
+      throw new AppError('CONFLICT', 'This Reddit account is already registered on TinyGig. If it is yours, contact support.')
+    }
+    const createdOn = new Date(Date.parse(`${data.redditCreatedOn}T00:00:00+05:30`))
+    const ageMonths = Math.floor((accountAgeDays(createdOn) ?? 0) / 30.44)
     const phone = normalizePhone(data.phone)
     const values = {
       fullName: data.fullName,
       email: data.email,
       phone,
       state: data.state,
-      redditUrl: `https://www.reddit.com/user/${redditUsername}`,
+      redditUrl: accountUrl('reddit', redditUsername),
       redditUsername,
-      accountAgeMonths: data.accountAgeMonths,
+      accountAgeMonths: ageMonths,
       karma: data.karma,
       upiId: data.upiId,
       referralCodeUsed: data.referralCode || null,
@@ -64,6 +78,17 @@ export const submitApplication = createServerFn({ method: 'POST' })
       await db.insert(workerProfile).values({ ...values, userId: me.id, ownReferralCode: createReferralCode() })
     }
     if (me.name !== data.fullName) await db.update(user).set({ name: data.fullName }).where(eq(user.id, me.id))
+
+    // The application's Reddit account becomes the first row in the register; re-applying updates it.
+    if (owner) {
+      await db
+        .update(socialAccount)
+        .set({ createdOn, karma: data.karma, karmaUpdatedAt: new Date() })
+        .where(and(eq(socialAccount.platform, 'reddit'), eq(socialAccount.handle, redditUsername)))
+    } else {
+      await createAccount(db, { workerId: me.id, platform: 'reddit', input: redditUsername, createdOn, karma: data.karma, actorId: me.id })
+    }
+    await recordAccountLossConsent(db, me.id)
 
     await attributeReferral(
       db,
@@ -81,7 +106,7 @@ export const submitApplication = createServerFn({ method: 'POST' })
         email: data.email,
         reddit: `u/${redditUsername}`,
         karma: data.karma,
-        ageMonths: data.accountAgeMonths,
+        ageMonths,
         state: data.state,
       },
     })

@@ -1,6 +1,6 @@
 import { keepPreviousData, useQuery, useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { AlertTriangle, ArrowLeft, CheckCircle2, ExternalLink, Gift, Inbox, ListChecks, Wallet } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Gift, Inbox, ListChecks, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import { z } from 'zod'
 import { DataTable } from '@/components/data-table/data-table'
@@ -9,18 +9,18 @@ import { useTableSearch } from '@/components/data-table/use-table-search'
 import { CopyButton } from '@/components/shared/copy-button'
 import { EmptyState } from '@/components/shared/empty-state'
 import { Money } from '@/components/shared/money'
-import { PlatformIcon } from '@/components/shared/platform-icon'
 import { formatDate, formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatCard } from '@/components/shared/stat-card'
 import { StatusBadge, statusLabel } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { type Platform, SUBMISSION_STATUSES } from '@/db/schema/enums'
+import { SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { SUBMISSION_STATUS_OPTIONS, workerSubmissionColumns } from '@/features/gigs/components/submission-columns'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
 import { SubmissionReviewSheet } from '@/features/submissions/components/submission-review-sheet'
 import { reviewQueueQuery } from '@/features/submissions/queries'
+import { WorkerAccountsCard } from '@/features/accounts/components/worker-accounts-card'
 import { WorkerAdminNote } from '@/features/workers/components/worker-admin-note'
 import { WorkerStatusActions } from '@/features/workers/components/worker-status-actions'
 import { workerDetailQuery } from '@/features/workers/queries'
@@ -69,14 +69,6 @@ function WorkerDetailPage() {
 
   const decided = p.completedCount + p.rejectedCount
   const open = ['claimed', 'submitted', 'resubmitted', 'changes_requested', 'live_check'].reduce((n, s) => n + (data.statusCounts[s] ?? 0), 0)
-  const socials = (
-    [
-      ['x', p.xUrl],
-      ['linkedin', p.linkedinUrl],
-      ['threads', p.threadsUrl],
-      ['instagram', p.instagramUrl],
-    ] as [Platform, string | null][]
-  ).filter(([, url]) => !!url)
 
   return (
     <div className="space-y-6">
@@ -140,19 +132,6 @@ function WorkerDetailPage() {
         <section className="rounded-xl border bg-card p-4">
           <h2 className="mb-3 text-sm font-semibold">Profile</h2>
           <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2 xl:grid-cols-3">
-            <Fact label="Reddit">
-              <a href={p.redditUrl} target="_blank" rel="noreferrer" className="inline-flex min-w-0 items-center gap-1 font-medium hover:underline">
-                <PlatformIcon platform="reddit" />
-                <span className="truncate">u/{p.redditUsername}</span>
-                <ExternalLink className="size-3.5 shrink-0 text-muted-foreground" />
-              </a>
-            </Fact>
-            <Fact label="Karma">
-              <span className="tabular font-medium">{formatNumber(p.karma)}</span>
-            </Fact>
-            <Fact label="Account age">
-              <span className="tabular">{p.accountAgeMonths} months</span>
-            </Fact>
             <Fact label="Email">
               <span className="truncate">{p.email}</span>
               <CopyButton value={p.email} />
@@ -171,18 +150,6 @@ function WorkerDetailPage() {
               <span className="font-mono text-xs">{p.ownReferralCode}</span>
               <CopyButton value={p.ownReferralCode} />
             </Fact>
-            {socials.length ? (
-              <Fact label="Other socials" className="sm:col-span-2 xl:col-span-3">
-                <span className="flex flex-wrap gap-3">
-                  {socials.map(([platform, url]) => (
-                    <a key={platform} href={url!} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:underline">
-                      <PlatformIcon platform={platform} />
-                      <span className="max-w-56 truncate">{url!.replace(/^https?:\/\/(www\.)?/, '')}</span>
-                    </a>
-                  ))}
-                </span>
-              </Fact>
-            ) : null}
             {p.languages ? <Fact label="Languages">{p.languages}</Fact> : null}
             {p.bio ? (
               <Fact label="Bio" className="sm:col-span-2 xl:col-span-3">
@@ -205,6 +172,8 @@ function WorkerDetailPage() {
           <WorkerAdminNote userId={userId} initial={p.adminNote} />
         </section>
       </div>
+
+      <WorkerAccountsCard workerId={userId} accounts={data.accounts} />
 
       <Tabs value={tab} onValueChange={(v) => navigate({ search: { tab: v === 'submissions' ? undefined : (v as (typeof TABS)[number]) }, replace: true, resetScroll: false })}>
         <TabsList>

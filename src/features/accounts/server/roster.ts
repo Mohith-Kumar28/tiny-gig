@@ -9,6 +9,7 @@ import { audit } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, paginated, pageArgs, tableSearchSchema } from '@/lib/table-query'
 import { accountAgeDays, DAY_MS, isKarmaStale, LEVELS, levelFor } from '../rules'
+import { createAccount } from './account-service'
 import { countsAsClientWork, loadWork } from './history'
 import { syncProfileMirror } from './mirror'
 
@@ -308,3 +309,31 @@ export const listClientTagsLite = createServerFn({ method: 'GET' })
       .from(clientTag)
       .orderBy(asc(clientTag.name)),
   )
+
+/** Staff add accounts for a worker (R38): an unrecorded account is invisible to every rule. */
+export const adminAddAccount = createServerFn({ method: 'POST' })
+  .middleware([adminMiddleware])
+  .validator(
+    z.object({
+      workerId: z.string(),
+      platform: z.enum(ACCOUNT_PLATFORMS),
+      url: z.string().trim().min(2).max(300),
+      /** Epoch ms (IST midnight) of the creation date. */
+      createdOn: z.number().int().positive().optional(),
+      karma: z.number().int().min(0).max(100_000_000).optional(),
+    }),
+  )
+  .handler(async ({ data, context }) => {
+    const exists = await context.db.select({ id: user.id }).from(user).where(eq(user.id, data.workerId)).get()
+    if (!exists) throw new AppError('NOT_FOUND', 'Worker not found.')
+    const row = await createAccount(context.db, {
+      workerId: data.workerId,
+      platform: data.platform,
+      input: data.url,
+      createdOn: data.createdOn ? new Date(data.createdOn) : null,
+      karma: data.karma ?? null,
+      actorId: context.user.id,
+      confirmed: true,
+    })
+    return { id: row.id }
+  })
