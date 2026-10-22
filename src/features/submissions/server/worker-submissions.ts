@@ -1,4 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
+import { waitUntil } from 'cloudflare:workers'
+import { verifySubmissions } from '@/features/reddit/server/verify-service'
 import { and, asc, desc, eq, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { gig, socialAccount, submission, submissionEvent, user } from '@/db/schema'
@@ -133,6 +135,8 @@ export const submitProof = createServerFn({ method: 'POST' })
       screenshotKeys: data.screenshotKeys,
       note: data.workerNote,
     })
+    // Check the post right away so staff see "live ✓" or a problem before they open it.
+    waitUntil(verifySubmissions(db, { ids: [data.submissionId] }).catch((err) => console.error('[reddit-verify]', err)))
     const settings = await loadSettings(db)
     if (settings.submissionAlerts === 'immediate' && (r.status === 'submitted' || r.status === 'resubmitted' || r.status === 'in_review')) {
       queueEmail({

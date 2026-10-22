@@ -168,6 +168,14 @@ export const submission = sqliteTable(
       .$defaultFn(() => []),
     insightsSubmittedAt: timestamp('insights_submitted_at'),
     insightsRemindedAt: timestamp('insights_reminded_at'),
+    /** Automatic live check via Reddit's API: latest verdict, when, and what Reddit said. */
+    verifyState: text('verify_state'),
+    verifyCheckedAt: timestamp('verify_checked_at'),
+    verifyDetail: text('verify_detail', { mode: 'json' }).$type<Record<string, string | number | boolean | null>>(),
+    /** First time a problem (removed, wrong account…) was seen — staff are alerted once. */
+    verifyFlaggedAt: timestamp('verify_flagged_at'),
+    /** Last time the check confirmed the post was up. */
+    verifyLiveAt: timestamp('verify_live_at'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },
@@ -182,6 +190,7 @@ export const submission = sqliteTable(
     index('submission_payout_idx').on(t.payoutId),
     index('submission_account_idx').on(t.accountId),
     index('submission_first_submitted_idx').on(t.firstSubmittedAt),
+    index('submission_verify_idx').on(t.verifyCheckedAt),
   ],
 )
 

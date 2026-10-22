@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { PageHeader } from '@/components/shared/page-header'
+import { RedditCheckCard } from '@/features/reddit/components/reddit-check-card'
 import { ClientsManager } from '@/features/clients/components/clients-manager'
 import { clientsQuery } from '@/features/clients/queries'
 import { AdminTeam } from '@/features/settings/components/admin-team'
@@ -29,6 +30,7 @@ function SettingsPage() {
         <PageHeader title="Settings" />
         <SettingsForm initial={settings} />
       </div>
+      <RedditCheckCard />
       <ClientsManager />
       <AdminTeam />
       <ReviewTemplatesManager />

@@ -28,6 +28,9 @@ export const socialAccount = sqliteTable(
     standing: text('standing', { enum: ACCOUNT_STANDINGS }).notNull().default('active'),
     standingNote: text('standing_note'),
     addedBy: userRef('added_by'),
+    /** What Reddit's API last said about the account: ok, suspended, or not_found (deleted / shadowbanned). */
+    redditStatus: text('reddit_status'),
+    redditCheckedAt: timestamp('reddit_checked_at'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

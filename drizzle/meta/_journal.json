@@ -64,6 +64,13 @@
       "when": 1792666083368,
       "tag": "0008_warmup",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "6",
+      "when": 1792667497806,
+      "tag": "0009_reddit_verify",
+      "breakpoints": true
     }
   ]
 }
