@@ -2,6 +2,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { Check, CheckCheck, ChevronsUpDown, Inbox, Keyboard, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { ClientFilter } from '@/features/clients/components/client-filter'
 import { DataTableFacetedFilter } from '@/components/data-table/data-table-faceted-filter'
 import { DataTablePagination } from '@/components/data-table/data-table-pagination'
 import { DataTableSearch } from '@/components/data-table/data-table-search'
@@ -142,7 +143,7 @@ function ReviewInbox() {
   })
 
   const allChecked = visible.length > 0 && visible.every((r) => checked.has(r.id))
-  const filtersActive = Boolean(search.q || search.gigId || search.platform?.length)
+  const filtersActive = Boolean(search.q || search.gigId || search.platform?.length || search.client?.length)
 
   return (
     <div className="-mx-4 -my-6 flex h-[calc(100dvh-3.25rem)] min-w-0 flex-col overflow-hidden sm:-mx-6 lg:-mx-8">
@@ -181,6 +182,7 @@ function ReviewInbox() {
           value={search.platform}
           onChange={(platform) => onSearchChange({ platform, selected: undefined })}
         />
+        <ClientFilter value={search.client} onChange={(client) => onSearchChange({ client, selected: undefined })} />
         {filtersActive ? (
           <Button variant="ghost" size="sm" className="h-8" onClick={() => navigate({ search: { tab: search.tab } })}>
             Reset <X />

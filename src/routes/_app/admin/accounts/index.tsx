@@ -21,6 +21,7 @@ import { type PickedWorker, WorkerPicker } from '@/features/accounts/components/
 import { rosterQuery } from '@/features/accounts/queries'
 import { accountLabel, communityLabel, LEVEL_LABELS, LEVELS } from '@/features/accounts/rules'
 import { adminAddAccount, type RosterRow, rosterSearchSchema } from '@/features/accounts/server/roster'
+import { ClientFilter } from '@/features/clients/components/client-filter'
 import { useAction } from '@/hooks/use-action'
 
 const STANDING_OPTIONS = [
@@ -188,12 +189,7 @@ function AccountsPage() {
               value={search.level}
               onChange={(v) => onSearchChange({ level: v })}
             />
-            <DataTableFacetedFilter
-              title="Client"
-              options={(data?.tags ?? []).map((t) => ({ value: t.id, label: t.name }))}
-              value={search.client}
-              onChange={(v) => onSearchChange({ client: v })}
-            />
+            <ClientFilter value={search.client} onChange={(v) => onSearchChange({ client: v })} />
             <DataTableFacetedFilter
               title="Platform"
               options={ACCOUNT_PLATFORMS.map((p) => ({ value: p, label: PLATFORM_LABEL[p] ?? p }))}

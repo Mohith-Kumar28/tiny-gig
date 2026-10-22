@@ -7,6 +7,7 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import type { FacetOption } from '@/components/data-table/types'
 import type { SubmissionStatus } from '@/db/schema/enums'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
+import { clientColumn, singleClient } from '@/features/clients/components/client-filter'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -127,6 +128,7 @@ export const gigSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [
       </div>
     ),
   },
+  clientColumn<QueueRow>(singleClient),
   status,
   proof,
   payout,
@@ -150,7 +152,7 @@ const gigCol: ColumnDef<QueueRow, unknown> = {
 }
 
 /** Submissions of one worker: the gig is the interesting column. */
-export const workerSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [gigCol, status, proof, payout, submitted, updated]
+export const workerSubmissionColumns: ColumnDef<QueueRow, unknown>[] = [gigCol, clientColumn<QueueRow>(singleClient), status, proof, payout, submitted, updated]
 
 /** Post log: every posted submission across gigs, newest first. */
 export const postLogColumns: ColumnDef<QueueRow, unknown>[] = [
@@ -166,6 +168,7 @@ export const postLogColumns: ColumnDef<QueueRow, unknown>[] = [
     ),
   },
   gigCol,
+  clientColumn<QueueRow>(singleClient),
   {
     id: 'worker',
     header: 'Worker',

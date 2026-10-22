@@ -11,6 +11,7 @@ import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
 import { INDIAN_STATES } from '@/db/schema/enums'
 import { DecisionDialog } from '@/features/workers/components/decision-dialog'
+import { ClientFilter } from '@/features/clients/components/client-filter'
 import { type WorkerRow, workerColumns } from '@/features/workers/components/worker-columns'
 import { exportWorkersCsv } from '@/features/workers/components/worker-csv'
 import { workersQuery, workerStatusCountsQuery } from '@/features/workers/queries'
@@ -82,7 +83,7 @@ function WorkersPage() {
         isFetching={isFetching}
         searchPlaceholder="Search name, email, Reddit, phone, UPI…"
         onRowClick={(r) => navigate({ to: '/admin/workers/$userId', params: { userId: r.userId } })}
-        hasActiveFilters={Boolean(search.status || search.state || search.q || search.flagged)}
+        hasActiveFilters={Boolean(search.status || search.state || search.client || search.q || search.flagged)}
         onResetFilters={() => navigate({ search: {} })}
         initialHidden={{ age: false }}
         filters={
@@ -100,6 +101,7 @@ function WorkersPage() {
               value={search.state}
               onChange={(v) => onSearchChange({ state: v })}
             />
+            <ClientFilter value={search.client} noneLabel="No client accounts" onChange={(v) => onSearchChange({ client: v })} />
             <DataTableToggleFilter
               active={!!search.flagged}
               onToggle={() => onSearchChange({ flagged: search.flagged ? undefined : true })}
@@ -109,7 +111,7 @@ function WorkersPage() {
           </>
         }
         empty={
-          search.status || search.state || search.q || search.flagged ? (
+          search.status || search.state || search.client || search.q || search.flagged ? (
             <EmptyState
               title="No workers match"
               description="Nothing fits these filters. Press Reset to see approved and suspended workers."

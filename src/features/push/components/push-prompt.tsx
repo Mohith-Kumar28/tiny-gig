@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { usePush } from '../use-push'
+import { pushErrorToast, showPushError, siteSettingsUrl } from '../push-errors'
 
 const SNOOZE_KEY = 'tg:push-prompt-snoozed-until'
 const SNOOZE_DAYS = 14
@@ -56,14 +57,15 @@ export function PushPrompt({ audience = 'worker' }: { audience?: keyof typeof CO
             try {
               if (await enable()) toast.success(copy.done)
               else {
-                toast.error(`Alerts are blocked in this browser. You can allow them later from ${copy.where}.`)
+                pushErrorToast(
+                  'Alerts are blocked in this browser',
+                  `Allow notifications for TinyGig in the browser's site settings, then turn them on from ${copy.where}.`,
+                  siteSettingsUrl(),
+                )
                 snooze()
               }
             } catch (err) {
-              toast.error('Could not turn alerts on', {
-                description: err instanceof Error ? err.message : undefined,
-                duration: 12_000,
-              })
+              showPushError(err)
             }
           }}
         >

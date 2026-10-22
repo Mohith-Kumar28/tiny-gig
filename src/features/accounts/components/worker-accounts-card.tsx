@@ -11,7 +11,9 @@ import { cn } from '@/lib/utils'
 import { accountAgeDays, accountLabel, formatAge, levelFor } from '../rules'
 import { adminAddAccount } from '../server/roster'
 import { LevelBadge, platformIconFor } from './account-columns'
-import { CreatedOnEditor, istDateInputToMs, KarmaEditor, StandingSelect } from './account-editors'
+import { ClientsEditor, CreatedOnEditor, istDateInputToMs, KarmaEditor, StandingSelect } from './account-editors'
+import { clientsQuery } from '@/features/clients/queries'
+import { useQuery } from '@tanstack/react-query'
 import { AddAccountDialog } from './add-account-dialog'
 
 type Account = {
@@ -24,11 +26,13 @@ type Account = {
   karma: number | null
   karmaUpdatedAt: Date | null
   standing: AccountStanding
+  clientTagIds?: string[]
 }
 
 /** A worker's accounts on their admin page, with the same one-click edits as the roster. */
 export function WorkerAccountsCard({ workerId, accounts, karmaStaleDays = 30 }: { workerId: string; accounts: Account[]; karmaStaleDays?: number }) {
   const [adding, setAdding] = useState(false)
+  const { data: clients } = useQuery(clientsQuery())
   const add = useAction(
     (v: { platform: Account['platform']; url: string; createdOn: string; karma: string }) =>
       adminAddAccount({
@@ -86,6 +90,10 @@ export function WorkerAccountsCard({ workerId, accounts, karmaStaleDays = 30 }: 
               ) : (
                 <span className="text-xs text-muted-foreground">{a.karma != null ? `${formatNumber(a.karma)} followers/karma` : ''}</span>
               )}
+              <ClientsEditor
+                id={a.id}
+                value={(a.clientTagIds ?? []).flatMap((id) => clients?.find((c) => c.id === id) ?? [])}
+              />
               <div className="ml-auto">
                 <StandingSelect id={a.id} value={a.standing} />
               </div>

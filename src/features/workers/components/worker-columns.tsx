@@ -4,6 +4,7 @@ import { Money } from '@/components/shared/money'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
+import { clientColumn } from '@/features/clients/components/client-filter'
 import { formatNumber } from '@/lib/format'
 import type { listWorkers } from '../server/admin-workers'
 
@@ -90,6 +91,7 @@ export const applicantColumns: ColumnDef<WorkerRow, unknown>[] = [
 export const workerColumns: ColumnDef<WorkerRow, unknown>[] = [
   name,
   status,
+  clientColumn<WorkerRow>((r) => r.clients, 'Clients'),
   karma,
   age,
   state,

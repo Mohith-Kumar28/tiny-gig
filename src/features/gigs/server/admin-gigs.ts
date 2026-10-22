@@ -13,6 +13,7 @@ import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { slugify } from '@/lib/slug'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 import { gigFormSchemaRefined, type GigFormValues, PAID_LEVEL_KEYS } from '../schemas'
+import { clientFacet, clientWhere } from '@/features/clients/client-filter'
 import { rateRange } from '@/features/opportunities/server/rates'
 import { loadSettings } from '@/features/settings/server/settings-store'
 import type { AppSettings } from '@/features/settings/schemas'
@@ -22,6 +23,7 @@ export const gigsSearchSchema = tableSearchSchema.extend({
   status: facet(GIG_STATUSES),
   platform: facet(PLATFORMS),
   taskType: facet(TASK_TYPES),
+  client: clientFacet,
 })
 export type GigsSearch = z.infer<typeof gigsSearchSchema>
 
@@ -35,6 +37,8 @@ export const listGigs = createServerFn({ method: 'GET' })
     if (data.status?.length) filters.push(inArray(gig.status, data.status))
     if (data.platform?.length) filters.push(inArray(gig.platform, data.platform))
     if (data.taskType?.length) filters.push(inArray(gig.taskType, data.taskType))
+    const byClient = clientWhere(gig.clientTagId, data.client)
+    if (byClient) filters.push(byClient)
     if (data.q) {
       const q = `%${data.q.toLowerCase()}%`
       filters.push(or(like(sql`lower(${gig.title})`, q), like(sql`lower(${gig.community})`, q)) as SQL)
@@ -75,8 +79,12 @@ export const listGigs = createServerFn({ method: 'GET' })
           priority: gig.priority,
           pending,
           approved,
+          clientId: clientTag.id,
+          clientName: clientTag.name,
+          clientColor: clientTag.color,
         })
         .from(gig)
+        .leftJoin(clientTag, eq(clientTag.id, gig.clientTagId))
         .where(where)
         .orderBy(...orderBy)
         .limit(limit)

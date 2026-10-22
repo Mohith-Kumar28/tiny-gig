@@ -1,12 +1,13 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, inArray, isNotNull, isNull, like, or, sql, type SQL } from 'drizzle-orm'
 import { z } from 'zod'
-import { workerProfile, submission, payout, referral, socialAccount, user } from '@/db/schema'
+import { clientTag, workerProfile, submission, payout, referral, socialAccount, user } from '@/db/schema'
 import { INDIAN_STATES, WORKER_STATUSES } from '@/db/schema/enums'
 import { queueEmail } from '@/emails/send-email'
 import { audit, notify } from '@/lib/server/activity'
 import { adminMiddleware, AppError } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
+import { clientFacet, NO_CLIENT } from '@/features/clients/client-filter'
 import { syncReferee } from '@/features/referrals/server/engine'
 
 
@@ -15,6 +16,8 @@ export const workersSearchSchema = tableSearchSchema.extend({
   state: z.array(z.enum(INDIAN_STATES)).optional().catch(undefined),
   minKarma: z.number().int().optional().catch(undefined),
   flagged: z.boolean().optional().catch(undefined),
+  /** Workers with an account tagged for any of these clients. */
+  client: clientFacet,
 })
 export type WorkersSearch = z.infer<typeof workersSearchSchema>
 
@@ -44,6 +47,22 @@ export const listWorkers = createServerFn({ method: 'GET' })
       filters.push(
         sql`exists (select 1 from "referral" r where r."referee_id" = "worker_profile"."user_id" and r."flagged" = 1)`,
       )
+    }
+    if (data.client?.length) {
+      const real = data.client.filter((id) => id !== NO_CLIENT)
+      const parts: SQL[] = []
+      if (real.length)
+        parts.push(
+          sql`exists (select 1 from "social_account" sa, json_each(sa."client_tag_ids") j where sa."worker_id" = "worker_profile"."user_id" and j.value in (${sql.join(
+            real.map((id) => sql`${id}`),
+            sql`, `,
+          )}))`,
+        )
+      if (data.client.includes(NO_CLIENT))
+        parts.push(
+          sql`not exists (select 1 from "social_account" sa, json_each(sa."client_tag_ids") j where sa."worker_id" = "worker_profile"."user_id")`,
+        )
+      filters.push((parts.length === 1 ? parts[0] : or(...parts)) as SQL)
     }
     const where = filters.length ? and(...filters) : undefined
     const approvalRate = sql<number>`case when (${workerProfile.completedCount} + ${workerProfile.rejectedCount}) = 0 then 0 else ${workerProfile.completedCount} * 1.0 / (${workerProfile.completedCount} + ${workerProfile.rejectedCount}) end`
@@ -96,7 +115,29 @@ export const listWorkers = createServerFn({ method: 'GET' })
         .offset(offset),
       db.select({ n: count() }).from(workerProfile).where(where),
     ])
-    return paginated(rows, totalRow?.n ?? 0, page, perPage)
+    // Clients across each worker's accounts, so staff can see who is set up for whom.
+    const ids = rows.map((r) => r.userId)
+    const [accounts, tags] = ids.length
+      ? await Promise.all([
+          db
+            .select({ workerId: socialAccount.workerId, clientTagIds: socialAccount.clientTagIds })
+            .from(socialAccount)
+            .where(inArray(socialAccount.workerId, ids)),
+          db.select({ id: clientTag.id, name: clientTag.name, color: clientTag.color }).from(clientTag),
+        ])
+      : [[], []]
+    const tagById = new Map(tags.map((t) => [t.id, t]))
+    const clientsOf = new Map<string, Set<string>>()
+    for (const a of accounts) {
+      const set = clientsOf.get(a.workerId) ?? new Set<string>()
+      for (const id of a.clientTagIds ?? []) set.add(id)
+      clientsOf.set(a.workerId, set)
+    }
+    const withClients = rows.map((r) => ({
+      ...r,
+      clients: [...(clientsOf.get(r.userId) ?? [])].flatMap((id) => tagById.get(id) ?? []),
+    }))
+    return paginated(withClients, totalRow?.n ?? 0, page, perPage)
   })
 
 export const getWorkerStatusCounts = createServerFn({ method: 'GET' })

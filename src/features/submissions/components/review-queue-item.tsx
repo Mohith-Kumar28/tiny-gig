@@ -4,6 +4,7 @@ import { PlatformIcon } from '@/components/shared/platform-icon'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Checkbox } from '@/components/ui/checkbox'
+import { ClientChip } from '@/features/accounts/components/client-chip'
 import { TASK_TYPE_LABELS } from '@/features/gigs/components/worker-gig-meta'
 import { cn } from '@/lib/utils'
 import type { listReviewQueue } from '../server/admin-review'
@@ -63,6 +64,7 @@ export function ReviewQueueItem({
         </p>
         <div className="mt-1.5 flex items-center gap-2">
           <StatusBadge status={row.status} />
+          {row.clientName ? <ClientChip name={row.clientName} color={row.clientColor ?? 'slate'} className="h-5" /> : null}
           {row.revision > 1 ? <span className="text-[11px] text-muted-foreground tabular">v{row.revision}</span> : null}
           {row.screenshotCount ? (
             <span

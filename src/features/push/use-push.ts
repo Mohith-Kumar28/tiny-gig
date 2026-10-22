@@ -1,6 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
 import { getPushConfig, removePushSubscription, savePushSubscription } from './server/push'
+import { PushSetupError } from './push-errors'
 
 /**
  * Where this device stands on push alerts:
@@ -25,11 +26,12 @@ function isBrave() {
 function pushError(err: unknown) {
   const msg = err instanceof Error ? err.message : String(err)
   if (/push service/i.test(msg) || (err instanceof DOMException && err.name === 'AbortError')) {
-    return new Error(
-      isBrave()
-        ? 'Brave blocks web push by default. Open brave://settings/privacy, turn on "Use Google services for push messaging", restart Brave and try again.'
-        : 'This browser could not reach its push service. Check you are online and not in a private window, then try again.',
-    )
+    return isBrave()
+      ? new PushSetupError(
+          'Brave blocks web push by default. Copy the settings link, paste it into the address bar, turn on "Use Google services for push messaging", then restart Brave and try again.',
+          'brave://settings/privacy',
+        )
+      : new PushSetupError('This browser could not reach its push service. Check you are online and not in a private window, then try again.')
   }
   return err instanceof Error ? err : new Error(msg)
 }

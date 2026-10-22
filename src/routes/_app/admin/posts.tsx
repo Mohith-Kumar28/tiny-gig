@@ -9,13 +9,15 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { PLATFORM_LABELS } from '@/components/shared/platform-icon'
 import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
+import { ClientFilter } from '@/features/clients/components/client-filter'
 import { postLogColumns, SUBMISSION_STATUS_OPTIONS } from '@/features/gigs/components/submission-columns'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
 import { SubmissionReviewSheet } from '@/features/submissions/components/submission-review-sheet'
+import { clientFacet } from '@/features/clients/client-filter'
 import { reviewQueueQuery } from '@/features/submissions/queries'
 import { facet, tableSearchSchema } from '@/lib/table-query'
 
-const searchSchema = tableSearchSchema.extend({ status: facet(SUBMISSION_STATUSES), platform: facet(PLATFORMS) })
+const searchSchema = tableSearchSchema.extend({ status: facet(SUBMISSION_STATUSES), platform: facet(PLATFORMS), client: clientFacet })
 
 // A posted submission is never "in progress" again, so that facet would always be empty.
 const STATUS_OPTIONS = SUBMISSION_STATUS_OPTIONS.filter((o) => o.value !== 'claimed')
@@ -56,7 +58,7 @@ function PostLogPage() {
         searchPlaceholder="Search gig, worker, post link…"
         onRowClick={(r) => setOpenSubmission(r.id)}
         activeRowId={openSubmission ?? undefined}
-        hasActiveFilters={Boolean(search.status || search.platform || search.q)}
+        hasActiveFilters={Boolean(search.status || search.platform || search.client || search.q)}
         onResetFilters={() => navigate({ search: {} })}
         filters={
           <>
@@ -72,6 +74,7 @@ function PostLogPage() {
               value={search.platform}
               onChange={(v) => onSearchChange({ platform: v })}
             />
+            <ClientFilter value={search.client} onChange={(v) => onSearchChange({ client: v })} />
           </>
         }
         empty={

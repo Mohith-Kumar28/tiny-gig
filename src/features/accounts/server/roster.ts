@@ -8,6 +8,7 @@ import { OPEN_ASSIGNMENT } from '@/features/submissions/state'
 import { audit } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, paginated, pageArgs, tableSearchSchema } from '@/lib/table-query'
+import { clientFacet, NO_CLIENT } from '@/features/clients/client-filter'
 import { readiness } from '../cooldowns'
 import { accountAgeDays, DAY_MS, isKarmaStale, LEVELS, levelFor } from '../rules'
 import { createAccount } from './account-service'
@@ -20,7 +21,7 @@ export const rosterSearchSchema = tableSearchSchema.extend({
   standing: facet(STANDING_FILTERS),
   level: facet(LEVELS),
   platform: facet(ACCOUNT_PLATFORMS),
-  client: z.array(z.string()).optional().catch(undefined),
+  client: clientFacet,
   inUse: z.boolean().optional().catch(undefined),
   /** "Who is free right now" (R3): active, past every cooldown, not in use. */
   free: z.boolean().optional().catch(undefined),
@@ -166,7 +167,9 @@ export const listAccounts = createServerFn({ method: 'GET' })
       if (data.level?.length && !(r.level && data.level.includes(r.level))) return false
       if (
         data.client?.length &&
-        !data.client.some((c) => r.lastClient?.id === c || r.clientTagIds.includes(c))
+        !data.client.some((c) =>
+          c === NO_CLIENT ? r.clientTagIds.length === 0 : r.lastClient?.id === c || r.clientTagIds.includes(c),
+        )
       )
         return false
       if (data.inUse && !r.inUse) return false

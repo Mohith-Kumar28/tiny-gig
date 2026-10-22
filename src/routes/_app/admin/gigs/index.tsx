@@ -12,6 +12,7 @@ import { PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
 import { useGigStatus } from '@/features/gigs/components/gig-actions'
 import { type GigRow, gigColumns } from '@/features/gigs/components/gig-columns'
 import { TASK_TYPE_LABELS } from '@/features/gigs/components/worker-gig-meta'
+import { ClientFilter } from '@/features/clients/components/client-filter'
 import { gigsQuery } from '@/features/gigs/queries'
 import { gigsSearchSchema } from '@/features/gigs/server/admin-gigs'
 
@@ -64,7 +65,7 @@ function GigsPage() {
         isFetching={isFetching}
         searchPlaceholder="Search title or community…"
         onRowClick={(r) => navigate({ to: '/admin/gigs/$gigId', params: { gigId: r.id } })}
-        hasActiveFilters={Boolean(search.status || search.platform || search.taskType || search.q)}
+        hasActiveFilters={Boolean(search.status || search.platform || search.taskType || search.client || search.q)}
         onResetFilters={() => navigate({ search: {} })}
         initialHidden={{ liveHold: false, createdAt: false }}
         filters={
@@ -87,6 +88,7 @@ function GigsPage() {
               value={search.taskType}
               onChange={(v) => onSearchChange({ taskType: v })}
             />
+            <ClientFilter value={search.client} onChange={(v) => onSearchChange({ client: v })} />
           </>
         }
         empty={

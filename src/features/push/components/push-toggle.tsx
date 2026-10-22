@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
+import { pushErrorToast, showPushError, siteSettingsUrl } from '../push-errors'
 import { sendTestPush } from '../server/push'
 import { isIos, usePush } from '../use-push'
 
@@ -91,13 +92,13 @@ export function PushToggle({ className, audience = 'worker' }: { className?: str
       if (next) {
         const ok = await enable()
         if (ok) toast.success('Alerts on for this device')
-        else toast.error('Notifications are blocked for TinyGig in this browser', { description: unblockHint() })
+        else pushErrorToast('Notifications are blocked for TinyGig in this browser', unblockHint(), siteSettingsUrl())
       } else {
         await disable()
         toast.success('Alerts off for this device')
       }
     } catch (err) {
-      toast.error('Could not turn alerts on', { description: err instanceof Error ? err.message : undefined, duration: 12_000 })
+      showPushError(err)
     }
   }
   return (

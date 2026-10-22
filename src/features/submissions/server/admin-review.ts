@@ -1,11 +1,12 @@
 import { createServerFn } from '@tanstack/react-start'
 import { and, asc, count, desc, eq, inArray, isNotNull, like, lte, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
-import { gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
+import { clientTag, gig, socialAccount, submission, submissionEvent, user, workerProfile } from '@/db/schema'
 import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { audit, notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
+import { clientFacet, clientWhere } from '@/features/clients/client-filter'
 import { applyInsights, applyProof } from './proof-service'
 import { decideOne } from './review-service'
 
@@ -23,6 +24,7 @@ export const reviewSearchSchema = tableSearchSchema.extend({
   /** Only submissions that have been posted (submitted at least once) — the post log. */
   posted: z.boolean().optional().catch(undefined),
   selected: z.string().optional().catch(undefined),
+  client: clientFacet,
 })
 export type ReviewSearch = z.infer<typeof reviewSearchSchema>
 
@@ -61,6 +63,8 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
     if (data.gigId) filters.push(eq(submission.gigId, data.gigId))
     if (data.workerId) filters.push(eq(submission.workerId, data.workerId))
     if (data.posted) filters.push(isNotNull(submission.submittedAt))
+    const byClient = clientWhere(submission.clientTagId, data.client)
+    if (byClient) filters.push(byClient)
     if (data.q) {
       const q = `%${data.q.toLowerCase()}%`
       filters.push(
@@ -119,11 +123,15 @@ export const listReviewQueue = createServerFn({ method: 'GET' })
         redditUsername: workerProfile.redditUsername,
         karma: workerProfile.karma,
         workerImage: user.image,
+        clientId: clientTag.id,
+        clientName: clientTag.name,
+        clientColor: clientTag.color,
       })
       .from(submission)
       .innerJoin(gig, eq(gig.id, submission.gigId))
       .innerJoin(workerProfile, eq(workerProfile.userId, submission.workerId))
       .innerJoin(user, eq(user.id, submission.workerId))
+      .leftJoin(clientTag, eq(clientTag.id, submission.clientTagId))
       .where(where)
 
     const [rows, [totalRow]] = await Promise.all([

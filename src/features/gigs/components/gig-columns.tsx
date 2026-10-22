@@ -5,6 +5,7 @@ import { Money } from '@/components/shared/money'
 import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { clientColumn, singleClient } from '@/features/clients/components/client-filter'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import type { listGigs } from '../server/admin-gigs'
@@ -45,6 +46,7 @@ export const gigColumns: ColumnDef<GigRow, unknown>[] = [
       </div>
     ),
   },
+  clientColumn<GigRow>(singleClient),
   {
     id: 'status',
     header: () => 'Status',
