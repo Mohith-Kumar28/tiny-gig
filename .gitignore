@@ -14,6 +14,9 @@ todos.json
 
 .dev.vars*
 !.dev.vars.example
+# Production secrets: synced to Cloudflare with `bun run secrets:push`
+.prod.vars
+!.prod.vars.example
 !.env.example
 
 dist

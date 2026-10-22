@@ -1,0 +1,21 @@
+# Production secrets for the Cloudflare Worker. Copy to .prod.vars (never committed) and fill in.
+# Sync to Cloudflare:  bun run secrets:push      (preview first: bun run secrets:push --dry-run)
+#
+# KEY=value  → pushed to Cloudflare (created or replaced)
+# KEY=       → left alone: Cloudflare keeps its current value (it never shows secrets back)
+# Plain, non-secret settings (APP_URL, EMAIL_FROM, ADMIN_EMAILS) live in wrangler.jsonc "vars".
+
+# Signs sessions and encrypts 2FA secrets. Changing it signs everyone out and breaks existing 2FA.
+BETTER_AUTH_SECRET=
+
+# Resend email API key (send-only key for the EMAIL_FROM domain).
+RESEND_API_KEY=
+
+# "Continue with Google". OAuth client must allow
+# https://<your-domain>/api/auth/callback/google as a redirect URI.
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+
+# Browser push (VAPID). Generate with: bun run vapid:new
+VAPID_PUBLIC_KEY=
+VAPID_PRIVATE_KEY=

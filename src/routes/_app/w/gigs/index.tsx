@@ -1,4 +1,5 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
+import { PushPrompt } from '@/features/push/components/push-prompt'
 import { createFileRoute } from '@tanstack/react-router'
 import { SearchX } from 'lucide-react'
 import { useCallback } from 'react'
@@ -35,6 +36,7 @@ function FindGigsPage() {
       <PageHeader
         title="Find gigs"
       />
+      <PushPrompt />
       <WorkerGigFilters search={search} onChange={onChange} />
       <p className="text-sm text-muted-foreground" aria-live="polite">
         {isPending ? 'Loading gigs…' : `${pluralize(gigs.length, 'gig')} found${gigs.length !== open ? ` · ${open} open to you` : ''}`}

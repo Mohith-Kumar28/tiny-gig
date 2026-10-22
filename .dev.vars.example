@@ -7,6 +7,6 @@ RESEND_API_KEY=
 # Local override of the production APP_URL in wrangler.jsonc
 APP_URL=http://localhost:3000
 
-# Web push keys (VAPID). Generate a P-256 pair; public = raw point base64url, private = JWK "d".
+# Web push keys (VAPID). Generate with: bun run vapid:new
 VAPID_PUBLIC_KEY=
 VAPID_PRIVATE_KEY=

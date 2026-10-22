@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { WorkerOverview } from '@/features/analytics/components/worker-overview'
 import { workerOverviewQuery } from '@/features/analytics/queries'
 import { myEarningsQuery } from '@/features/payouts/queries'
+import { PushPrompt } from '@/features/push/components/push-prompt'
 
 export const Route = createFileRoute('/_app/w/')({
   head: () => ({ meta: [{ title: 'Overview · TinyGig' }] }),
@@ -17,5 +18,10 @@ export const Route = createFileRoute('/_app/w/')({
 function OverviewPage() {
   const { data: overview } = useSuspenseQuery(workerOverviewQuery())
   const { data: earnings } = useQuery(myEarningsQuery())
-  return <WorkerOverview overview={overview} earnings={earnings} />
+  return (
+    <div className="space-y-6">
+      <PushPrompt />
+      <WorkerOverview overview={overview} earnings={earnings} />
+    </div>
+  )
 }

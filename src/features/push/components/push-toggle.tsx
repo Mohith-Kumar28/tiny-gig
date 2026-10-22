@@ -1,82 +1,58 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { BellRing } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { BellOff, BellRing, Share } from 'lucide-react'
 import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
-import { getPushConfig, removePushSubscription, savePushSubscription } from '../server/push'
+import { isIos, usePush } from '../use-push'
 
-function urlBase64ToUint8Array(base64: string) {
-  const padding = '='.repeat((4 - (base64.length % 4)) % 4)
-  const raw = atob((base64 + padding).replace(/-/g, '+').replace(/_/g, '/'))
-  return Uint8Array.from(raw, (c) => c.charCodeAt(0))
+/** How to undo a block, by browser. People often hit "Block" by reflex; this is the way back. */
+function unblockHint() {
+  if (typeof navigator === 'undefined') return ''
+  const ua = navigator.userAgent
+  if (isIos()) return 'Open iPhone Settings → Notifications → TinyGig and allow notifications.'
+  if (/Android/.test(ua)) return 'Tap the lock icon next to the address (or the ⋮ menu → Site settings) → Notifications → Allow, then come back.'
+  if (/Safari/.test(ua) && !/Chrome/.test(ua)) return 'Safari → Settings → Websites → Notifications → set TinyGig to Allow, then come back.'
+  return 'Click the lock icon next to the address bar → Notifications → Allow, then reload this page.'
 }
 
 /**
- * Opt in to phone/desktop alerts. New gigs only stay open for interest for a few minutes,
- * so this is the fastest way to hear about them (§4.1).
+ * The settings switch for new-gig alerts on this device (Notifications page, Me, Profile).
+ * Explains blocked and iPhone-install cases instead of silently failing.
  */
 export function PushToggle({ className }: { className?: string }) {
-  const qc = useQueryClient()
-  const { data } = useQuery({ queryKey: ['me', 'push'], queryFn: () => getPushConfig() })
-  const [supported, setSupported] = useState(false)
-  const [endpoint, setEndpoint] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  useEffect(() => {
-    const ok = typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window
-    setSupported(ok)
-    if (!ok) return
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((reg) => reg.pushManager.getSubscription())
-      .then((sub) => setEndpoint(sub?.endpoint ?? null))
-      .catch(() => undefined)
-  }, [])
-  if (!supported || !data?.publicKey) return null
-  const on = !!endpoint && data.endpoints.includes(endpoint)
-
+  const { state, busy, enable, disable } = usePush()
+  if (state === 'loading' || state === 'unsupported') return null
   const toggle = async (next: boolean) => {
-    setBusy(true)
     try {
-      const reg = await navigator.serviceWorker.register('/sw.js')
       if (next) {
-        const perm = await Notification.requestPermission()
-        if (perm !== 'granted') {
-          toast.error('Notifications are blocked. Allow them in your browser settings.')
-          return
-        }
-        const sub =
-          (await reg.pushManager.getSubscription()) ??
-          (await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(data.publicKey ?? '') }))
-        const json = sub.toJSON()
-        await savePushSubscription({ data: { endpoint: sub.endpoint, p256dh: json.keys?.p256dh ?? '', auth: json.keys?.auth ?? '' } })
-        setEndpoint(sub.endpoint)
-        toast.success('Alerts on for this device')
+        const ok = await enable()
+        toast[ok ? 'success' : 'error'](ok ? 'Alerts on for this device' : 'Notifications are blocked for TinyGig in this browser')
       } else {
-        const sub = await reg.pushManager.getSubscription()
-        if (sub) {
-          await removePushSubscription({ data: { endpoint: sub.endpoint } })
-          await sub.unsubscribe()
-        }
-        setEndpoint(null)
+        await disable()
         toast.success('Alerts off for this device')
       }
-      await qc.invalidateQueries({ queryKey: ['me', 'push'] })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Could not change alerts')
-    } finally {
-      setBusy(false)
     }
   }
-
   return (
-    <div className={cn('flex items-center gap-3 rounded-xl border bg-card p-4', className)}>
-      <BellRing className="size-5 shrink-0 text-primary" />
-      <div className="min-w-0 flex-1">
+    <div className={cn('flex items-start gap-3 rounded-xl border bg-card p-4', className)}>
+      {state === 'denied' ? <BellOff className="mt-0.5 size-5 shrink-0 text-muted-foreground" /> : <BellRing className="mt-0.5 size-5 shrink-0 text-primary" />}
+      <div className="min-w-0 flex-1 space-y-1">
         <p className="text-sm font-medium">New-gig alerts on this device</p>
-        <p className="text-xs text-muted-foreground">Gigs only take interest for a few minutes. Get a ping the moment one goes live.</p>
+        {state === 'needs-install' ? (
+          <p className="text-xs text-muted-foreground">
+            On iPhone, alerts work once TinyGig is on your Home Screen: tap <Share className="inline size-3.5 align-text-bottom" /> Share →{' '}
+            <strong>Add to Home Screen</strong>, open TinyGig from there, and turn this on.
+          </p>
+        ) : state === 'denied' ? (
+          <p className="text-xs text-muted-foreground">Notifications are blocked for TinyGig. {unblockHint()}</p>
+        ) : (
+          <p className="text-xs text-muted-foreground">Gigs only take interest for a few minutes. Get a ping the moment one goes live.</p>
+        )}
       </div>
-      <Switch checked={on} disabled={busy} onCheckedChange={toggle} aria-label="New-gig alerts" />
+      {state === 'on' || state === 'off' ? (
+        <Switch checked={state === 'on'} disabled={busy} onCheckedChange={toggle} aria-label="New-gig alerts" />
+      ) : null}
     </div>
   )
 }

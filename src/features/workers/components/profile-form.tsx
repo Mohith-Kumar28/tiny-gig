@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
 import { Textarea } from '@/components/ui/textarea'
+import { PushToggle } from '@/features/push/components/push-toggle'
 import { useAction } from '@/hooks/use-action'
 import { type ProfileUpdateInput, profileUpdateSchema } from '../schemas'
 import { type getMyProfile, updateMyProfile } from '../server/profile'
@@ -152,7 +153,8 @@ export function ProfileForm({ profile }: { profile: Profile }) {
           </FormSection>
         </div>
 
-        <FormSection title="Email updates">
+        <FormSection title="Notifications">
+          <PushToggle className="sm:col-span-2" />
           <FormField
             control={form.control}
             name="emailPrefs.newGigs"

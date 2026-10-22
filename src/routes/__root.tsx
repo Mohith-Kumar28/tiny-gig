@@ -18,12 +18,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: SITE.title },
       { name: 'description', content: SITE.description },
       { name: 'theme-color', content: '#e2561f' },
+      { name: 'apple-mobile-web-app-capable', content: 'yes' },
+      { name: 'apple-mobile-web-app-title', content: 'TinyGig' },
       { property: 'og:site_name', content: SITE.name },
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
       { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
+      // Installable app: needed for push on iPhone (Add to Home Screen) and a nicer Android install.
+      { rel: 'manifest', href: '/manifest.webmanifest' },
     ],
   }),
   loader: async ({ context }) => {
