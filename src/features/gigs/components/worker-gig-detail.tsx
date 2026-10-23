@@ -27,7 +27,7 @@ import type { getGigForWorker } from '../server/worker-gigs'
 import { NextLevelLine, PayAmount, payCaption } from './pay'
 import { formatHours, slotsLeft, TASK_TYPE_LABELS } from './worker-gig-meta'
 
-type GigDetailData = Awaited<ReturnType<typeof getGigForWorker>>
+type GigDetailData = Extract<Awaited<ReturnType<typeof getGigForWorker>>, { unavailable: null }>
 
 /** A ruled section of the gig page; sections stack inside one bordered panel. */
 function Section({ title, children, action }: { title: string; children: ReactNode; action?: ReactNode }) {

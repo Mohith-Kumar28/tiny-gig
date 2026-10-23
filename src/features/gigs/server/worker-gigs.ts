@@ -105,11 +105,14 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
     const { db, user } = context
     const g = await db.query.gig.findFirst({ where: eq(gig.id, data.id) })
     if (!g || g.status === 'draft') throw new AppError('NOT_FOUND', 'Gig not found.')
-    const [mine, interest] = await Promise.all([
-      db.query.submission.findFirst({
-        where: and(eq(submission.gigId, g.id), eq(submission.workerId, user.id)),
-        columns: { id: true, status: true },
-      }),
+    const mine = await db.query.submission.findFirst({
+      where: and(eq(submission.gigId, g.id), eq(submission.workerId, user.id)),
+      columns: { id: true, status: true },
+    })
+    // Closed or paused gigs are only for workers already doing them; everyone else (old alerts,
+    // bell links, bookmarks) gets a short "closed" screen, not the brief and pay.
+    if (g.status !== 'live' && !mine) return { unavailable: { title: g.title, status: g.status } } as const
+    const [interest] = await Promise.all([
       db
         .select({ status: gigInterest.status, accountIds: gigInterest.accountIds })
         .from(gigInterest)
@@ -138,6 +141,7 @@ export const getGigForWorker = createServerFn({ method: 'GET' })
         }
       })
     return {
+      unavailable: null,
       gig: workerSafeGig(g),
       mySubmission: mine ?? null,
       ineligible: mine ? null : (gigClosedReason(g, now) ?? block?.message ?? null),

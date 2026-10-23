@@ -1,6 +1,6 @@
 import { createServerFn } from '@tanstack/react-start'
 import { getRequestHeader } from '@tanstack/react-start/server'
-import { and, eq } from 'drizzle-orm'
+import { and, eq, ne } from 'drizzle-orm'
 import { z } from 'zod'
 import { pushSubscription } from '@/db/schema'
 import { userMiddleware } from '@/lib/server/middleware'
@@ -10,8 +10,11 @@ import { sendPush } from './send-push'
 export const getPushConfig = createServerFn({ method: 'GET' })
   .middleware([userMiddleware])
   .handler(async ({ context }) => {
-    const subs = await context.db.select({ endpoint: pushSubscription.endpoint }).from(pushSubscription).where(eq(pushSubscription.userId, context.user.id))
-    return { publicKey: pushEnv().VAPID_PUBLIC_KEY ?? null, endpoints: subs.map((s) => s.endpoint) }
+    const subs = await context.db
+      .select({ endpoint: pushSubscription.endpoint, userAgent: pushSubscription.userAgent, createdAt: pushSubscription.createdAt })
+      .from(pushSubscription)
+      .where(eq(pushSubscription.userId, context.user.id))
+    return { publicKey: pushEnv().VAPID_PUBLIC_KEY ?? null, endpoints: subs.map((s) => s.endpoint), devices: subs }
   })
 
 export const savePushSubscription = createServerFn({ method: 'POST' })
@@ -30,6 +33,20 @@ export const removePushSubscription = createServerFn({ method: 'POST' })
   .validator(z.object({ endpoint: z.string().max(1000) }))
   .handler(async ({ data, context }) => {
     await context.db.delete(pushSubscription).where(and(eq(pushSubscription.endpoint, data.endpoint), eq(pushSubscription.userId, context.user.id)))
+    return { ok: true }
+  })
+
+/**
+ * Turns alerts off on every other browser/device of this person. The switch only controls the
+ * browser it's shown in, so this is the way to silence a device you can't reach (an old laptop,
+ * or a subscription made on a previous site address).
+ */
+export const removeOtherPushSubscriptions = createServerFn({ method: 'POST' })
+  .middleware([userMiddleware])
+  .validator(z.object({ keep: z.string().max(1000).nullable() }))
+  .handler(async ({ data, context }) => {
+    const mine = eq(pushSubscription.userId, context.user.id)
+    await context.db.delete(pushSubscription).where(data.keep ? and(mine, ne(pushSubscription.endpoint, data.keep)) : mine)
     return { ok: true }
   })
 

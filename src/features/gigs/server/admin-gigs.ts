@@ -222,6 +222,22 @@ async function announceGig(db: Db, g: typeof gig.$inferSelect) {
   return eligible.length
 }
 
+/**
+ * When a gig closes, workers still waiting on it hear back once instead of the gig lingering in
+ * their bell and alerts. Paused gigs keep their hands up: they may reopen.
+ */
+async function releaseWaitingHands(db: Db, g: { id: string; title: string }) {
+  const waiting = await db
+    .update(gigInterest)
+    .set({ status: 'not_selected', updatedAt: new Date() })
+    .where(and(eq(gigInterest.gigId, g.id), eq(gigInterest.status, 'interested')))
+    .returning({ workerId: gigInterest.workerId })
+  await notify(
+    db,
+    waiting.map((w) => ({ userId: w.workerId, title: `“${g.title}” has closed`, body: 'Thanks for raising your hand. Keep an eye out for the next one.', href: '/w/gigs' })),
+  )
+}
+
 export const saveGig = createServerFn({ method: 'POST' })
   .middleware([adminMiddleware])
   .validator(gigFormSchemaRefined.and(z.object({ id: z.string().optional() })))
@@ -265,6 +281,7 @@ export const saveGig = createServerFn({ method: 'POST' })
 
     let notified = 0
     if (saved.status === 'live' && !wasLive && notifyWorkers) notified = await announceGig(db, saved)
+    if (saved.status === 'closed') await releaseWaitingHands(db, saved)
     await audit(db, { actorId: user.id, action: id ? 'gig.update' : 'gig.create', entityType: 'gig', entityId: saved.id })
     return { id: saved.id, notified }
   })
@@ -288,6 +305,7 @@ export const setGigStatus = createServerFn({ method: 'POST' })
         .where(eq(gig.id, t.id))
         .returning()
       if (firstPublish && updated && data.notifyWorkers !== false) notified += await announceGig(db, updated)
+      if (data.status === 'closed' && t.status !== 'closed') await releaseWaitingHands(db, t)
       await audit(db, { actorId: user.id, action: `gig.status.${data.status}`, entityType: 'gig', entityId: t.id })
     }
     return { updated: targets.length, notified }

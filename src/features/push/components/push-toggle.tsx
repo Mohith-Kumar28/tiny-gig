@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
+import { pluralize } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { osNotificationSettings, pushErrorToast, showPushError, siteSettingsUrl, waitForPushArrival } from '../push-errors'
 import { sendTestPush } from '../server/push'
@@ -31,6 +32,14 @@ function unblockHint() {
   return 'Click the lock icon next to the address bar → Notifications → Allow, then reload this page.'
 }
 
+/** "Chrome on Mac" from a stored user agent, good enough to recognise your own devices. */
+function deviceName(ua: string | null) {
+  if (!ua) return 'Unknown browser'
+  const browser = /Edg\//.test(ua) ? 'Edge' : /Firefox\//.test(ua) ? 'Firefox' : /Chrome\//.test(ua) ? 'Chrome' : /Safari\//.test(ua) ? 'Safari' : 'Browser'
+  const os = /iPhone|iPad/.test(ua) ? 'iPhone' : /Android/.test(ua) ? 'Android' : /Mac OS X/.test(ua) ? 'Mac' : /Windows/.test(ua) ? 'Windows' : /Linux/.test(ua) ? 'Linux' : ''
+  return os ? `${browser} on ${os}` : browser
+}
+
 /**
  * The settings switch for new-gig alerts on this device (Notifications page, Me, Profile).
  * Explains blocked and iPhone-install cases instead of silently failing.
@@ -47,7 +56,7 @@ const COPY = {
 }
 
 export function PushToggle({ className, audience = 'worker' }: { className?: string; audience?: keyof typeof COPY }) {
-  const { state, busy, enable, disable } = usePush()
+  const { state, busy, enable, disable, others, disableOthers } = usePush()
   const [testing, setTesting] = useState(false)
   const copy = COPY[audience]
   if (state === 'loading') return null
@@ -145,6 +154,31 @@ export function PushToggle({ className, audience = 'worker' }: { className?: str
           <Button variant="link" size="sm" className="h-auto p-0 text-xs" disabled={testing} onClick={test}>
             <Send className="size-3.5" /> {testing ? 'Sending…' : 'Send a test alert'}
           </Button>
+        ) : null}
+        {others.length ? (
+          <div className="mt-2 rounded-md bg-muted/60 px-3 py-2 text-xs text-muted-foreground">
+            <p>
+              Alerts are also on for {pluralize(others.length, 'other browser')} on your account:{' '}
+              {others
+                .map((d) => `${deviceName(d.userAgent)} (since ${new Date(d.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })})`)
+                .join(', ')}
+              . This switch only controls this browser.
+            </p>
+            <Button
+              variant="link"
+              size="sm"
+              className="h-auto p-0 text-xs"
+              disabled={busy}
+              onClick={() =>
+                disableOthers().then(
+                  () => toast.success('Alerts turned off on your other browsers'),
+                  () => toast.error('Could not turn them off. Try again.'),
+                )
+              }
+            >
+              <BellOff className="size-3.5" /> Turn off on {others.length === 1 ? 'that browser' : 'those browsers'}
+            </Button>
+          </div>
         ) : null}
       </div>
       {state === 'on' || state === 'off' ? (

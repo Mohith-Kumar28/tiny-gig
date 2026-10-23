@@ -29,6 +29,7 @@
 	],
 	"kv_namespaces": [{ "binding": "CACHE", "id": "d58126541e1c4277988dcbabe1e8d359" }],
 	"r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "tinygig-uploads" }],
+	"assets": { "binding": "ASSETS", "run_worker_first": ["/sw.js"] },
 	"workers_dev": true,
 	"preview_urls": false,
 	"routes": [{ "pattern": "tinygig.in", "custom_domain": true }],

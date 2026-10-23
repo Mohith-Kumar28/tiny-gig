@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
-import { getPushConfig, removePushSubscription, savePushSubscription } from './server/push'
+import { getPushConfig, removeOtherPushSubscriptions, removePushSubscription, savePushSubscription } from './server/push'
 import { PushSetupError } from './push-errors'
 
 /**
@@ -126,5 +126,18 @@ export function usePush() {
     }
   }, [qc])
 
-  return { state, busy, enable, disable }
+  /** Alerts this person still gets somewhere else: other browsers, devices or an old site address. */
+  const others = (config?.devices ?? []).filter((d) => d.endpoint !== endpoint)
+
+  const disableOthers = useCallback(async () => {
+    setBusy(true)
+    try {
+      await removeOtherPushSubscriptions({ data: { keep: endpoint } })
+      await qc.invalidateQueries({ queryKey: ['me', 'push'] })
+    } finally {
+      setBusy(false)
+    }
+  }, [endpoint, qc])
+
+  return { state, busy, enable, disable, others, disableOthers }
 }
