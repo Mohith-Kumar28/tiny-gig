@@ -11,7 +11,9 @@ import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon
 import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { StatusBadge } from '@/components/shared/status-badge'
+import { SheetPager } from '@/components/shared/sheet-pager'
 import { Button } from '@/components/ui/button'
+import { useCachedListPager } from '@/hooks/use-row-pager'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { ClientChip } from '@/features/accounts/components/client-chip'
 import { statusTransitions, useDuplicateGig, useGigStatus } from '@/features/gigs/components/gig-actions'
@@ -20,6 +22,7 @@ import { gigSubmissionColumns, SUBMISSION_STATUS_OPTIONS } from '@/features/gigs
 import { formatHours, TASK_TYPE_LABELS } from '@/features/gigs/components/worker-gig-meta'
 import { gigAdminQuery } from '@/features/gigs/queries'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { SubmissionReviewSheet } from '@/features/submissions/components/submission-review-sheet'
 import { reviewQueueQuery } from '@/features/submissions/queries'
 import { formatMoney, formatNumber } from '@/lib/format'
@@ -66,18 +69,26 @@ function GigDetailPage() {
 
   const subSearch = { tab: 'all' as const, gigId, status: search.status, q: search.q, sort: search.sort, page: search.page, perPage: search.perPage ?? 20 }
   const { data: subs, isFetching } = useQuery({ ...reviewQueueQuery(subSearch), placeholderData: keepPreviousData })
+  const pager = useRowPager(subs?.rows, (r) => r.id, openSubmission, (r) => setOpenSubmission(r?.id ?? null))
 
   const waiting = (counts.submitted ?? 0) + (counts.resubmitted ?? 0)
   const approved = counts.approved ?? 0
 
+  const listNav = useCachedListPager<{ id: string }>(['admin', 'gigs'], gigId, (r) => r.id, (id) =>
+    navigate({ to: '/admin/gigs/$gigId', params: { gigId: id }, search: {} as never }),
+  )
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 h-7 text-muted-foreground">
-          <Link to="/admin/gigs">
-            <ArrowLeft /> Gigs
-          </Link>
-        </Button>
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" size="sm" className="-ml-2 h-7 text-muted-foreground">
+            <Link to="/admin/gigs" search={listNav.search as never}>
+              <ArrowLeft /> Gigs
+            </Link>
+          </Button>
+          <SheetPager pager={listNav.pager} hotkeys={!openSubmission} />
+        </div>
         <div className="space-y-3">
           <div className="min-w-0 space-y-1.5">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
@@ -266,7 +277,7 @@ function GigDetailPage() {
         />
       </section>
 
-      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} />
+      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} pager={pager} />
     </div>
   )
 }

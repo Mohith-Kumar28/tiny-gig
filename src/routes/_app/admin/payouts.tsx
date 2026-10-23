@@ -21,6 +21,7 @@ import {
   type PayoutRow,
   payoutColumns,
 } from '@/features/payouts/components/payout-columns'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { PayoutSheet } from '@/features/payouts/components/payout-sheet'
 import { payableBalancesQuery, payoutsQuery } from '@/features/payouts/queries'
 import { createPayouts, payoutsSearchSchema, setPayoutStatus } from '@/features/payouts/server/payouts'
@@ -199,7 +200,8 @@ function PayoutList() {
   const effective = { ...search, status: search.status ?? DEFAULT_STATUS, perPage: search.perPage ?? DEFAULT_PER_PAGE }
   const { data, isFetching } = useQuery({ ...payoutsQuery(effective), placeholderData: keepPreviousData })
   const [open, setOpen] = useState<PayoutRow | null>(null)
-  const [paying, setPaying] = useState<{ rows: PayoutRow[]; clear?: () => void } | null>(null)
+  const [paying, setPaying] = useState<{ rows: PayoutRow[]; clear?: () => void; fromSheet?: boolean } | null>(null)
+  const pager = useRowPager(data?.rows, (r) => r.id, open?.id ?? null, setOpen)
 
   const processing = useAction(
     async (rows: PayoutRow[]) => {
@@ -292,12 +294,18 @@ function PayoutList() {
       <PayoutSheet
         payout={open}
         onOpenChange={(o) => !o && setOpen(null)}
-        onMarkPaid={(p) => {
-          setOpen(null)
-          setPaying({ rows: [p] })
+        onMarkPaid={(p) => setPaying({ rows: [p], fromSheet: true })}
+        pager={pager}
+      />
+      <MarkPaidDialog
+        payouts={paying?.rows ?? null}
+        onOpenChange={(o) => !o && setPaying(null)}
+        onDone={() => {
+          paying?.clear?.()
+          // Paid from the sheet: carry on with the next payout instead of closing.
+          if (paying?.fromSheet) pager.advance()
         }}
       />
-      <MarkPaidDialog payouts={paying?.rows ?? null} onOpenChange={(o) => !o && setPaying(null)} onDone={() => paying?.clear?.()} />
     </div>
   )
 }

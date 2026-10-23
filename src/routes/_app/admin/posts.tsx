@@ -12,6 +12,7 @@ import { PLATFORMS, SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { ClientFilter } from '@/features/clients/components/client-filter'
 import { postLogColumns, SUBMISSION_STATUS_OPTIONS } from '@/features/gigs/components/submission-columns'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { SubmissionReviewSheet } from '@/features/submissions/components/submission-review-sheet'
 import { clientFacet } from '@/features/clients/client-filter'
 import { reviewQueueQuery } from '@/features/submissions/queries'
@@ -44,6 +45,7 @@ function PostLogPage() {
   const onSearchChange = useTableSearch(navigate as never)
   const { data, isFetching } = useQuery({ ...reviewQueueQuery(postLogSearch(search)), placeholderData: keepPreviousData })
   const [openSubmission, setOpenSubmission] = useState<string | null>(null)
+  const pager = useRowPager(data?.rows, (r) => r.id, openSubmission, (r) => setOpenSubmission(r?.id ?? null))
 
   return (
     <div className="space-y-6">
@@ -86,7 +88,7 @@ function PostLogPage() {
           />
         }
       />
-      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} />
+      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} pager={pager} />
     </div>
   )
 }

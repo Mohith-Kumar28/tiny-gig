@@ -27,6 +27,8 @@ import { SubmissionReviewPanel } from '@/features/submissions/components/submiss
 import { useReviewDecision } from '@/features/submissions/components/use-review-decision'
 import { DecisionDialog } from '@/features/workers/components/decision-dialog'
 import { useHotkeys } from '@/hooks/use-hotkeys'
+import { useRowPager } from '@/hooks/use-row-pager'
+import { SheetPager } from '@/components/shared/sheet-pager'
 import { cn } from '@/lib/utils'
 
 const TAB_LABELS: Record<ReviewTab, string> = {
@@ -93,6 +95,8 @@ function ReviewInbox() {
 
   const select = (id: string | undefined) =>
     navigate({ search: (prev) => ({ ...prev, selected: id }), replace: true, resetScroll: false })
+
+  const pager = useRowPager(visible, (r) => r.id, selectedId ?? null, (r) => select(r?.id))
 
   const move = (delta: number) => {
     if (!visible.length) return
@@ -311,12 +315,14 @@ function ReviewInbox() {
           </div>
         ) : (
           <Sheet open={!!selectedId} onOpenChange={(o) => !o && select(undefined)}>
-            <SheetContent className="w-full gap-0 p-0 sm:max-w-xl" showCloseButton={false}>
+            <SheetContent className="w-full gap-0 p-0 sm:max-w-2xl" showCloseButton={false}>
               <div className="flex h-12 shrink-0 items-center gap-2 border-b pr-2 pl-4">
                 <SheetTitle className="text-sm">Review submission</SheetTitle>
                 <SheetDescription className="sr-only">Proof, worker and decision</SheetDescription>
+                {/* J / K are already bound by the inbox itself */}
+                <SheetPager pager={pager} hotkeys={false} className="ml-auto" />
                 <SheetClose asChild>
-                  <Button variant="ghost" size="icon" className="ml-auto size-9" aria-label="Close">
+                  <Button variant="ghost" size="icon" className="size-9" aria-label="Close">
                     <X />
                   </Button>
                 </SheetClose>

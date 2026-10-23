@@ -16,6 +16,7 @@ import { applicantColumns, type WorkerRow } from '@/features/workers/components/
 import { workersQuery, workerStatusCountsQuery } from '@/features/workers/queries'
 import { decideApplicants, workersSearchSchema } from '@/features/workers/server/admin-workers'
 import { useAction } from '@/hooks/use-action'
+import { useRowPager } from '@/hooks/use-row-pager'
 
 const STATUS_OPTIONS = [
   { label: 'Pending', value: 'pending' },
@@ -54,13 +55,7 @@ function ApplicantsPage() {
     },
   )
 
-  // After deciding in the sheet, jump to the next applicant in the list.
-  const openNext = () => {
-    const rows = data?.rows ?? []
-    const idx = rows.findIndex((r) => r.userId === openId)
-    const next = rows[idx + 1] ?? null
-    setOpenId(next?.userId ?? null)
-  }
+  const pager = useRowPager(data?.rows, (r) => r.userId, openId, (r) => setOpenId(r?.userId ?? null))
 
   return (
     <div className="space-y-6">
@@ -133,7 +128,7 @@ function ApplicantsPage() {
           </>
         )}
       />
-      <ApplicantSheet userId={openId} onOpenChange={(o) => !o && setOpenId(null)} onDecided={openNext} />
+      <ApplicantSheet userId={openId} onOpenChange={(o) => !o && setOpenId(null)} pager={pager} />
       <DecisionDialog
         open={!!bulkReject}
         onOpenChange={(o) => !o && setBulkReject(null)}

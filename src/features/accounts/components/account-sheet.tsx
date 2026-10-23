@@ -7,6 +7,8 @@ import { formatDate, formatDateTime, RelativeTime } from '@/components/shared/re
 import { StatusBadge } from '@/components/shared/status-badge'
 import { WhatsAppIcon, whatsappLink } from '@/components/shared/whatsapp-icon'
 import { Button } from '@/components/ui/button'
+import { SheetPager } from '@/components/shared/sheet-pager'
+import type { RowPager } from '@/hooks/use-row-pager'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { formatNumber } from '@/lib/format'
@@ -38,14 +40,23 @@ function describeValue(field: string | undefined, v: unknown) {
 }
 
 /** Full history of one account (R2): every task, client, community, link and outcome, plus who changed what (R7). */
-export function AccountSheet({ accountId, onOpenChange }: { accountId: string | null; onOpenChange: (open: boolean) => void }) {
+export function AccountSheet({
+  accountId,
+  onOpenChange,
+  pager,
+}: {
+  accountId: string | null
+  onOpenChange: (open: boolean) => void
+  pager?: RowPager
+}) {
   const { data, isLoading } = useQuery({ ...accountHistoryQuery(accountId ?? ''), enabled: !!accountId })
   const { data: clients } = useQuery({ ...clientsQuery(), enabled: !!accountId })
   const a = data?.account
   return (
     <Sheet open={!!accountId} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 sm:max-w-xl">
-        <SheetHeader className="border-b">
+      <SheetContent className="w-full gap-0 sm:max-w-2xl xl:max-w-3xl">
+        <SheetHeader className="border-b pr-12">
+          <SheetPager pager={pager} className="absolute top-2.5 right-12" />
           <SheetTitle className="flex items-center gap-2 font-display text-xl">
             {a ? <PlatformIcon platform={platformIconFor(a.platform)} /> : null}
             {a ? accountLabel(a.platform, a.handle) : 'Account'}

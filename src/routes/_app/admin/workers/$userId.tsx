@@ -12,12 +12,15 @@ import { Money } from '@/components/shared/money'
 import { formatDate, formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { StatusBadge, statusLabel } from '@/components/shared/status-badge'
+import { SheetPager } from '@/components/shared/sheet-pager'
 import { Button } from '@/components/ui/button'
+import { useCachedListPager } from '@/hooks/use-row-pager'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { SUBMISSION_STATUSES } from '@/db/schema/enums'
 import { SUBMISSION_STATUS_OPTIONS, workerSubmissionColumns } from '@/features/gigs/components/submission-columns'
 import type { QueueRow } from '@/features/submissions/components/review-queue-item'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { SubmissionReviewSheet } from '@/features/submissions/components/submission-review-sheet'
 import { reviewQueueQuery } from '@/features/submissions/queries'
 import { WorkerAccountsCard } from '@/features/accounts/components/worker-accounts-card'
@@ -71,18 +74,26 @@ function WorkerDetailPage() {
     placeholderData: keepPreviousData,
     enabled: tab === 'submissions',
   })
+  const pager = useRowPager(subs?.rows, (r) => r.id, openSubmission, (r) => setOpenSubmission(r?.id ?? null))
 
   const decided = p.completedCount + p.rejectedCount
   const open = ['claimed', 'submitted', 'resubmitted', 'changes_requested', 'live_check', 'on_hold', 'in_review'].reduce((n, s) => n + (data.statusCounts[s] ?? 0), 0)
 
+  const listNav = useCachedListPager<{ userId: string }>(['admin', 'workers'], userId, (r) => r.userId, (id) =>
+    navigate({ to: '/admin/workers/$userId', params: { userId: id }, search: {} as never }),
+  )
+
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Button asChild variant="ghost" size="sm" className="-ml-2 h-7 text-muted-foreground">
-          <Link to="/admin/workers">
-            <ArrowLeft /> Workers
-          </Link>
-        </Button>
+        <div className="flex items-center justify-between gap-2">
+          <Button asChild variant="ghost" size="sm" className="-ml-2 h-7 text-muted-foreground">
+            <Link to="/admin/workers" search={listNav.search as never}>
+              <ArrowLeft /> Workers
+            </Link>
+          </Button>
+          <SheetPager pager={listNav.pager} hotkeys={!openSubmission} />
+        </div>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="min-w-0 space-y-1">
             <div className="flex flex-wrap items-center gap-2">
@@ -359,7 +370,7 @@ function WorkerDetailPage() {
         </TabsContent>
       </Tabs>
 
-      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} />
+      <SubmissionReviewSheet submissionId={openSubmission} onOpenChange={(o) => !o && setOpenSubmission(null)} pager={pager} />
     </div>
   )
 }

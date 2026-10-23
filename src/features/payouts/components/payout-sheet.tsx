@@ -8,6 +8,8 @@ import { formatDateTime, RelativeTime } from '@/components/shared/relative-time'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
+import { SheetPager } from '@/components/shared/sheet-pager'
+import type { RowPager } from '@/hooks/use-row-pager'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
@@ -31,10 +33,13 @@ export function PayoutSheet({
   payout: p,
   onOpenChange,
   onMarkPaid,
+  pager,
 }: {
   payout: PayoutRow | null
   onOpenChange: (open: boolean) => void
   onMarkPaid: (p: PayoutRow) => void
+  /** Previous / next through the payouts list; a status change moves on to the next one. */
+  pager?: RowPager
 }) {
   const { data: items, isLoading } = useQuery({ ...payoutItemsQuery(p?.id ?? ''), enabled: !!p })
   const [failing, setFailing] = useState(false)
@@ -50,15 +55,16 @@ export function PayoutSheet({
       success: (_r, v) =>
         v.status === 'failed' ? 'Marked failed · items released back to the balance' : v.status === 'processing' ? 'Marked processing' : 'Moved back to pending',
       invalidate: [['admin']],
-      onSuccess: () => onOpenChange(false),
+      onSuccess: () => (pager ? pager.advance() : onOpenChange(false)),
     },
   )
   const open = p && p.status !== 'paid' && p.status !== 'failed'
 
   return (
     <Sheet open={!!p} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 sm:max-w-md">
-        <SheetHeader className="border-b">
+      <SheetContent className="w-full gap-0 sm:max-w-xl">
+        <SheetHeader className="border-b pr-12">
+          <SheetPager pager={pager} className="absolute top-2.5 right-12" />
           <SheetTitle className="font-display text-2xl">
             {p ? (
               <Money

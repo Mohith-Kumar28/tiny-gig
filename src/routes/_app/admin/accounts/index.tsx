@@ -14,6 +14,7 @@ import { StatCard, StatGrid } from '@/components/shared/stat-card'
 import { Button } from '@/components/ui/button'
 import { ACCOUNT_PLATFORMS } from '@/db/schema/enums'
 import { accountColumns } from '@/features/accounts/components/account-columns'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { AccountSheet } from '@/features/accounts/components/account-sheet'
 import { istDateInputToMs, STANDING_LABELS } from '@/features/accounts/components/account-editors'
 import { AddAccountDialog, type AddAccountValues } from '@/features/accounts/components/add-account-dialog'
@@ -72,6 +73,7 @@ function AccountsPage() {
   const onSearchChange = useTableSearch(navigate as never)
   const { data, isFetching } = useQuery({ ...rosterQuery(search), placeholderData: keepPreviousData })
   const [open, setOpen] = useState<string | null>(null)
+  const pager = useRowPager(data?.rows, (r) => r.id, open, (r) => setOpen(r?.id ?? null))
   const [adding, setAdding] = useState(false)
   const [worker, setWorker] = useState<PickedWorker | null>(null)
   const add = useAction(
@@ -228,7 +230,7 @@ function AccountsPage() {
           )
         }
       />
-      <AccountSheet accountId={open} onOpenChange={(o) => !o && setOpen(null)} />
+      <AccountSheet accountId={open} onOpenChange={(o) => !o && setOpen(null)} pager={pager} />
       <AddAccountDialog
         open={adding}
         onOpenChange={(o) => {

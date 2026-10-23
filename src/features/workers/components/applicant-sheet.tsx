@@ -4,13 +4,17 @@ import { AlertTriangle, Check, ExternalLink, X } from 'lucide-react'
 import { useState } from 'react'
 import { CopyButton } from '@/components/shared/copy-button'
 import { formatDate, formatDateTime, RelativeTime } from '@/components/shared/relative-time'
+import { SheetPager } from '@/components/shared/sheet-pager'
 import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
+import { Kbd } from '@/components/ui/kbd'
 import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle } from '@/components/ui/sheet'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Spinner } from '@/components/ui/spinner'
 import { accountAgeDays, formatAge } from '@/features/accounts/rules'
 import { useAction } from '@/hooks/use-action'
+import { useHotkeys } from '@/hooks/use-hotkeys'
+import type { RowPager } from '@/hooks/use-row-pager'
 import { formatNumber } from '@/lib/format'
 import { workerDetailQuery } from '../queries'
 import { decideApplicants } from '../server/admin-workers'
@@ -28,11 +32,12 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
 export function ApplicantSheet({
   userId,
   onOpenChange,
-  onDecided,
+  pager,
 }: {
   userId: string | null
   onOpenChange: (open: boolean) => void
-  onDecided?: () => void
+  /** Previous / next through the list; approving or rejecting moves straight on to the next one. */
+  pager?: RowPager
 }) {
   const { data, isLoading } = useQuery({ ...workerDetailQuery(userId ?? ''), enabled: !!userId })
   const [rejecting, setRejecting] = useState(false)
@@ -43,15 +48,26 @@ export function ApplicantSheet({
       invalidate: [['admin']],
       onSuccess: () => {
         setRejecting(false)
-        onDecided?.()
+        if (pager) pager.advance()
+        else onOpenChange(false)
       },
     },
   )
   const p = data?.profile
+  const canDecide = !!p && p.status !== 'approved' && !decide.isPending
+  useHotkeys(
+    {
+      a: () => canDecide && decide.mutate({ decision: 'approve' }),
+      r: () => canDecide && setRejecting(true),
+    },
+    !!userId,
+  )
+  const andNext = pager?.hasNext ? ' & next' : ''
   return (
     <Sheet open={!!userId} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full gap-0 sm:max-w-md">
-        <SheetHeader className="border-b">
+      <SheetContent className="w-full gap-0 sm:max-w-2xl">
+        <SheetHeader className="border-b pr-12">
+          <SheetPager pager={pager} className="absolute top-2.5 right-12" />
           <SheetTitle className="font-display text-xl">{p?.fullName ?? 'Applicant'}</SheetTitle>
           <SheetDescription className="flex items-center gap-2">
             {p ? <StatusBadge status={p.status} /> : null}
@@ -151,10 +167,11 @@ export function ApplicantSheet({
             </p>
             <div className="flex gap-2">
               <Button variant="outline" className="flex-1" onClick={() => setRejecting(true)} disabled={decide.isPending}>
-                <X /> Reject
+                <X /> Reject{andNext} <Kbd className="ml-auto hidden sm:inline-flex">R</Kbd>
               </Button>
               <Button className="flex-1" onClick={() => decide.mutate({ decision: 'approve' })} disabled={decide.isPending}>
-                {decide.isPending ? <Spinner /> : <Check />} Approve
+                {decide.isPending ? <Spinner /> : <Check />} Approve{andNext}{' '}
+                <Kbd className="ml-auto hidden bg-primary-foreground/20 text-primary-foreground sm:inline-flex">A</Kbd>
               </Button>
             </div>
           </SheetFooter>
