@@ -14,7 +14,7 @@
 	"observability": { "enabled": true },
 	"upload_source_maps": true,
 	"vars": {
-		"APP_URL": "https://tinygig.mohithkumar808.workers.dev",
+		"APP_URL": "https://tinygig.in",
 		"APP_NAME": "TinyGig",
 		"EMAIL_FROM": "TinyGig <tinygig@mail.monway.ai>",
 		"ADMIN_EMAILS": "mohith@tokgency.com"
@@ -29,5 +29,8 @@
 	],
 	"kv_namespaces": [{ "binding": "CACHE", "id": "d58126541e1c4277988dcbabe1e8d359" }],
 	"r2_buckets": [{ "binding": "UPLOADS", "bucket_name": "tinygig-uploads" }],
+	"workers_dev": true,
+	"preview_urls": false,
+	"routes": [{ "pattern": "tinygig.in", "custom_domain": true }],
 	"triggers": { "crons": ["*/15 * * * *"] }
 }

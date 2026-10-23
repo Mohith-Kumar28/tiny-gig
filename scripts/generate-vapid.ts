@@ -8,3 +8,4 @@ const raw = new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey))
 const jwk = await crypto.subtle.exportKey('jwk', pair.privateKey)
 const b64url = (b: Uint8Array) => Buffer.from(b).toString('base64url')
 console.log(`VAPID_PUBLIC_KEY=${b64url(raw)}\nVAPID_PRIVATE_KEY=${jwk.d}`)
+export {}
