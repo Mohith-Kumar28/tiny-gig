@@ -1,6 +1,6 @@
 import { SITE } from '@/lib/site'
 
-export const OG_IMAGE = { url: `${SITE.url}/og.png`, width: 1200, height: 630, alt: 'TinyGig: get paid to post on Reddit, X, LinkedIn and Threads' }
+export const OG_IMAGE = { url: `${SITE.url}/og.png?v=2`, width: 1200, height: 630, alt: 'TinyGig: get paid to post on Reddit, X, LinkedIn and Threads' }
 
 /** Absolute URL for a site path, e.g. absoluteUrl('/faq') -> https://tinygig.in/faq */
 export function absoluteUrl(path = '/') {
