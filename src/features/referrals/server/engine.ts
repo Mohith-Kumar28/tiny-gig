@@ -4,6 +4,7 @@ import { referral, referralProgram, referralReward, workerProfile, submission, u
 import { queueEmail } from '@/emails/send-email'
 import { notify } from '@/lib/server/activity'
 import { isProgramRunning, refereeQualifies, referrerTiersEarned } from '../rules'
+import { normalizeReferralCode } from '../constants'
 
 
 /**
@@ -15,7 +16,7 @@ export async function attributeReferral(
   referee: { userId: string; name: string; phone: string; upiId: string; redditUsername: string },
   rawCode: string | null | undefined,
 ) {
-  const code = rawCode?.trim().toUpperCase()
+  const code = normalizeReferralCode(rawCode)
   if (!code) return
   const existing = await db.query.referral.findFirst({ where: eq(referral.refereeId, referee.userId) })
   if (existing) return
