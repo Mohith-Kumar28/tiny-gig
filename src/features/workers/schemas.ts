@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { INDIAN_STATES } from '@/db/schema/enums'
+import { REFERRAL_CODE_MAX } from '@/features/referrals/constants'
 
 export const REDDIT_URL_RE = /^https?:\/\/(www\.|old\.|new\.)?reddit\.com\/(u|user)\/([A-Za-z0-9_-]{3,20})\/?/i
 
@@ -38,7 +39,7 @@ export const applicationSchema = z.object({
     .string()
     .trim()
     .toUpperCase()
-    .max(12)
+    .max(REFERRAL_CODE_MAX)
     .optional()
     .or(z.literal('')),
   /** The separate account-loss checkbox (R59) — not folded into a general terms link. */
