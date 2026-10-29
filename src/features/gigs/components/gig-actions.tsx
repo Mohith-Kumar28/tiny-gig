@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router'
-import { Copy, MoreHorizontal, Pause, Pencil, Play, Send, Square, Trash2 } from 'lucide-react'
+import { Copy, MoreHorizontal, Pause, Pencil, Play, Send, Share2, Square, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import { toast } from 'sonner'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -48,6 +49,16 @@ export function useDuplicateGig() {
   })
 }
 
+/** Copies the worker-facing gig page, so it can be dropped into a WhatsApp group. */
+export async function copyGigLink(gigId: string) {
+  try {
+    await navigator.clipboard.writeText(`${window.location.origin}/w/gigs/${gigId}`)
+    toast.success('Gig link copied to clipboard')
+  } catch {
+    toast.error('Couldn’t copy the link. Check clipboard permissions.')
+  }
+}
+
 /** Next sensible status transitions for a gig. */
 export function statusTransitions(status: GigStatus): { status: GigStatus; label: string; icon: typeof Play }[] {
   switch (status) {
@@ -93,6 +104,9 @@ export function GigRowActions({ gig }: { gig: { id: string; title: string; statu
           </DropdownMenuItem>
           <DropdownMenuItem onSelect={() => duplicate.mutate(gig.id)}>
             <Copy /> Duplicate
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => copyGigLink(gig.id)}>
+            <Share2 /> Share link
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           {statusTransitions(gig.status).map((t) => (
