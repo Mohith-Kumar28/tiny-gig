@@ -12,6 +12,7 @@ export function clientWhere(column: SQLWrapper, ids: string[] | undefined): SQL 
   if (!ids?.length) return undefined
   const real = ids.filter((id) => id !== NO_CLIENT)
   const parts: SQL[] = []
+  // d1-bounded: clientFacet caps the list at 50
   if (real.length) parts.push(inArray(column as never, real))
   if (ids.includes(NO_CLIENT)) parts.push(isNull(column as never))
   return parts.length === 1 ? parts[0] : or(...parts)

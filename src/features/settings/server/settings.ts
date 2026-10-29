@@ -37,6 +37,7 @@ export const saveReviewTemplate = createServerFn({ method: 'POST' })
       await context.db.update(reviewTemplate).set(values).where(eq(reviewTemplate.id, id))
       return { id }
     }
+    // d1-bounded: one row
     const [row] = await context.db.insert(reviewTemplate).values(values).returning({ id: reviewTemplate.id })
     return { id: row?.id }
   })

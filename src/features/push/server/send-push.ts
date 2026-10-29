@@ -1,6 +1,7 @@
 import { buildPushPayload } from '@block65/webcrypto-web-push'
 import { inArray } from 'drizzle-orm'
 import type { Db } from '@/db/client'
+import { inChunks } from '@/db/in-chunks'
 import { pushSubscription } from '@/db/schema'
 import { pushEnv } from './push-env'
 
@@ -25,7 +26,9 @@ export async function sendPush(
     return { ...result, configured: false }
   }
   if (!items.length) return result
-  const subs = await db.select().from(pushSubscription).where(inArray(pushSubscription.userId, [...new Set(items.map((i) => i.userId))]))
+  const subs = await inChunks(db, [...new Set(items.map((i) => i.userId))], (ids) =>
+    db.select().from(pushSubscription).where(inArray(pushSubscription.userId, ids)),
+  )
   if (!subs.length) return result
   const byUser = new Map<string, typeof subs>()
   for (const s of subs) byUser.set(s.userId, [...(byUser.get(s.userId) ?? []), s])
@@ -55,6 +58,6 @@ export async function sendPush(
       }),
     ),
   )
-  if (dead.length) await db.delete(pushSubscription).where(inArray(pushSubscription.endpoint, dead))
+  await inChunks(db, dead, (endpoints) => db.delete(pushSubscription).where(inArray(pushSubscription.endpoint, endpoints)).returning({ id: pushSubscription.id }))
   return result
 }

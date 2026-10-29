@@ -1,6 +1,7 @@
 import { waitUntil } from 'cloudflare:workers'
 import { eq } from 'drizzle-orm'
 import type { Db } from '@/db/client'
+import { insertMany } from '@/db/in-chunks'
 import { sendPush } from '@/features/push/server/send-push'
 import { schema } from '@/db/client'
 
@@ -8,6 +9,7 @@ export function audit(
   db: Db,
   entry: { actorId: string | null; action: string; entityType: string; entityId: string; meta?: Record<string, unknown> },
 ) {
+  // d1-bounded: one row
   return db.insert(schema.auditLog).values(entry)
 }
 
@@ -18,11 +20,7 @@ export function notify(
   if (!entries.length) return Promise.resolve()
   // Same message to their phones, after the response; push is best-effort.
   waitUntil(sendPush(db, entries).catch((err) => console.error('[push]', err)))
-  // D1 limits bound parameters per statement, so large fan-outs go in chunks.
-  if (entries.length <= 15) return db.insert(schema.notification).values(entries)
-  return (async () => {
-    for (let i = 0; i < entries.length; i += 15) await db.insert(schema.notification).values(entries.slice(i, i + 15))
-  })()
+  return insertMany(db, schema.notification, entries, (chunk) => db.insert(schema.notification).values(chunk))
 }
 
 /** Same message to every admin: bell, and push on any device they turned alerts on for. */

@@ -9,6 +9,7 @@ import { adminMiddleware, AppError } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 import { clientFacet, NO_CLIENT } from '@/features/clients/client-filter'
 import { syncReferee } from '@/features/referrals/server/engine'
+import { IN_CHUNK_SIZE, inBatches, inChunks } from '@/db/in-chunks'
 
 
 export const workersSearchSchema = tableSearchSchema.extend({
@@ -119,10 +120,12 @@ export const listWorkers = createServerFn({ method: 'GET' })
     const ids = rows.map((r) => r.userId)
     const [accounts, tags] = ids.length
       ? await Promise.all([
-          db
-            .select({ workerId: socialAccount.workerId, clientTagIds: socialAccount.clientTagIds })
-            .from(socialAccount)
-            .where(inArray(socialAccount.workerId, ids)),
+          inChunks(db, ids, (chunk) =>
+            db
+              .select({ workerId: socialAccount.workerId, clientTagIds: socialAccount.clientTagIds })
+              .from(socialAccount)
+              .where(inArray(socialAccount.workerId, chunk)),
+          ),
           db.select({ id: clientTag.id, name: clientTag.name, color: clientTag.color }).from(clientTag),
         ])
       : [[], []]
@@ -205,27 +208,24 @@ export const decideApplicants = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const { db, user: admin } = context
     if (data.decision === 'reject' && !data.note) throw new AppError('BAD_REQUEST', 'Add a reason for rejecting.')
-    const targets = await db.query.workerProfile.findMany({
-      where: inArray(workerProfile.userId, data.userIds),
-    })
+    const targets = await inChunks(db, data.userIds, (ids) => db.query.workerProfile.findMany({ where: inArray(workerProfile.userId, ids) }))
+    const targetIds = targets.map((t) => t.userId)
     const status = data.decision === 'approve' ? ('approved' as const) : ('rejected' as const)
     const now = new Date()
-    await db
-      .update(workerProfile)
-      .set({ status, reviewNote: data.note ?? null, reviewedBy: admin.id, reviewedAt: now })
-      .where(inArray(workerProfile.userId, targets.map((t) => t.userId)))
+    await inBatches(db, targetIds, IN_CHUNK_SIZE, (ids) =>
+      db
+        .update(workerProfile)
+        .set({ status, reviewNote: data.note ?? null, reviewedBy: admin.id, reviewedAt: now })
+        .where(inArray(workerProfile.userId, ids)),
+    )
     if (status === 'approved' && targets.length) {
       // Approving means the reviewer checked the profile's cake day by eye (R27).
-      await db
-        .update(socialAccount)
-        .set({ createdOnConfirmedAt: now, createdOnConfirmedBy: admin.id })
-        .where(
-          and(
-            inArray(socialAccount.workerId, targets.map((t) => t.userId)),
-            isNull(socialAccount.createdOnConfirmedAt),
-            isNotNull(socialAccount.createdOn),
-          ),
-        )
+      await inBatches(db, targetIds, IN_CHUNK_SIZE, (ids) =>
+        db
+          .update(socialAccount)
+          .set({ createdOnConfirmedAt: now, createdOnConfirmedBy: admin.id })
+          .where(and(inArray(socialAccount.workerId, ids), isNull(socialAccount.createdOnConfirmedAt), isNotNull(socialAccount.createdOn))),
+      )
     }
 
     await notify(

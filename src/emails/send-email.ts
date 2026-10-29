@@ -2,7 +2,8 @@ import { render } from '@react-email/components'
 import { waitUntil } from 'cloudflare:workers'
 import { createElement } from 'react'
 import { Resend } from 'resend'
-import { getDb, schema } from '@/db/client'
+import { type Db, getDb, schema } from '@/db/client'
+import { insertMany } from '@/db/in-chunks'
 import { env } from '@/lib/env'
 import { BaseEmail } from './base-email'
 import { type EmailTemplateData, type EmailTemplateName, emailTemplates } from './templates'
@@ -24,6 +25,10 @@ async function renderEmail<T extends EmailTemplateName>(template: T, data: Email
   return { subject, html, text }
 }
 
+function logEmails(db: Db, rows: (typeof schema.emailLog.$inferInsert)[]) {
+  return insertMany(db, schema.emailLog, rows, (chunk) => db.insert(schema.emailLog).values(chunk))
+}
+
 /** Renders, sends (or logs in dev when no RESEND_API_KEY) and records an email. */
 export async function sendEmail<T extends EmailTemplateName>({ to, template, data }: SendArgs<T>) {
   const recipients = Array.isArray(to) ? to : [to]
@@ -33,7 +38,8 @@ export async function sendEmail<T extends EmailTemplateName>({ to, template, dat
 
   if (!env.RESEND_API_KEY) {
     console.log(`[email:${template}] → ${recipients.join(', ')} | ${subject}\n${text.slice(0, 600)}`)
-    await db.insert(schema.emailLog).values(
+    await logEmails(
+      db,
       recipients.map((r) => ({ to: r, template, subject, status: 'logged' as const })),
     )
     return
@@ -55,7 +61,7 @@ export async function sendEmail<T extends EmailTemplateName>({ to, template, dat
       error,
     }
   })
-  await db.insert(schema.emailLog).values(rows)
+  await logEmails(db, rows)
   const failed = rows.find((r) => r.status === 'failed')
   if (failed) throw new Error(`Email could not be sent: ${failed.error ?? 'unknown error'}`)
 }
@@ -80,7 +86,8 @@ export function queueBulkEmail<T extends EmailTemplateName>(args: { to: string[]
     for (let i = 0; i < args.to.length; i += 100) {
       const chunk = args.to.slice(i, i + 100)
       const res = await resend.batch.send(chunk.map((to) => ({ from: env.EMAIL_FROM, to, subject, html, text })))
-      await db.insert(schema.emailLog).values(
+      await logEmails(
+        db,
         chunk.map((to, j) => ({
           to,
           template: args.template,

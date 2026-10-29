@@ -2,6 +2,7 @@ import { createServerFn } from '@tanstack/react-start'
 import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import type { Db } from '@/db/client'
+import { inChunks } from '@/db/in-chunks'
 import { clientTag, gig, gigInterest, submission, workerProfile } from '@/db/schema'
 import { GIG_STATUSES, PLATFORMS, type SUBMISSION_STATUSES, TASK_TYPES } from '@/db/schema/enums'
 import { queueBulkEmail } from '@/emails/send-email'
@@ -291,7 +292,7 @@ export const setGigStatus = createServerFn({ method: 'POST' })
   .validator(z.object({ ids: z.array(z.string()).min(1), status: z.enum(GIG_STATUSES), notifyWorkers: z.boolean().optional() }))
   .handler(async ({ data, context }) => {
     const { db, user } = context
-    const targets = await db.query.gig.findMany({ where: inArray(gig.id, data.ids) })
+    const targets = await inChunks(db, data.ids, (ids) => db.query.gig.findMany({ where: inArray(gig.id, ids) }))
     let notified = 0
     for (const t of targets) {
       const firstPublish = data.status === 'live' && !t.publishedAt

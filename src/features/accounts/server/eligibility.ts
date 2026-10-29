@@ -1,5 +1,6 @@
 import { inArray } from 'drizzle-orm'
 import type { Db } from '@/db/client'
+import { inChunks, insertMany } from '@/db/in-chunks'
 import { blockLog, clientTag, socialAccount, workerProfile } from '@/db/schema'
 import type { gig as gigTable } from '@/db/schema'
 import { loadSettings } from '@/features/settings/server/settings-store'
@@ -28,11 +29,11 @@ export async function loadEligibility(db: Db, workerIds: string[]) {
   const ids = [...new Set(workerIds)]
   const [settings, accounts, history, profiles, tags] = await Promise.all([
     loadSettings(db),
-    ids.length ? db.select().from(socialAccount).where(inArray(socialAccount.workerId, ids)) : Promise.resolve([]),
+    inChunks(db, ids, (chunk) => db.select().from(socialAccount).where(inArray(socialAccount.workerId, chunk))),
     loadWork(db, { workerIds: ids }),
-    ids.length
-      ? db.select({ userId: workerProfile.userId, state: workerProfile.state, fullName: workerProfile.fullName }).from(workerProfile).where(inArray(workerProfile.userId, ids))
-      : Promise.resolve([]),
+    inChunks(db, ids, (chunk) =>
+      db.select({ userId: workerProfile.userId, state: workerProfile.state, fullName: workerProfile.fullName }).from(workerProfile).where(inArray(workerProfile.userId, chunk)),
+    ),
     db.select({ id: clientTag.id, name: clientTag.name }).from(clientTag),
   ])
   const group = <T,>(rows: T[], key: (r: T) => string) => {
@@ -89,8 +90,5 @@ export async function logBlocks(
     unlockAt: e.block.unlockAt,
     source,
   }))
-  // D1 caps bound parameters per statement; insert in modest chunks.
-  for (let i = 0; i < rows.length; i += 10) {
-    await db.insert(blockLog).values(rows.slice(i, i + 10)).onConflictDoNothing()
-  }
+  await insertMany(db, blockLog, rows, (chunk) => db.insert(blockLog).values(chunk).onConflictDoNothing())
 }

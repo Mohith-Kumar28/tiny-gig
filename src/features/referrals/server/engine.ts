@@ -1,5 +1,6 @@
 import { and, count, eq, inArray, isNotNull, min, sum } from 'drizzle-orm'
 import type { Db } from '@/db/client'
+import { inChunks, insertMany } from '@/db/in-chunks'
 import { referral, referralProgram, referralReward, workerProfile, submission, user } from '@/db/schema'
 import { queueEmail } from '@/emails/send-email'
 import { notify } from '@/lib/server/activity'
@@ -129,7 +130,7 @@ export async function evaluateReferrer(db: Db, referrerId: string, now = new Dat
     }
     if (!values.length) continue
 
-    const inserted = await db.insert(referralReward).values(values).onConflictDoNothing().returning()
+    const inserted = (await insertMany(db, referralReward, values, (chunk) => db.insert(referralReward).values(chunk).onConflictDoNothing().returning())).flat()
     for (const row of inserted) {
       created.push({
         workerId: row.workerId,
@@ -150,10 +151,9 @@ export async function evaluateReferrer(db: Db, referrerId: string, now = new Dat
       href: '/w/referrals',
     })),
   )
-  const emails = await db
-    .select({ id: user.id, email: user.email })
-    .from(user)
-    .where(inArray(user.id, [...new Set(created.map((c) => c.workerId))]))
+  const emails = await inChunks(db, [...new Set(created.map((c) => c.workerId))], (ids) =>
+    db.select({ id: user.id, email: user.email }).from(user).where(inArray(user.id, ids)),
+  )
   const byId = new Map(emails.map((e) => [e.id, e.email]))
   for (const c of created) {
     const to = byId.get(c.workerId)

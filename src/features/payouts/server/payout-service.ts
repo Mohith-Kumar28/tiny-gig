@@ -1,31 +1,31 @@
-import { and, count, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { and, count, eq, inArray, isNull, type SQL, sql } from 'drizzle-orm'
 import type { Db } from '@/db/client'
+import { inChunks } from '@/db/in-chunks'
 import { payout, referralReward, submission, workerProfile } from '@/db/schema'
 import { audit } from '@/lib/server/activity'
 
 export async function unpaidByWorker(db: Db, workerIds?: string[]) {
-  const subFilter = and(
-    eq(submission.status, 'approved'),
-    isNull(submission.payoutId),
-    workerIds ? inArray(submission.workerId, workerIds) : undefined,
-  )
-  const rewardFilter = and(
-    eq(referralReward.status, 'approved'),
-    isNull(referralReward.payoutId),
-    workerIds ? inArray(referralReward.workerId, workerIds) : undefined,
-  )
-  const [subs, rewards] = await Promise.all([
+  const unpaidWork = (forWorkers?: SQL) =>
     db
       .select({ workerId: submission.workerId, amount: sql<number>`sum(${submission.payoutAmount})`, n: count() })
       .from(submission)
-      .where(subFilter)
-      .groupBy(submission.workerId),
+      .where(and(eq(submission.status, 'approved'), isNull(submission.payoutId), forWorkers))
+      .groupBy(submission.workerId)
+  const unpaidRewards = (forWorkers?: SQL) =>
     db
       .select({ workerId: referralReward.workerId, amount: sql<number>`sum(${referralReward.amount})`, n: count() })
       .from(referralReward)
-      .where(rewardFilter)
-      .groupBy(referralReward.workerId),
-  ])
+      .where(and(eq(referralReward.status, 'approved'), isNull(referralReward.payoutId), forWorkers))
+      .groupBy(referralReward.workerId)
+  // Grouped by worker, so per-chunk results never overlap.
+  const [subs, rewards] = await Promise.all(
+    workerIds
+      ? [
+          inChunks(db, workerIds, (ids) => unpaidWork(inArray(submission.workerId, ids))),
+          inChunks(db, workerIds, (ids) => unpaidRewards(inArray(referralReward.workerId, ids))),
+        ]
+      : [unpaidWork(), unpaidRewards()],
+  )
   const map = new Map<string, { gigAmount: number; gigCount: number; rewardAmount: number; rewardCount: number }>()
   for (const s of subs) map.set(s.workerId, { gigAmount: Number(s.amount), gigCount: s.n, rewardAmount: 0, rewardCount: 0 })
   for (const r of rewards) {
@@ -44,7 +44,7 @@ export async function unpaidByWorker(db: Db, workerIds?: string[]) {
 export async function lockBalancesIntoPayouts(db: Db, opts: { workerIds?: string[]; actorId: string | null; note?: string | null }) {
   const balances = await unpaidByWorker(db, opts.workerIds)
   if (!balances.size) return { created: 0, total: 0 }
-  const profiles = await db.query.workerProfile.findMany({ where: inArray(workerProfile.userId, [...balances.keys()]) })
+  const profiles = await inChunks(db, [...balances.keys()], (ids) => db.query.workerProfile.findMany({ where: inArray(workerProfile.userId, ids) }))
   let created = 0
   let total = 0
   for (const p of profiles) {

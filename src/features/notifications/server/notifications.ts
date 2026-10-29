@@ -3,6 +3,7 @@ import { and, count, desc, eq, inArray, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { notification } from '@/db/schema'
 import { userMiddleware } from '@/lib/server/middleware'
+import { IN_CHUNK_SIZE, inBatches } from '@/db/in-chunks'
 
 
 export const listNotifications = createServerFn({ method: 'GET' })
@@ -27,8 +28,10 @@ export const markNotificationsRead = createServerFn({ method: 'POST' })
   .middleware([userMiddleware])
   .validator(z.object({ ids: z.array(z.string()).optional() }))
   .handler(async ({ data, context }) => {
-    const filters = [eq(notification.userId, context.user.id), isNull(notification.readAt)]
-    if (data.ids?.length) filters.push(inArray(notification.id, data.ids))
-    await context.db.update(notification).set({ readAt: new Date() }).where(and(...filters))
+    const { db, user } = context
+    const unread = and(eq(notification.userId, user.id), isNull(notification.readAt))
+    const readAt = new Date()
+    if (!data.ids?.length) await db.update(notification).set({ readAt }).where(unread)
+    else await inBatches(db, data.ids, IN_CHUNK_SIZE, (ids) => db.update(notification).set({ readAt }).where(and(unread, inArray(notification.id, ids))))
     return { ok: true }
   })

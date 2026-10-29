@@ -12,6 +12,7 @@ import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/li
 import { isProgramRunning, nextTierProgress, refereeQualifies } from '../rules'
 import { programFormSchema } from '../schemas'
 import { evaluateAllReferrers, evaluateReferrer } from './engine'
+import { inChunks } from '@/db/in-chunks'
 
 const referrerProfile = alias(workerProfile, 'referrer_profile')
 
@@ -245,11 +246,14 @@ export const decideRewards = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const { db, user } = context
     const status = data.decision === 'approve' ? ('approved' as const) : ('void' as const)
-    const rows = await db
-      .update(referralReward)
-      .set({ status, note: data.note ?? null, decidedBy: user.id, decidedAt: new Date() })
-      .where(and(inArray(referralReward.id, data.ids), eq(referralReward.status, 'pending_review')))
-      .returning({ workerId: referralReward.workerId, amount: referralReward.amount })
+    const decidedAt = new Date()
+    const rows = await inChunks(db, data.ids, (ids) =>
+      db
+        .update(referralReward)
+        .set({ status, note: data.note ?? null, decidedBy: user.id, decidedAt })
+        .where(and(inArray(referralReward.id, ids), eq(referralReward.status, 'pending_review')))
+        .returning({ workerId: referralReward.workerId, amount: referralReward.amount }),
+    )
     if (status === 'approved') {
       await notify(
         db,

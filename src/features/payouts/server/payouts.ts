@@ -3,6 +3,7 @@ import { and, count, desc, eq, inArray, like, or, type SQL, sql } from 'drizzle-
 import { z } from 'zod'
 import { payout, submission, referralReward, workerProfile, gig, referralProgram } from '@/db/schema'
 import { PAYOUT_STATUSES } from '@/db/schema/enums'
+import { inChunks } from '@/db/in-chunks'
 import { queueEmail } from '@/emails/send-email'
 import { audit, notify } from '@/lib/server/activity'
 import { AppError, adminMiddleware, workerMiddleware } from '@/lib/server/middleware'
@@ -18,16 +19,18 @@ export const getPayableBalances = createServerFn({ method: 'GET' })
     const balances = await unpaidByWorker(db)
     const ids = [...balances.keys()]
     if (!ids.length) return []
-    const workers = await db
-      .select({
-        userId: workerProfile.userId,
-        fullName: workerProfile.fullName,
-        upiId: workerProfile.upiId,
-        phone: workerProfile.phone,
-        status: workerProfile.status,
-      })
-      .from(workerProfile)
-      .where(inArray(workerProfile.userId, ids))
+    const workers = await inChunks(db, ids, (chunk) =>
+      db
+        .select({
+          userId: workerProfile.userId,
+          fullName: workerProfile.fullName,
+          upiId: workerProfile.upiId,
+          phone: workerProfile.phone,
+          status: workerProfile.status,
+        })
+        .from(workerProfile)
+        .where(inArray(workerProfile.userId, chunk)),
+    )
     return workers
       .map((w) => {
         const b = balances.get(w.userId)!
@@ -138,7 +141,7 @@ export const markPayoutsPaid = createServerFn({ method: 'POST' })
   .handler(async ({ data, context }) => {
     const { db, user } = context
     const now = new Date()
-    const rows = await db.query.payout.findMany({ where: inArray(payout.id, data.items.map((i) => i.id)) })
+    const rows = await inChunks(db, data.items.map((i) => i.id), (ids) => db.query.payout.findMany({ where: inArray(payout.id, ids) }))
     const utrById = new Map(data.items.map((i) => [i.id, i.utr]))
     let updated = 0
     for (const p of rows) {
