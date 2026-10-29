@@ -87,15 +87,20 @@ export const emailTemplates = {
     cta: { label: 'Review applicant', href: url(ctx, '/admin/applicants?status=pending') },
   }),
 
-  applicationApproved: (d: { name: string }, ctx: Ctx): Content => ({
+  applicationApproved: (d: { name: string; whatsapp?: { label: string; url: string } | null }, ctx: Ctx): Content => ({
     subject: "You're in! Your TinyGig account is approved",
-    preview: 'Add your accounts and start raising your hand for gigs.',
+    preview: d.whatsapp ? 'First step: join your TinyGig WhatsApp group.' : 'Add your accounts and start raising your hand for gigs.',
     heading: `Welcome aboard, ${d.name.split(' ')[0]} 🎉`,
     paragraphs: [
       'Your application has been approved. You now have full access to your dashboard.',
-      'Add every account you can work from on My accounts, then tap “I’m interested” on gigs that suit you. When you’re selected, post, submit the link and get paid via UPI.',
+      ...(d.whatsapp
+        ? [
+            `First, join the TinyGig WhatsApp group for ${d.whatsapp.label} workers using the button below. Announcements, new gigs and help are shared there. Please don’t share the link.`,
+          ]
+        : []),
+      `Then add every account you can work from on My accounts (${url(ctx, '/w/accounts')}) and tap “I’m interested” on gigs that suit you. When you’re selected, post, submit the link and get paid via UPI.`,
     ],
-    cta: { label: 'Browse gigs', href: url(ctx, '/w/gigs') },
+    cta: d.whatsapp ? { label: 'Join the WhatsApp group', href: d.whatsapp.url } : { label: 'Browse gigs', href: url(ctx, '/w/gigs') },
   }),
 
   applicationRejected: (d: { name: string; reason?: string | null }, ctx: Ctx): Content => ({
@@ -259,6 +264,16 @@ export const emailTemplates = {
       ...(d.utr ? [{ label: 'UTR / reference', value: d.utr }] : []),
     ],
     cta: { label: 'Payment history', href: url(ctx, '/w/payments') },
+  }),
+
+  broadcast: (d: { subject: string; html: string; preview: string }, ctx: Ctx): Content => ({
+    subject: d.subject,
+    preview: d.preview,
+    heading: d.subject,
+    paragraphs: [],
+    html: d.html,
+    cta: { label: 'Open TinyGig', href: url(ctx, '/w/notifications') },
+    footerNote: 'You’re getting this because you work with TinyGig. You’ll also find it under Notifications.',
   }),
 
   referralJoined: (d: { name: string }, ctx: Ctx): Content => ({

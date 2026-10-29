@@ -9,7 +9,7 @@ import { markNotificationsRead } from '@/features/notifications/server/notificat
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
 
-export function NotificationBell({ allHref }: { allHref?: string }) {
+export function NotificationBell() {
   const { data } = useQuery(notificationsQuery())
   const markAll = useAction(() => markNotificationsRead({ data: {} }), { invalidate: [['notifications']] })
   const unread = data?.unread ?? 0
@@ -57,13 +57,6 @@ export function NotificationBell({ allHref }: { allHref?: string }) {
             <p className="px-3 py-10 text-center text-sm text-muted-foreground">You're all caught up.</p>
           )}
         </div>
-        {allHref ? (
-          <div className="shrink-0 border-t p-1.5">
-            <Button asChild variant="ghost" size="sm" className="w-full">
-              <Link to={allHref}>View all</Link>
-            </Button>
-          </div>
-        ) : null}
       </PopoverContent>
     </Popover>
   )

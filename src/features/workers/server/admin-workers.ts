@@ -9,6 +9,8 @@ import { adminMiddleware, AppError } from '@/lib/server/middleware'
 import { facet, orderByFrom, pageArgs, paginated, tableSearchSchema } from '@/lib/table-query'
 import { clientFacet, NO_CLIENT } from '@/features/clients/client-filter'
 import { syncReferee } from '@/features/referrals/server/engine'
+import { whatsappGroupFor, workerLevels } from '@/features/broadcasts/server/recipients'
+import { loadSettings } from '@/features/settings/server/settings-store'
 import { IN_CHUNK_SIZE, inBatches, inChunks } from '@/db/in-chunks'
 
 
@@ -237,9 +239,11 @@ export const decideApplicants = createServerFn({ method: 'POST' })
         href: status === 'approved' ? '/w' : '/pending',
       })),
     )
+    const [settings, levels] = status === 'approved' ? await Promise.all([loadSettings(db), workerLevels(db, targetIds, now)]) : [null, null]
     for (const t of targets) {
-      if (status === 'approved') {
-        queueEmail({ to: t.email, template: 'applicationApproved', data: { name: t.fullName } })
+      if (settings && levels) {
+        const whatsapp = whatsappGroupFor(settings, levels.get(t.userId) ?? 'warmup')
+        queueEmail({ to: t.email, template: 'applicationApproved', data: { name: t.fullName, whatsapp } })
       } else {
         queueEmail({ to: t.email, template: 'applicationRejected', data: { name: t.fullName, reason: data.note } })
       }

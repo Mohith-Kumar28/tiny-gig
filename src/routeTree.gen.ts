@@ -34,6 +34,7 @@ import { Route as AppAdminIndexRouteImport } from './routes/_app/admin/index'
 import { Route as AppAdminApplicantsRouteImport } from './routes/_app/admin/applicants'
 import { Route as AppAdminClientsRouteImport } from './routes/_app/admin/clients'
 import { Route as AppAdminEmailsRouteImport } from './routes/_app/admin/emails'
+import { Route as AppAdminNotificationsRouteImport } from './routes/_app/admin/notifications'
 import { Route as AppAdminPayoutsRouteImport } from './routes/_app/admin/payouts'
 import { Route as AppAdminPostsRouteImport } from './routes/_app/admin/posts'
 import { Route as AppAdminReviewRouteImport } from './routes/_app/admin/review'
@@ -190,6 +191,11 @@ const AppAdminClientsRoute = AppAdminClientsRouteImport.update({
 const AppAdminEmailsRoute = AppAdminEmailsRouteImport.update({
   id: '/emails',
   path: '/emails',
+  getParentRoute: () => AppAdminRoute,
+} as any)
+const AppAdminNotificationsRoute = AppAdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
   getParentRoute: () => AppAdminRoute,
 } as any)
 const AppAdminPayoutsRoute = AppAdminPayoutsRouteImport.update({
@@ -382,6 +388,7 @@ export interface FileRoutesByFullPath {
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/clients': typeof AppAdminClientsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
+  '/admin/notifications': typeof AppAdminNotificationsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
@@ -439,6 +446,7 @@ export interface FileRoutesByTo {
   '/admin/applicants': typeof AppAdminApplicantsRoute
   '/admin/clients': typeof AppAdminClientsRoute
   '/admin/emails': typeof AppAdminEmailsRoute
+  '/admin/notifications': typeof AppAdminNotificationsRoute
   '/admin/payouts': typeof AppAdminPayoutsRoute
   '/admin/posts': typeof AppAdminPostsRoute
   '/admin/review': typeof AppAdminReviewRoute
@@ -500,6 +508,7 @@ export interface FileRoutesById {
   '/_app/admin/applicants': typeof AppAdminApplicantsRoute
   '/_app/admin/clients': typeof AppAdminClientsRoute
   '/_app/admin/emails': typeof AppAdminEmailsRoute
+  '/_app/admin/notifications': typeof AppAdminNotificationsRoute
   '/_app/admin/payouts': typeof AppAdminPayoutsRoute
   '/_app/admin/posts': typeof AppAdminPostsRoute
   '/_app/admin/review': typeof AppAdminReviewRoute
@@ -561,6 +570,7 @@ export interface FileRouteTypes {
     | '/admin/applicants'
     | '/admin/clients'
     | '/admin/emails'
+    | '/admin/notifications'
     | '/admin/payouts'
     | '/admin/posts'
     | '/admin/review'
@@ -618,6 +628,7 @@ export interface FileRouteTypes {
     | '/admin/applicants'
     | '/admin/clients'
     | '/admin/emails'
+    | '/admin/notifications'
     | '/admin/payouts'
     | '/admin/posts'
     | '/admin/review'
@@ -678,6 +689,7 @@ export interface FileRouteTypes {
     | '/_app/admin/applicants'
     | '/_app/admin/clients'
     | '/_app/admin/emails'
+    | '/_app/admin/notifications'
     | '/_app/admin/payouts'
     | '/_app/admin/posts'
     | '/_app/admin/review'
@@ -912,6 +924,13 @@ declare module '@tanstack/react-router' {
       path: '/emails'
       fullPath: '/admin/emails'
       preLoaderRoute: typeof AppAdminEmailsRouteImport
+      parentRoute: typeof AppAdminRoute
+    }
+    '/_app/admin/notifications': {
+      id: '/_app/admin/notifications'
+      path: '/notifications'
+      fullPath: '/admin/notifications'
+      preLoaderRoute: typeof AppAdminNotificationsRouteImport
       parentRoute: typeof AppAdminRoute
     }
     '/_app/admin/payouts': {
@@ -1152,6 +1171,7 @@ interface AppAdminRouteChildren {
   AppAdminApplicantsRoute: typeof AppAdminApplicantsRoute
   AppAdminClientsRoute: typeof AppAdminClientsRoute
   AppAdminEmailsRoute: typeof AppAdminEmailsRoute
+  AppAdminNotificationsRoute: typeof AppAdminNotificationsRoute
   AppAdminPayoutsRoute: typeof AppAdminPayoutsRoute
   AppAdminPostsRoute: typeof AppAdminPostsRoute
   AppAdminReviewRoute: typeof AppAdminReviewRoute
@@ -1175,6 +1195,7 @@ const AppAdminRouteChildren: AppAdminRouteChildren = {
   AppAdminApplicantsRoute: AppAdminApplicantsRoute,
   AppAdminClientsRoute: AppAdminClientsRoute,
   AppAdminEmailsRoute: AppAdminEmailsRoute,
+  AppAdminNotificationsRoute: AppAdminNotificationsRoute,
   AppAdminPayoutsRoute: AppAdminPayoutsRoute,
   AppAdminPostsRoute: AppAdminPostsRoute,
   AppAdminReviewRoute: AppAdminReviewRoute,

@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const paise = z.coerce.number<string | number>().int().min(0).max(10_000_000)
 const levelTable = z.object({ L1: paise, L2: paise, L3: paise, L4: paise })
+const groupLink = z.union([z.literal(''), z.url({ protocol: /^https?$/ }).max(500)])
 
 export const settingsSchema = z.object({
   alertEmails: z.array(z.email()).max(20),
@@ -35,6 +36,8 @@ export const settingsSchema = z.object({
   upvoteRate: paise,
   /** Lock every unpaid balance into a payout each Monday morning (IST). */
   weeklyPayouts: z.boolean(),
+  /** WhatsApp group invite per worker level, sent in the approval email and shown on Notifications. */
+  whatsappGroups: z.object({ warmup: groupLink, L1: groupLink, L2: groupLink, L3: groupLink, L4: groupLink }),
 })
 export type AppSettings = z.output<typeof settingsSchema>
 export type AppSettingsInput = z.input<typeof settingsSchema>
@@ -63,6 +66,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   },
   upvoteRate: 500,
   weeklyPayouts: true,
+  whatsappGroups: { warmup: '', L1: '', L2: '', L3: '', L4: '' },
 }
 
 export const reviewTemplateSchema = z.object({

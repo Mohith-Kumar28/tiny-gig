@@ -1,6 +1,7 @@
 import type { LucideIcon } from 'lucide-react'
 import {
   AtSign,
+  Bell,
   Briefcase,
   Building2,
   CircleUserRound,
@@ -10,6 +11,7 @@ import {
   Inbox,
   LayoutDashboard,
   Mail,
+  Megaphone,
   Newspaper,
   Search,
   Settings,
@@ -40,6 +42,7 @@ export const WORKER_NAV: NavItem[] = [
   { to: '/w', label: 'Overview', icon: LayoutDashboard, exact: true },
   { to: '/w/gigs', label: 'Find gigs', icon: Search },
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
+  { to: '/w/notifications', label: 'Notifications', icon: Bell, badgeKey: 'unread' },
   { to: '/w/payments', label: 'Earnings', icon: Wallet },
   { to: '/w/accounts', label: 'My accounts', icon: AtSign },
   { to: '/w/warmup', label: 'Warm-up', icon: Sprout },
@@ -53,7 +56,7 @@ export const WORKER_BOTTOM_NAV: NavItem[] = [
   { to: '/w/gigs', label: 'Gigs', icon: Search },
   { to: '/w/work', label: 'My work', icon: ClipboardCheck, badgeKey: 'active' },
   { to: '/w/payments', label: 'Earnings', icon: Wallet },
-  { to: '/w/me', label: 'Me', icon: CircleUserRound, match: ['/w/me', '/w/accounts', '/w/warmup', '/w/profile', '/w/referrals', '/w/notifications'] },
+  { to: '/w/me', label: 'Me', icon: CircleUserRound, badgeKey: 'unread', match: ['/w/me', '/w/accounts', '/w/warmup', '/w/profile', '/w/referrals', '/w/notifications'] },
 ]
 
 export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
@@ -75,6 +78,7 @@ export const ADMIN_NAV: { label: string; items: NavItem[] }[] = [
       { to: '/admin/applicants', label: 'Applicants', icon: UserCheck, badgeKey: 'pending_applicants' },
       { to: '/admin/workers', label: 'Workers', icon: Users },
       { to: '/admin/referrals', label: 'Referrals', icon: Gift, badgeKey: 'rewards_pending' },
+      { to: '/admin/notifications', label: 'Notify workers', icon: Megaphone },
     ],
   },
   {

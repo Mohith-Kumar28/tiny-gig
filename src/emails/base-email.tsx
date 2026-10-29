@@ -17,6 +17,8 @@ export type BaseEmailProps = {
   preview: string
   heading: string
   paragraphs: string[]
+  /** Markup from the broadcast renderer (allow-listed). Never pass user input here directly. */
+  html?: string
   details?: EmailDetail[]
   quote?: string
   cta?: { label: string; href: string }
@@ -40,6 +42,7 @@ export function BaseEmail({
   preview,
   heading,
   paragraphs,
+  html,
   details,
   quote,
   cta,
@@ -73,6 +76,11 @@ export function BaseEmail({
                 {p}
               </Text>
             ))}
+            {html ? (
+              <Section style={{ fontSize: 15, lineHeight: '24px', color: colors.ink }}>
+                <div dangerouslySetInnerHTML={{ __html: html }} />
+              </Section>
+            ) : null}
             {quote ? (
               <Text
                 style={{

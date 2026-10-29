@@ -15,11 +15,12 @@ export function audit(
 
 export function notify(
   db: Db,
-  entries: { userId: string; title: string; body?: string; href?: string }[],
+  entries: { userId: string; title: string; body?: string; href?: string; broadcastId?: string }[],
+  { push = true }: { push?: boolean } = {},
 ) {
   if (!entries.length) return Promise.resolve()
   // Same message to their phones, after the response; push is best-effort.
-  waitUntil(sendPush(db, entries).catch((err) => console.error('[push]', err)))
+  if (push) waitUntil(sendPush(db, entries).catch((err) => console.error('[push]', err)))
   return insertMany(db, schema.notification, entries, (chunk) => db.insert(schema.notification).values(chunk))
 }
 

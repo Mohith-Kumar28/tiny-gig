@@ -5,6 +5,7 @@ import { CheckCheck } from 'lucide-react'
 import { PageHeader } from '@/components/shared/page-header'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { WhatsappGroupCard } from '@/features/notifications/components/whatsapp-group-card'
 import { WorkerNotificationsList } from '@/features/notifications/components/worker-notifications-list'
 import { notificationsQuery } from '@/features/notifications/queries'
 import { markNotificationsRead } from '@/features/notifications/server/notifications'
@@ -30,7 +31,7 @@ function NotificationsPage() {
     <div className="max-w-3xl space-y-5">
       <PageHeader
         title="Notifications"
-        description={data.unread ? `${data.unread} unread` : 'Task updates, payments and referral news, newest first.'}
+        description={data.unread ? `${data.unread} unread` : 'Messages from the team, task updates, payments and referral news.'}
         actions={
           data.unread ? (
             <Button variant="outline" size="sm" disabled={markAll.isPending} onClick={() => markAll.mutate(undefined)}>
@@ -39,8 +40,9 @@ function NotificationsPage() {
           ) : null
         }
       />
+      <WhatsappGroupCard />
       <PushToggle />
-      <WorkerNotificationsList rows={data.rows} onOpen={(id) => markOne.mutate(id)} />
+      <WorkerNotificationsList rows={data.rows} pinned={data.pinned} onOpen={(id) => markOne.mutate(id)} />
     </div>
   )
 }

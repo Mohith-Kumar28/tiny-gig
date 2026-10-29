@@ -85,6 +85,13 @@
       "when": 1792704864144,
       "tag": "0011_account_clients",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "6",
+      "when": 1793296215111,
+      "tag": "0012_broadcasts",
+      "breakpoints": true
     }
   ]
 }

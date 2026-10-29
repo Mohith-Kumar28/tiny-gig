@@ -5,6 +5,8 @@ import { BottomNav } from '@/components/layout/bottom-nav'
 import { WORKER_BOTTOM_NAV, WORKER_NAV } from '@/components/layout/nav'
 import { homeFor } from '@/features/auth/guards'
 import { DisclaimerGate } from '@/features/consent/components/disclaimer-gate'
+import { NewNotificationToasts } from '@/features/notifications/components/new-notification-toasts'
+import { notificationsQuery } from '@/features/notifications/queries'
 import { myWorkCountsQuery } from '@/features/submissions/queries'
 
 export const Route = createFileRoute('/_app/w')({
@@ -19,17 +21,19 @@ export const Route = createFileRoute('/_app/w')({
 function WorkerLayout() {
   const { viewer } = Route.useRouteContext()
   const { data: counts } = useQuery(myWorkCountsQuery())
+  const { data: notes } = useQuery(notificationsQuery())
+  const badges = { active: counts?.active ?? 0, unread: notes?.unread ?? 0 }
   return (
     <AppShell
       viewer={viewer}
       home="/w"
       groups={[{ items: WORKER_NAV }]}
-      badges={{ active: counts?.active ?? 0 }}
-      notificationsHref="/w/notifications"
-      mobileNav={<BottomNav items={WORKER_BOTTOM_NAV} badges={{ active: counts?.active ?? 0 }} />}
+      badges={badges}
+      mobileNav={<BottomNav items={WORKER_BOTTOM_NAV} badges={badges} />}
     >
       <Outlet />
       <DisclaimerGate />
+      <NewNotificationToasts />
     </AppShell>
   )
 }

@@ -3,6 +3,7 @@ import { createFileRoute, Outlet, redirect } from '@tanstack/react-router'
 import { Search } from 'lucide-react'
 import { AppShell } from '@/components/layout/app-shell'
 import { CommandPalette } from '@/components/layout/command-palette'
+import { NotificationBell } from '@/components/layout/notification-bell'
 import { ADMIN_NAV } from '@/components/layout/nav'
 import { Kbd } from '@/components/ui/kbd'
 import { adminBadgesQuery } from '@/features/analytics/queries'
@@ -24,6 +25,7 @@ function AdminLayout() {
       home="/admin"
       groups={ADMIN_NAV}
       badges={badges}
+      headerEnd={<NotificationBell />}
       headerExtra={
         <button
           type="button"

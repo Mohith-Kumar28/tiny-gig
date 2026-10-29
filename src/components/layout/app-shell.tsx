@@ -21,7 +21,6 @@ import {
 } from '@/components/ui/sidebar'
 import type { Viewer } from '@/features/auth/server/viewer'
 import { isNavActive, type NavItem } from './nav'
-import { NotificationBell } from './notification-bell'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
 
@@ -68,7 +67,7 @@ export function AppShell({
   badges,
   home,
   headerExtra,
-  notificationsHref,
+  headerEnd,
   mobileNav,
   children,
 }: {
@@ -77,7 +76,8 @@ export function AppShell({
   badges?: Record<string, number>
   home: string
   headerExtra?: ReactNode
-  notificationsHref?: string
+  /** After the theme toggle, e.g. the admin bell. */
+  headerEnd?: ReactNode
   /** Phone tab bar. When set, the sidebar is desktop-only and content clears the bar. */
   mobileNav?: ReactNode
   children: ReactNode
@@ -119,7 +119,7 @@ export function AppShell({
           ) : null}
           <div className="flex min-w-0 flex-1 items-center gap-2">{headerExtra}</div>
           <ThemeToggle />
-          <NotificationBell allHref={notificationsHref} />
+          {headerEnd}
         </header>
         <main
           className={

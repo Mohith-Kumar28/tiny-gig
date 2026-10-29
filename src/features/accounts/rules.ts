@@ -52,6 +52,23 @@ export function levelFor(createdOn: Date | null | undefined, at: Date = new Date
   return 'L4'
 }
 
+/**
+ * A worker's level is their best usable Reddit account's level. Someone with no dated,
+ * usable Reddit account is still warming up.
+ */
+export function workerLevel(
+  accounts: { platform: string; createdOn: Date | null; standing: string }[],
+  at: Date = new Date(),
+): Level {
+  let best = 0
+  for (const a of accounts) {
+    if (a.platform !== 'reddit' || (a.standing !== 'active' && a.standing !== 'warned')) continue
+    const level = levelFor(a.createdOn, at)
+    if (level) best = Math.max(best, LEVELS.indexOf(level))
+  }
+  return LEVELS[best] as Level
+}
+
 /** The next level and when the account reaches it, or null at L4. */
 export function nextLevel(createdOn: Date | null | undefined, at: Date = new Date()): { level: PaidLevel; at: Date } | null {
   const current = levelFor(createdOn, at)

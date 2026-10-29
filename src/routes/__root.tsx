@@ -60,7 +60,7 @@ function RootDocument({ children }: { children: ReactNode }) {
         <ThemeProvider>
           <TooltipProvider delayDuration={200}>
             {children}
-            <Toaster richColors closeButton position="bottom-right" />
+            <Toaster richColors closeButton position="bottom-right" mobileOffset={{ bottom: 'calc(4.75rem + env(safe-area-inset-bottom))' }} />
           </TooltipProvider>
         </ThemeProvider>
         <Scripts />

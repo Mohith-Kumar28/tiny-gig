@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Spinner } from '@/components/ui/spinner'
 import { Switch } from '@/components/ui/switch'
+import { LEVEL_LABELS, LEVELS } from '@/features/accounts/rules'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
 import { SettingsSection } from './settings-section'
@@ -323,6 +324,29 @@ export function SettingsForm({ initial }: { initial: AppSettings }) {
               />
             )}
           />
+        </Group>
+        <Group
+          title="WhatsApp groups"
+          description="Each worker is pointed to the group for their level: their best Reddit account's level, or warm-up when they have none yet. Used in the approval email and on the worker's Notifications page. Leave blank to skip a level."
+        >
+          <div className="grid items-start gap-4 sm:grid-cols-2">
+            {LEVELS.map((l) => (
+              <FormField
+                key={l}
+                control={form.control}
+                name={`whatsappGroups.${l}`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{LEVEL_LABELS[l]} group</FormLabel>
+                    <FormControl>
+                      <Input type="url" inputMode="url" placeholder="https://chat.whatsapp.com/…" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            ))}
+          </div>
         </Group>
         <Group title="Opportunities" description="Opportunities ask workers to raise a hand, then you pick who does the work.">
           {num('interestWindowMinutes', 'Interest window', 'How long workers have to say they’re interested before you pick.', 'minutes')}

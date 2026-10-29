@@ -1,4 +1,6 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
+import type { BroadcastAudience } from '@/features/broadcasts/audience'
+import type { RichDoc } from '@/features/broadcasts/rich-text'
 import { createdAt, id, timestamp, updatedAt } from './_helpers'
 import { clientTag, socialAccount } from './accounts'
 import { user } from './auth'
@@ -255,6 +257,28 @@ export const payout = sqliteTable(
   ],
 )
 
+export type BroadcastChannels = { email: boolean; push: boolean }
+
+/** A message staff wrote to many workers. Each recipient gets a `notification` row pointing here. */
+export const broadcast = sqliteTable(
+  'broadcast',
+  {
+    id: id(),
+    subject: text('subject').notNull(),
+    doc: text('doc', { mode: 'json' }).$type<RichDoc>().notNull(),
+    /** Rendered from `doc` on the server; the only HTML a worker ever sees. */
+    html: text('html').notNull(),
+    audience: text('audience', { mode: 'json' }).$type<BroadcastAudience>().notNull(),
+    channels: text('channels', { mode: 'json' }).$type<BroadcastChannels>().notNull(),
+    recipientCount: integer('recipient_count').notNull(),
+    /** Set while the message sits fixed at the top of each recipient's notifications. */
+    pinnedAt: timestamp('pinned_at'),
+    createdBy: userRef('created_by'),
+    createdAt: createdAt(),
+  },
+  (t) => [index('broadcast_created_idx').on(t.createdAt)],
+)
+
 export const notification = sqliteTable(
   'notification',
   {
@@ -265,10 +289,11 @@ export const notification = sqliteTable(
     title: text('title').notNull(),
     body: text('body'),
     href: text('href'),
+    broadcastId: text('broadcast_id').references(() => broadcast.id, { onDelete: 'cascade' }),
     readAt: timestamp('read_at'),
     createdAt: createdAt(),
   },
-  (t) => [index('notification_user_idx').on(t.userId, t.createdAt)],
+  (t) => [index('notification_user_idx').on(t.userId, t.createdAt), index('notification_broadcast_idx').on(t.broadcastId)],
 )
 
 /** Browser push subscriptions — the fastest way to reach a worker inside the interest window (§4.1). */
