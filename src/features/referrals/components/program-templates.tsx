@@ -2,14 +2,16 @@ import { ArrowRight } from 'lucide-react'
 import { describeProgram } from '../rules'
 import { formToRule, PROGRAM_TEMPLATES, type ProgramTemplate } from './program-form-values'
 
-/** Empty state for the program builder: one-click starter templates. */
-export function ProgramTemplates({ onPick }: { onPick: (t: ProgramTemplate) => void }) {
+/** One-click starter templates: the empty state, and below the list once programs exist. */
+export function ProgramTemplates({ onPick, first = true }: { onPick: (t: ProgramTemplate) => void; first?: boolean }) {
   return (
     <div className="rounded-lg border border-dashed bg-card/50 p-6 sm:p-8">
       <div className="mx-auto max-w-xl space-y-1 text-center">
-        <h2 className="font-display text-lg font-bold">Create your first referral program</h2>
+        <h2 className="font-display text-lg font-bold">{first ? 'Create your first referral program' : 'Start another from a template'}</h2>
         <p className="text-sm text-muted-foreground text-pretty">
-          Start from a template and tweak it, or build one from scratch. Programs also apply to past referrals that fall in their window.
+          {first
+            ? 'Start from a template and tweak it, or build one from scratch. Programs also apply to past referrals that fall in their window.'
+            : 'Several programs can run at once. Pick one to open it prefilled, then adjust before saving.'}
         </p>
       </div>
       <div className="mt-6 grid gap-3 md:grid-cols-3">

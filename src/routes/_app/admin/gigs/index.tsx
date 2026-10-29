@@ -8,7 +8,7 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { PageHeader } from '@/components/shared/page-header'
 import { PLATFORM_LABELS, PlatformIcon } from '@/components/shared/platform-icon'
 import { Button } from '@/components/ui/button'
-import { PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
+import { GIG_STATUSES, PLATFORMS, TASK_TYPES } from '@/db/schema/enums'
 import { useGigStatus } from '@/features/gigs/components/gig-actions'
 import { type GigRow, gigColumns } from '@/features/gigs/components/gig-columns'
 import { TASK_TYPE_LABELS } from '@/features/gigs/components/worker-gig-meta'
@@ -29,9 +29,13 @@ const PLATFORM_OPTIONS = PLATFORMS.map((p) => ({
 }))
 const TASK_OPTIONS = TASK_TYPES.map((t) => ({ label: TASK_TYPE_LABELS[t], value: t }))
 
+/** No status in the URL means live gigs; clearing the filter asks for every status explicitly. */
+const DEFAULT_STATUS: GigStatus[] = ['live']
+type GigStatus = (typeof GIG_STATUSES)[number]
+
 export const Route = createFileRoute('/_app/admin/gigs/')({
   head: () => ({ meta: [{ title: 'Gigs · TinyGig Admin' }] }),
-  validateSearch: gigsSearchSchema,
+  validateSearch: gigsSearchSchema.transform((s) => ({ ...s, status: s.status ?? DEFAULT_STATUS })),
   loaderDeps: ({ search }) => search,
   loader: ({ context, deps }) => context.queryClient.ensureQueryData(gigsQuery(deps)),
   component: GigsPage,
@@ -65,7 +69,7 @@ function GigsPage() {
         isFetching={isFetching}
         searchPlaceholder="Search title or community…"
         onRowClick={(r) => navigate({ to: '/admin/gigs/$gigId', params: { gigId: r.id } })}
-        hasActiveFilters={Boolean(search.status || search.platform || search.taskType || search.client || search.q)}
+        hasActiveFilters={Boolean(search.status.join() !== DEFAULT_STATUS.join() || search.platform || search.taskType || search.client || search.q)}
         onResetFilters={() => navigate({ search: {} })}
         initialHidden={{ liveHold: false, createdAt: false }}
         filters={
@@ -74,7 +78,7 @@ function GigsPage() {
               title="Status"
               options={STATUS_OPTIONS}
               value={search.status}
-              onChange={(v) => onSearchChange({ status: v })}
+              onChange={(v) => onSearchChange({ status: v?.length ? v : [...GIG_STATUSES] })}
             />
             <DataTableFacetedFilter
               title="Platform"

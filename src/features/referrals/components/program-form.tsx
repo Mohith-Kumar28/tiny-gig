@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import type { ReactNode } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm, useWatch } from 'react-hook-form'
 import type { z } from 'zod'
 import { Button } from '@/components/ui/button'
@@ -14,10 +14,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { REFERRAL_TRIGGERS } from '@/db/schema/enums'
 import { useAction } from '@/hooks/use-action'
+import { cn } from '@/lib/utils'
 import { TRIGGER_LABELS } from '../rules'
-import { type ProgramFormInput, programFormSchema } from '../schemas'
+import { PROGRAM_FORM_DEFAULTS, type ProgramFormInput, programFormSchema } from '../schemas'
 import { saveProgram } from '../server/referrals'
-import { formToRule, localToIso } from './program-form-values'
+import { formToRule, localToIso, PROGRAM_TEMPLATES } from './program-form-values'
 import { ProgramPreview } from './program-preview'
 
 type Output = z.output<typeof programFormSchema>
@@ -39,6 +40,38 @@ function RupeeInput(props: React.ComponentProps<typeof Input>) {
     <div className="relative">
       <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground">₹</span>
       <Input type="number" inputMode="decimal" min={0} step="1" className="pl-7 tabular" {...props} />
+    </div>
+  )
+}
+
+const STARTERS = [{ id: 'blank', title: 'Blank', values: { ...PROGRAM_FORM_DEFAULTS, name: '', description: '' } }, ...PROGRAM_TEMPLATES]
+
+/** New programs only: swap the whole form to a starter. Matches by name so a template picked on the page shows as selected. */
+function StarterPicker({ current, onPick }: { current: string; onPick: (values: ProgramFormInput) => void }) {
+  const [picked, setPicked] = useState<string | null>(null)
+  const active = picked ?? STARTERS.find((t) => t.id !== 'blank' && t.values.name === current)?.id ?? null
+  return (
+    <div className="space-y-2">
+      <p className="text-sm font-semibold">Start from</p>
+      <div className="flex flex-wrap gap-2">
+        {STARTERS.map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            aria-pressed={active === t.id}
+            onClick={() => {
+              setPicked(t.id)
+              onPick(t.values)
+            }}
+            className={cn(
+              'rounded-md border px-3 py-1.5 text-sm transition-colors hover:bg-accent focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-none',
+              active === t.id && 'border-primary bg-primary/10 font-medium',
+            )}
+          >
+            {t.title}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }
@@ -118,6 +151,7 @@ export function ProgramForm({
             className="grid min-h-0 flex-1 overflow-y-auto md:grid-cols-[1fr_340px] md:overflow-hidden"
           >
             <div className="space-y-5 px-6 py-5 md:overflow-y-auto">
+              {programId ? null : <StarterPicker key={String(open)} current={values.name} onPick={(v) => form.reset(v)} />}
               <Section title="Basics">
                 <FormField
                   control={form.control}

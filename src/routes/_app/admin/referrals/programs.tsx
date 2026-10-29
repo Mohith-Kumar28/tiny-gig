@@ -97,18 +97,21 @@ function ProgramsPage() {
           <Skeleton className="h-64 rounded-lg" />
         </div>
       ) : programs?.length ? (
-        <div className="grid gap-4 lg:grid-cols-2">
-          {programs.map((p) => (
-            <ProgramCard
-              key={p.id}
-              program={p}
-              onEdit={() => open({ id: p.id, values: programToForm(p) })}
-              onDuplicate={() => duplicate(p)}
-              onToggle={(active) => toggle.mutate({ id: p.id, active })}
-              toggling={toggle.isPending && toggle.variables?.id === p.id}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid gap-4 lg:grid-cols-2">
+            {programs.map((p) => (
+              <ProgramCard
+                key={p.id}
+                program={p}
+                onEdit={() => open({ id: p.id, values: programToForm(p) })}
+                onDuplicate={() => duplicate(p)}
+                onToggle={(active) => toggle.mutate({ id: p.id, active })}
+                toggling={toggle.isPending && toggle.variables?.id === p.id}
+              />
+            ))}
+          </div>
+          <ProgramTemplates first={false} onPick={(t) => open({ values: t.values })} />
+        </>
       ) : (
         <ProgramTemplates onPick={(t) => open({ values: t.values })} />
       )}

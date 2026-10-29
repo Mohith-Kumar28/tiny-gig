@@ -12,10 +12,12 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { WhatsAppIcon, whatsappLink } from '@/components/shared/whatsapp-icon'
 import { Button } from '@/components/ui/button'
 import { LevelBadge } from '@/features/accounts/components/account-columns'
+import { AccountSheet } from '@/features/accounts/components/account-sheet'
 import { accountLabel, isKarmaStale } from '@/features/accounts/rules'
 import { type AssignTarget, AssignDialog } from '@/features/opportunities/components/assign-dialog'
 import { DirectAssignDialog } from '@/features/opportunities/components/direct-assign'
 import { selectionQuery } from '@/features/opportunities/queries'
+import { useRowPager } from '@/hooks/use-row-pager'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
 
@@ -37,6 +39,32 @@ function Fact({ label, children, title }: { label: string; children: ReactNode; 
   )
 }
 
+/** An account handle that opens its history in a sheet, so the admin can flip between candidates without leaving. */
+function AccountButton({ label, onOpen, className }: { label: string; onOpen: () => void; className?: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className={cn(
+        'cursor-pointer rounded-sm decoration-dotted underline-offset-4 hover:underline focus-visible:underline focus-visible:outline-none',
+        className,
+      )}
+    >
+      {label}
+    </button>
+  )
+}
+
+function WhatsAppButton({ phone, name, message }: { phone: string; name: string; message: string }) {
+  return (
+    <Button asChild variant="ghost" size="icon" className="size-8" aria-label={`WhatsApp ${name}`}>
+      <a href={whatsappLink(phone, message)} target="_blank" rel="noreferrer noopener">
+        <WhatsAppIcon />
+      </a>
+    </Button>
+  )
+}
+
 /** §4.2: the screen that decides adoption. Facts side by side, best fit first, the reason in words. */
 function SelectPage() {
   const { gigId } = Route.useParams()
@@ -44,10 +72,15 @@ function SelectPage() {
   const [target, setTarget] = useState<AssignTarget | null>(null)
   const [direct, setDirect] = useState(false)
   const [directOpen, setDirectOpen] = useState(false)
+  const [openAccount, setOpenAccount] = useState<string | null>(null)
   const g = data.gig
   const full = g.slotsLeft === 0
   const active = data.assigned.filter((a) => !RELEASED.has(a.status))
   const committed = active.reduce((sum, a) => sum + a.payoutAmount, 0)
+  // Candidates then assigned, so J/K in the sheet walks the whole page top to bottom.
+  const accountIds = [...new Set([...data.candidates.map((c) => c.accountId), ...data.assigned.flatMap((a) => (a.accountId ? [a.accountId] : []))])]
+  const pager = useRowPager(accountIds, (id) => id, openAccount, setOpenAccount)
+  const greeting = (name: string, label: string) => `Hi ${name.split(' ')[0]}, about “${g.title}” on ${label}: `
   const openDirect = () => {
     setDirect(true)
     setDirectOpen(true)
@@ -167,7 +200,7 @@ function SelectPage() {
                   <div className="min-w-0 space-y-2">
                     <div className="space-y-0.5">
                       <p className={cn('text-sm font-semibold', blocked && 'text-muted-foreground')}>
-                        {c.label} <span className="font-normal text-muted-foreground">· {c.workerName}</span>
+                        <AccountButton label={c.label} onOpen={() => setOpenAccount(c.accountId)} /> <span className="font-normal text-muted-foreground">· {c.workerName}</span>
                         {i === 0 && !blocked && !risky ? (
                           <span className="ml-2 align-middle text-xs font-medium text-success">Best fit</span>
                         ) : null}
@@ -217,17 +250,7 @@ function SelectPage() {
                   </div>
 
                   <div className="col-start-2 mt-3 flex items-center gap-1.5 sm:col-start-3 sm:mt-0 sm:items-start">
-                    {c.phone ? (
-                      <Button asChild variant="ghost" size="icon" className="size-8" aria-label={`WhatsApp ${c.workerName}`}>
-                        <a
-                          href={whatsappLink(c.phone, `Hi ${c.workerName.split(' ')[0]}, about “${g.title}” on ${c.label}: `)}
-                          target="_blank"
-                          rel="noreferrer noopener"
-                        >
-                          <WhatsAppIcon />
-                        </a>
-                      </Button>
-                    ) : null}
+                    {c.phone ? <WhatsAppButton phone={c.phone} name={c.workerName} message={greeting(c.workerName, c.label)} /> : null}
                     {blocked ? (
                       <Button size="sm" variant="outline" disabled className="min-w-24">
                         <Ban /> Blocked
@@ -277,15 +300,23 @@ function SelectPage() {
                   <th className="ledger-label h-9 px-3 font-semibold">Level</th>
                   <th className="ledger-label h-9 px-3 font-semibold">Status</th>
                   <th className="ledger-label h-9 px-4 text-right font-semibold">Rate</th>
+                  <th className="h-9 w-12 px-2">
+                    <span className="sr-only">Contact</span>
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y">
                 {data.assigned.map((a) => {
                   const released = RELEASED.has(a.status)
+                  const label = a.handle && a.platform ? accountLabel(a.platform, a.handle) : null
                   return (
                     <tr key={a.id} className="align-top">
                       <td className="px-4 py-2.5 font-medium">
-                        {a.handle && a.platform ? accountLabel(a.platform, a.handle) : '—'}
+                        {label && a.accountId ? (
+                          <AccountButton label={label} onOpen={() => setOpenAccount(a.accountId)} className="text-left" />
+                        ) : (
+                          (label ?? '—')
+                        )}
                         {a.overrideReason ? (
                           <span className="mt-0.5 block text-xs font-normal text-warning-foreground dark:text-warning">
                             Override: {a.overrideReason}
@@ -300,6 +331,9 @@ function SelectPage() {
                       <td className="px-4 py-2.5 text-right">
                         <Money paise={a.payoutAmount} className={cn('font-display font-bold', released && 'ledger-struck text-muted-foreground')} />
                       </td>
+                      <td className="px-2 py-1.5 text-right">
+                        {a.phone ? <WhatsAppButton phone={a.phone} name={a.workerName} message={greeting(a.workerName, label ?? 'your account')} /> : null}
+                      </td>
                     </tr>
                   )
                 })}
@@ -312,6 +346,7 @@ function SelectPage() {
                   <td className="px-4 py-2.5 text-right">
                     <Money paise={committed} className="font-display font-bold" />
                   </td>
+                  <td />
                 </tr>
               </tfoot>
             </table>
@@ -328,6 +363,7 @@ function SelectPage() {
           setTarget(t)
         }}
       />
+      <AccountSheet accountId={openAccount} onOpenChange={(o) => !o && setOpenAccount(null)} pager={pager} />
       <AssignDialog gigId={gigId} gigTitle={g.title} target={target} direct={direct} onOpenChange={(o) => !o && setTarget(null)} />
     </div>
   )

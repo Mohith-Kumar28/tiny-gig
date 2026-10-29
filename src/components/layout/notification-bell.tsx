@@ -4,7 +4,6 @@ import { Bell, CheckCheck } from 'lucide-react'
 import { RelativeTime } from '@/components/shared/relative-time'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { notificationsQuery } from '@/features/notifications/queries'
 import { markNotificationsRead } from '@/features/notifications/server/notifications'
 import { useAction } from '@/hooks/use-action'
@@ -26,14 +25,14 @@ export function NotificationBell({ allHref }: { allHref?: string }) {
           ) : null}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-[min(380px,calc(100vw-1rem))] p-0">
-        <div className="flex items-center justify-between border-b px-3 py-2">
+      <PopoverContent align="end" className="flex max-h-(--radix-popover-content-available-height) w-[min(380px,calc(100vw-1rem))] flex-col overflow-hidden p-0">
+        <div className="flex shrink-0 items-center justify-between border-b px-3 py-2">
           <span className="text-sm font-medium">Notifications</span>
           <Button variant="ghost" size="sm" className="h-7 text-xs" disabled={!unread || markAll.isPending} onClick={() => markAll.mutate(undefined)}>
             <CheckCheck /> Mark all read
           </Button>
         </div>
-        <ScrollArea className="max-h-[420px]">
+        <div className="max-h-[420px] min-h-0 overflow-y-auto overscroll-contain">
           {data?.rows.length ? (
             <ul className="divide-y">
               {data.rows.map((n) => {
@@ -57,9 +56,9 @@ export function NotificationBell({ allHref }: { allHref?: string }) {
           ) : (
             <p className="px-3 py-10 text-center text-sm text-muted-foreground">You're all caught up.</p>
           )}
-        </ScrollArea>
+        </div>
         {allHref ? (
-          <div className="border-t p-1.5">
+          <div className="shrink-0 border-t p-1.5">
             <Button asChild variant="ghost" size="sm" className="w-full">
               <Link to={allHref}>View all</Link>
             </Button>

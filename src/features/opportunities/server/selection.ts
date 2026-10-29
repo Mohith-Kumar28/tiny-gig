@@ -39,7 +39,9 @@ export const getSelection = createServerFn({ method: 'GET' })
         .select({
           id: submission.id,
           status: submission.status,
+          accountId: submission.accountId,
           workerName: workerProfile.fullName,
+          phone: workerProfile.phone,
           handle: socialAccount.handle,
           platform: socialAccount.platform,
           level: submission.level,
