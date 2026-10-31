@@ -8,7 +8,6 @@ import { StatusBadge } from '@/components/shared/status-badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
-import { AccountLossNotice } from '@/features/consent/components/account-loss-notice'
 import { useAction } from '@/hooks/use-action'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -226,7 +225,6 @@ export function MyAccounts({ accounts }: { accounts: Account[] }) {
           </Button>
         }
       />
-      <AccountLossNotice />
       <section className="overflow-hidden rounded-lg border bg-card">
         <div className="flex items-baseline justify-between gap-3 border-b px-4 py-2.5">
           <h2 className="font-display text-base font-bold">Reddit</h2>

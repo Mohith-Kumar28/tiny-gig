@@ -1,6 +1,6 @@
 import { Container } from './container'
 
-/** The honest part. Mirrors the cooldown defaults, the live hold, client privacy and the account-loss clause. */
+/** The honest part. Mirrors the cooldown defaults, the live hold, and client privacy. */
 const RULES = [
   {
     title: 'Your account, your words',
@@ -17,10 +17,6 @@ const RULES = [
   {
     title: 'Clients stay private',
     body: 'Gigs never show who they are for. You see the community, the brief and the pay.',
-  },
-  {
-    title: 'Accounts can be lost',
-    body: 'Platforms can restrict or ban any account. Your accounts are your responsibility, so only use ones you are willing to risk.',
   },
   {
     title: 'Every Monday, no minimum',

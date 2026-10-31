@@ -5,7 +5,6 @@ import { queueEmail } from '@/emails/send-email'
 import { type Block, workerBlockReason } from '@/features/accounts/cooldowns'
 import { accountLabel, levelFor } from '@/features/accounts/rules'
 import { evaluateWorker, gigFacts, loadEligibility, logBlocks } from '@/features/accounts/server/eligibility'
-import { ACCOUNT_LOSS } from '@/features/consent/disclaimer'
 import { gigClosedReason } from '@/features/gigs/eligibility'
 import { formatMoney } from '@/lib/format'
 import { audit, notify } from '@/lib/server/activity'
@@ -120,7 +119,7 @@ export async function assignAccount(
     {
       userId: account.workerId,
       title: `You’re selected: ${g.title}`,
-      body: `Post from ${label} and submit the link by ${dueText}. ${ACCOUNT_LOSS.short}`,
+      body: `Post from ${label} and submit the link by ${dueText}.`,
       href: `/w/work/${created.id}`,
     },
   ])
@@ -128,7 +127,7 @@ export async function assignAccount(
     queueEmail({
       to: profile.email,
       template: 'selectedForGig',
-      data: { title: g.title, account: label, pay: formatMoney(payoutAmount), dueAt: dueText, submissionId: created.id, disclaimer: ACCOUNT_LOSS.short },
+      data: { title: g.title, account: label, pay: formatMoney(payoutAmount), dueAt: dueText, submissionId: created.id },
     })
   }
 

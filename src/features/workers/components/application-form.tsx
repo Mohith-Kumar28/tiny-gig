@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useRouter } from '@tanstack/react-router'
+import { Link, useRouter } from '@tanstack/react-router'
 import { ArrowRight } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
@@ -7,7 +7,6 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
-import { ACCOUNT_LOSS } from '@/features/consent/disclaimer'
 import { useAction } from '@/hooks/use-action'
 import { ACCOUNT_AGE_HINT, type ApplicationInput, applicationSchema } from '../schemas'
 import { submitApplication } from '../server/application'
@@ -176,15 +175,17 @@ export function ApplicationForm({ defaults }: { defaults: Partial<ApplicationInp
           control={form.control}
           name="acceptAccountLoss"
           render={({ field }) => (
-            <FormItem className="rounded-lg border border-warning/40 bg-warning/[0.07] p-4">
-              <div className="flex items-start gap-3">
+            <FormItem>
+              <div className="flex items-center gap-3">
                 <FormControl>
-                  <Checkbox checked={field.value === true} onCheckedChange={(v) => field.onChange(v === true ? true : undefined)} className="mt-0.5" />
+                  <Checkbox checked={field.value === true} onCheckedChange={(v) => field.onChange(v === true ? true : undefined)} />
                 </FormControl>
-                <div className="space-y-1">
-                  <FormLabel className="leading-snug font-medium">{ACCOUNT_LOSS.text}</FormLabel>
-                  <FormDescription>Tick to confirm you understand. You can add more accounts after approval.</FormDescription>
-                </div>
+                <FormLabel className="font-normal">
+                  I agree to the{' '}
+                  <Link to="/terms" target="_blank" className="underline underline-offset-4">
+                    Terms and Conditions
+                  </Link>
+                </FormLabel>
               </div>
               <FormMessage />
             </FormItem>

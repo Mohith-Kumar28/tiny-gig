@@ -60,12 +60,6 @@ export const FAQ: FaqItem[] = [
       'To keep accounts healthy, every gig checks a few cooldowns: one gig a day per person, no repeat in the same community within a week, a limit on how many open tasks you hold, and limits on work for the same client per account. A locked gig always says which rule applies and the date it opens again.',
   },
   {
-    id: 'account-safety',
-    question: 'Can I lose my Reddit account doing gigs?',
-    answer:
-      'Any platform can warn, restrict or ban any account, including while it does gigs. You run your own accounts and they are your responsibility: TinyGig is not liable if one is suspended, shadowbanned or lost. Writing in your own words, following the brief and respecting each community’s rules is the best way to keep an account healthy.',
-  },
-  {
     id: 'pay-levels',
     question: 'Why does the same gig pay different amounts?',
     answer:

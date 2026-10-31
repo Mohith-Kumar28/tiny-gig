@@ -128,7 +128,7 @@ export const emailTemplates = {
     footerNote: 'You can turn off new-gig emails in your profile settings.',
   }),
 
-  selectedForGig: (d: { title: string; account: string; pay: string; dueAt: string; submissionId: string; disclaimer: string }, ctx: Ctx): Content => ({
+  selectedForGig: (d: { title: string; account: string; pay: string; dueAt: string; submissionId: string }, ctx: Ctx): Content => ({
     subject: `You’re selected: “${d.title}”`,
     preview: `Post from ${d.account} and submit the link before ${d.dueAt}.`,
     heading: 'You’ve been selected',
@@ -142,7 +142,6 @@ export const emailTemplates = {
       { label: 'Deadline', value: d.dueAt },
     ],
     cta: { label: 'Open task', href: url(ctx, `/w/work/${d.submissionId}`) },
-    footerNote: d.disclaimer,
   }),
 
   claimConfirmed: (d: { title: string; dueAt: string; submissionId: string }, ctx: Ctx): Content => ({

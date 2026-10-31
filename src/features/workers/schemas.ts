@@ -42,8 +42,8 @@ export const applicationSchema = z.object({
     .max(REFERRAL_CODE_MAX)
     .optional()
     .or(z.literal('')),
-  /** The separate account-loss checkbox (R59) — not folded into a general terms link. */
-  acceptAccountLoss: z.literal(true, { error: 'Please read and tick this to continue' }),
+  /** The "I agree to the Terms" tick. Accepting records the account-loss consent (Terms §10.2). */
+  acceptAccountLoss: z.literal(true, { error: 'Please accept the Terms and Conditions to continue' }),
 })
 export type ApplicationInput = z.input<typeof applicationSchema>
 

@@ -4,7 +4,6 @@ import { AppShell } from '@/components/layout/app-shell'
 import { BottomNav } from '@/components/layout/bottom-nav'
 import { WORKER_BOTTOM_NAV, WORKER_NAV } from '@/components/layout/nav'
 import { homeFor } from '@/features/auth/guards'
-import { DisclaimerGate } from '@/features/consent/components/disclaimer-gate'
 import { NewNotificationToasts } from '@/features/notifications/components/new-notification-toasts'
 import { notificationsQuery } from '@/features/notifications/queries'
 import { myWorkCountsQuery } from '@/features/submissions/queries'
@@ -32,7 +31,6 @@ function WorkerLayout() {
       mobileNav={<BottomNav items={WORKER_BOTTOM_NAV} badges={badges} />}
     >
       <Outlet />
-      <DisclaimerGate />
       <NewNotificationToasts />
     </AppShell>
   )

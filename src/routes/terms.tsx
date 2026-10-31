@@ -117,11 +117,16 @@ function TermsPage() {
 
       <h2>10. Disclaimers and liability</h2>
       <p>
-        {SITE.name} is provided “as is”. We do not control Reddit, X, LinkedIn, Threads, Instagram or any other platform,
-        and we are not affiliated with them. You run and maintain your own social media accounts. {SITE.name} is not
-        responsible if any of your accounts is suspended, shadowbanned, restricted or lost, including while doing gigs, and
-        we are not responsible for actions those platforms or their moderators take on your accounts. To the extent the law allows, our total liability to you is limited to the approved earnings we owe
-        you.
+        10.1. {SITE.name} is provided “as is”. We do not control Reddit, X, LinkedIn, Threads, Instagram or any other
+        platform, and we are not affiliated with them.
+      </p>
+      <p id="account-loss">
+        10.2. You run and maintain your own social media accounts. {SITE.name} is not responsible if any of your accounts
+        is suspended, shadowbanned, restricted or lost, including while doing gigs.
+      </p>
+      <p>10.3. We are not responsible for actions those platforms or their moderators take on your accounts.</p>
+      <p>
+        10.4. To the extent the law allows, our total liability to you is limited to the approved earnings we owe you.
       </p>
 
       <h2>11. Changes and governing law</h2>

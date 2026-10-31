@@ -40,7 +40,6 @@ import { formatMoney } from '@/lib/format'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
 import { type getMySubmission, withdrawClaim } from '../server/worker-submissions'
-import { AccountLossNotice } from '@/features/consent/components/account-loss-notice'
 import { canWithdraw, isTwoStep } from '../state'
 import { InsightsForm } from './insights-form'
 import { ProofForm } from './proof-form'
@@ -343,13 +342,10 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
               ) : (
                 <div className="space-y-4">
                   {account ? (
-                    <div className="space-y-2">
-                      <p className="text-sm">
-                        Post from <strong>{account.label}</strong>. Proof must come from this account. Finish by{' '}
-                        <strong>{formatDateTime(sub.dueAt)}</strong>.
-                      </p>
-                      <AccountLossNotice compact />
-                    </div>
+                    <p className="text-sm">
+                      Post from <strong>{account.label}</strong>. Proof must come from this account. Finish by{' '}
+                      <strong>{formatDateTime(sub.dueAt)}</strong>.
+                    </p>
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       Finish by <strong className="text-foreground">{formatDateTime(sub.dueAt)}</strong>. Do the task first, then
