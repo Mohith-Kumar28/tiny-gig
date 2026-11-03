@@ -1,6 +1,6 @@
 import { z } from 'zod'
 
-/** Reddit's create-post tabs. Poll is shown but disabled, as it is for most communities. */
+/** Reddit's create-post tabs that a post brief can use. */
 export const POST_KINDS = ['text', 'media', 'link'] as const
 export type PostKind = (typeof POST_KINDS)[number]
 

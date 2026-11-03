@@ -7,7 +7,6 @@ import {
   ExternalLink,
   ImageIcon,
   Link2,
-  ListTodo,
   Loader2,
   Upload,
   X,
@@ -39,11 +38,10 @@ export type ComposerAction = {
   pending?: boolean
 }
 
-const TABS: { kind: PostKind | 'poll'; label: string }[] = [
+const TABS: { kind: PostKind; label: string }[] = [
   { kind: 'text', label: 'Text' },
   { kind: 'media', label: 'Images & Video' },
   { kind: 'link', label: 'Link' },
-  { kind: 'poll', label: 'Poll' },
 ]
 
 function useIsPhone() {
@@ -221,7 +219,7 @@ function Tabs({ kind, onChange }: { kind: PostKind; onChange?: (k: PostKind) => 
     <div role="tablist" className="flex gap-1 overflow-x-auto [scrollbar-width:none]">
       {TABS.map((t) => {
         const active = t.kind === kind
-        const disabled = t.kind === 'poll' || (!onChange && !active)
+        const disabled = !onChange && !active
         return (
           <button
             key={t.kind}
@@ -229,7 +227,7 @@ function Tabs({ kind, onChange }: { kind: PostKind; onChange?: (k: PostKind) => 
             role="tab"
             aria-selected={active}
             disabled={disabled}
-            onClick={() => t.kind !== 'poll' && onChange?.(t.kind)}
+            onClick={() => onChange?.(t.kind)}
             className={cn(
               'relative shrink-0 cursor-pointer rounded-full px-4 pt-2 pb-4 text-[15px] font-semibold text-[var(--rd-fg)] hover:bg-[var(--rd-hover)] disabled:cursor-default disabled:text-[var(--rd-disabled-fg)] disabled:hover:bg-transparent',
               active && 'disabled:text-[var(--rd-fg)]',
@@ -756,9 +754,6 @@ export function RedditComposer({
             </button>
             <button type="button" aria-label="Add video" onClick={() => set({ kind: 'media' })}>
               <CirclePlay />
-            </button>
-            <button type="button" aria-label="Poll (not available)" disabled className="opacity-40">
-              <ListTodo />
             </button>
             {secondary ? <ActionButton action={secondary} variant="secondary" className="ml-auto !size-auto !h-10 px-4" /> : null}
           </div>
