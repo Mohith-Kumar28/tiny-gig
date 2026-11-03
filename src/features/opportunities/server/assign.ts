@@ -9,6 +9,7 @@ import { gigClosedReason } from '@/features/gigs/eligibility'
 import { formatMoney } from '@/lib/format'
 import { audit, notify } from '@/lib/server/activity'
 import { AppError } from '@/lib/server/middleware'
+import { normalizeCommunity, type RedditPost } from '@/features/reddit-post/post'
 import { rateFor } from './rates'
 
 type GigRow = typeof gig.$inferSelect
@@ -31,7 +32,7 @@ export async function previewAccountForGig(db: Db, g: GigRow, accountId: string,
  */
 export async function assignAccount(
   db: Db,
-  args: { gigId: string; accountId: string; actorId: string; overrideReason?: string; direct?: boolean },
+  args: { gigId: string; accountId: string; actorId: string; overrideReason?: string; direct?: boolean; post?: RedditPost },
 ) {
   const now = new Date()
   const g = await db.select().from(gig).where(eq(gig.id, args.gigId)).get()
@@ -74,6 +75,7 @@ export async function assignAccount(
         selectedAt: now,
         selectedBy: args.actorId,
         overrideReason: evaluation.soft.length ? (reason ?? null) : null,
+        postContent: args.post ? { ...args.post, community: normalizeCommunity(args.post.community) } : null,
       })
       .returning({ id: submission.id })
     if (!created) throw new Error('insert failed')

@@ -1,6 +1,7 @@
 import { index, integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 import type { BroadcastAudience } from '@/features/broadcasts/audience'
 import type { RichDoc } from '@/features/broadcasts/rich-text'
+import type { RedditPost } from '@/features/reddit-post/post'
 import { createdAt, id, timestamp, updatedAt } from './_helpers'
 import { clientTag, socialAccount } from './accounts'
 import { user } from './auth'
@@ -170,6 +171,8 @@ export const submission = sqliteTable(
       .$defaultFn(() => []),
     insightsSubmittedAt: timestamp('insights_submitted_at'),
     insightsRemindedAt: timestamp('insights_reminded_at'),
+    /** Exactly what the worker should post for this assignment, set by staff. */
+    postContent: text('post_content', { mode: 'json' }).$type<RedditPost>(),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "src/features/reddit-post/components/reddit-composer.tsx"
+        ],
+        "createdAt": "2026-11-03T16:24:50.035Z",
+        "reason": "agent: src is mediaUrl(m.key), always an uploaded R2 object"
+      }
+    ]
+  }
+}

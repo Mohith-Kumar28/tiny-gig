@@ -36,6 +36,7 @@ import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Spinner } from '@/components/ui/spinner'
 import { formatHours } from '@/features/gigs/components/worker-gig-meta'
+import { PostBrief } from '@/features/reddit-post/components/post-brief'
 import { formatMoney } from '@/lib/format'
 import { useAction } from '@/hooks/use-action'
 import { cn } from '@/lib/utils'
@@ -146,7 +147,7 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
   const twoStep = isTwoStep(sub)
   const holdOver = sub.status === 'on_hold' && (!sub.liveCheckAt || new Date(sub.liveCheckAt).getTime() <= Date.now())
   const router = useRouter()
-  const [briefOpen, setBriefOpen] = useState(sub.status === 'claimed')
+  const [briefOpen, setBriefOpen] = useState(sub.status === 'claimed' && !sub.postContent)
   const status = sub.status
   const needsProof = status === 'claimed' || status === 'changes_requested'
   const overdue = new Date(sub.dueAt).getTime() < Date.now()
@@ -316,6 +317,12 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
 
           {nextStep}
 
+          {sub.postContent && needsProof ? (
+            <Section title="What to post on Reddit">
+              <PostBrief post={sub.postContent} accountLabel={account?.label} />
+            </Section>
+          ) : null}
+
           {status === 'on_hold' && holdOver ? (
             <Section>
               <InsightsForm submissionId={sub.id} accountLabel={account?.label} />
@@ -394,6 +401,18 @@ export function WorkerTaskDetail({ data }: { data: TaskData }) {
                 ) : null}
               </div>
             </Section>
+          ) : null}
+
+          {sub.postContent && !needsProof ? (
+            <Collapsible>
+              <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-4 py-3.5 text-left transition-colors hover:bg-accent/40 focus-visible:bg-accent/40 focus-visible:outline-none sm:px-5">
+                <span className="font-display text-base font-bold">What you were asked to post</span>
+                <ChevronDown className="size-4 text-muted-foreground transition-transform duration-200 group-data-[state=open]:rotate-180" />
+              </CollapsibleTrigger>
+              <CollapsibleContent className="px-4 pb-5 sm:px-5">
+                <PostBrief post={sub.postContent} accountLabel={account?.label} />
+              </CollapsibleContent>
+            </Collapsible>
           ) : null}
 
           <Collapsible open={briefOpen} onOpenChange={setBriefOpen}>

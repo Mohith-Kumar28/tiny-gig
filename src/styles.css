@@ -229,3 +229,82 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Reddit's create-post surface, copied so workers recognise it. Scoped; nothing else uses these. */
+.reddit-ui {
+  --rd-bg: #ffffff;
+  --rd-fg: #0f1a1c;
+  --rd-heading: #0f1a1c;
+  --rd-muted: #5c6c74;
+  --rd-placeholder: #576f76;
+  --rd-border: #8ba2ad;
+  --rd-border-weak: #dbe4e9;
+  --rd-hover: #e5ebee;
+  --rd-chip: #e5ebee;
+  --rd-chip-fg: #0f1a1c;
+  --rd-disabled: #eaedef;
+  --rd-disabled-fg: #a5b4bb;
+  --rd-primary: #0a449b;
+  --rd-primary-hover: #0a3a85;
+  --rd-primary-fg: #ffffff;
+  --rd-tab: #648efc;
+  --rd-danger: #d93900;
+  --rd-code: #eaedef;
+  font-family: "Reddit Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--rd-bg);
+  color: var(--rd-fg);
+}
+.dark .reddit-ui {
+  --rd-bg: #0e1113;
+  --rd-fg: #f2f4f5;
+  --rd-heading: #b7cad4;
+  --rd-muted: #8ba2ad;
+  --rd-placeholder: #8ba2ad;
+  --rd-border: #5c6c74;
+  --rd-border-weak: #333d42;
+  --rd-hover: #1a282d;
+  --rd-chip: #2a3236;
+  --rd-chip-fg: #f2f4f5;
+  --rd-disabled: #1a1d1f;
+  --rd-disabled-fg: #5c6c74;
+  --rd-primary: #115bca;
+  --rd-primary-hover: #1870f4;
+  --rd-primary-fg: #ffffff;
+  --rd-tab: #648efc;
+  --rd-danger: #ff4500;
+  --rd-code: #1a282d;
+}
+.rd-editor .ProseMirror {
+  outline: none;
+  min-height: 7rem;
+  font-size: 14px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.rd-editor .ProseMirror > * + * { margin-top: 0.75em; }
+.rd-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: var(--rd-placeholder);
+}
+.rd-editor h1 { font-size: 1.4em; font-weight: 700; }
+.rd-editor h2 { font-size: 1.25em; font-weight: 700; }
+.rd-editor h3 { font-size: 1.1em; font-weight: 700; }
+.rd-editor ul { list-style: disc; padding-left: 1.5em; }
+.rd-editor ol { list-style: decimal; padding-left: 1.5em; }
+.rd-editor blockquote { border-left: 4px solid var(--rd-border); padding-left: 0.75em; color: var(--rd-muted); }
+.rd-editor code { background: var(--rd-code); border-radius: 4px; padding: 0.1em 0.3em; font-family: ui-monospace, monospace; font-size: 0.9em; }
+.rd-editor pre { background: var(--rd-code); border-radius: 8px; padding: 0.75em; font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap; }
+.rd-editor pre code { background: none; padding: 0; }
+.rd-editor a { color: var(--rd-tab); text-decoration: underline; }
+.rd-editor sup { font-size: 0.75em; }
+.rd-editor .rd-spoiler { background: var(--rd-chip); color: var(--rd-fg); outline: 1px dashed var(--rd-border); border-radius: 3px; padding: 0 2px; }
+.rd-editor img, .rd-editor video { max-height: 420px; max-width: 100%; border-radius: 8px; }
+.rd-editor .ProseMirror-selectednode { outline: 2px solid var(--rd-tab); }
+.rd-editor table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+.rd-editor td, .rd-editor th { border: 1px solid var(--rd-border); padding: 0.35em 0.5em; vertical-align: top; }
+.rd-editor th { font-weight: 700; background: var(--rd-hover); }
+.rd-editor .selectedCell { background: color-mix(in srgb, var(--rd-tab) 20%, transparent); }
+.rd-editor .tableWrapper { overflow-x: auto; }

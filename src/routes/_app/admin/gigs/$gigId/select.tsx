@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { AlertTriangle, ArrowLeft, Ban, Hand, UserPlus } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Ban, FilePen, FilePlus, Hand, UserPlus } from 'lucide-react'
 import { type ReactNode, useState } from 'react'
 import { Countdown } from '@/components/shared/countdown'
 import { EmptyState } from '@/components/shared/empty-state'
@@ -17,6 +17,8 @@ import { accountLabel, isKarmaStale } from '@/features/accounts/rules'
 import { type AssignTarget, AssignDialog } from '@/features/opportunities/components/assign-dialog'
 import { DirectAssignDialog } from '@/features/opportunities/components/direct-assign'
 import { selectionQuery } from '@/features/opportunities/queries'
+import { PostContentDialog } from '@/features/reddit-post/components/post-dialog'
+import type { RedditPost } from '@/features/reddit-post/post'
 import { useRowPager } from '@/hooks/use-row-pager'
 import { formatNumber } from '@/lib/format'
 import { cn } from '@/lib/utils'
@@ -73,6 +75,7 @@ function SelectPage() {
   const [direct, setDirect] = useState(false)
   const [directOpen, setDirectOpen] = useState(false)
   const [openAccount, setOpenAccount] = useState<string | null>(null)
+  const [postFor, setPostFor] = useState<{ submissionId: string; post: RedditPost | null; community: string | null; label: string } | null>(null)
   const g = data.gig
   const full = g.slotsLeft === 0
   const active = data.assigned.filter((a) => !RELEASED.has(a.status))
@@ -291,7 +294,7 @@ function SelectPage() {
           <h2 id="assigned-title" className="font-display text-lg font-bold">
             Assigned <span className="text-muted-foreground tabular">({data.assigned.length})</span>
           </h2>
-          <div className="overflow-hidden rounded-lg border bg-card">
+          <div className="overflow-x-auto rounded-lg border bg-card">
             <table className="w-full text-sm">
               <thead className="border-b bg-muted/45">
                 <tr className="text-left">
@@ -300,6 +303,7 @@ function SelectPage() {
                   <th className="ledger-label h-9 px-3 font-semibold">Level</th>
                   <th className="ledger-label h-9 px-3 font-semibold">Status</th>
                   <th className="ledger-label h-9 px-4 text-right font-semibold">Rate</th>
+                  <th className="ledger-label h-9 px-2 text-center font-semibold">Post</th>
                   <th className="h-9 w-12 px-2">
                     <span className="sr-only">Contact</span>
                   </th>
@@ -331,6 +335,18 @@ function SelectPage() {
                       <td className="px-4 py-2.5 text-right">
                         <Money paise={a.payoutAmount} className={cn('font-display font-bold', released && 'ledger-struck text-muted-foreground')} />
                       </td>
+                      <td className="px-2 py-1.5 text-center">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className={cn('size-8', a.postContent ? 'text-ink' : 'text-muted-foreground')}
+                          aria-label={a.postContent ? `View or edit the post for ${label ?? a.workerName}` : `Add the post for ${label ?? a.workerName}`}
+                          title={a.postContent ? 'View or edit post' : 'Add post'}
+                          onClick={() => setPostFor({ submissionId: a.id, post: a.postContent, community: g.community, label: label ?? a.workerName })}
+                        >
+                          {a.postContent ? <FilePen /> : <FilePlus />}
+                        </Button>
+                      </td>
                       <td className="px-2 py-1.5 text-right">
                         {a.phone ? <WhatsAppButton phone={a.phone} name={a.workerName} message={greeting(a.workerName, label ?? 'your account')} /> : null}
                       </td>
@@ -346,7 +362,7 @@ function SelectPage() {
                   <td className="px-4 py-2.5 text-right">
                     <Money paise={committed} className="font-display font-bold" />
                   </td>
-                  <td />
+                  <td colSpan={2} />
                 </tr>
               </tfoot>
             </table>
@@ -364,7 +380,8 @@ function SelectPage() {
         }}
       />
       <AccountSheet accountId={openAccount} onOpenChange={(o) => !o && setOpenAccount(null)} pager={pager} />
-      <AssignDialog gigId={gigId} gigTitle={g.title} target={target} direct={direct} onOpenChange={(o) => !o && setTarget(null)} />
+      <PostContentDialog target={postFor} onOpenChange={(o) => !o && setPostFor(null)} />
+      <AssignDialog gigId={gigId} gigTitle={g.title} community={g.community} target={target} direct={direct} onOpenChange={(o) => !o && setTarget(null)} />
     </div>
   )
 }

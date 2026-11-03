@@ -6,6 +6,7 @@ import { type Candidate, type Evaluation, rankCandidates, reasonLine } from '@/f
 import { accountLabel } from '@/features/accounts/rules'
 import { evaluateWorker, gigFacts, loadEligibility } from '@/features/accounts/server/eligibility'
 import { adminMiddleware, AppError } from '@/lib/server/middleware'
+import { redditPostSchema } from '@/features/reddit-post/post'
 import { assignAccount, previewAccountForGig } from './assign'
 
 function describe(ev: Evaluation) {
@@ -48,6 +49,7 @@ export const getSelection = createServerFn({ method: 'GET' })
           payoutAmount: submission.payoutAmount,
           overrideReason: submission.overrideReason,
           selectedAt: submission.selectedAt,
+          postContent: submission.postContent,
         })
         .from(submission)
         .innerJoin(workerProfile, eq(workerProfile.userId, submission.workerId))
@@ -165,7 +167,7 @@ export const previewAssignment = createServerFn({ method: 'GET' })
 
 export const selectAccount = createServerFn({ method: 'POST' })
   .middleware([adminMiddleware])
-  .validator(z.object({ gigId: z.string(), accountId: z.string(), overrideReason: z.string().trim().max(500).optional(), direct: z.boolean().optional() }))
+  .validator(z.object({ gigId: z.string(), accountId: z.string(), overrideReason: z.string().trim().max(500).optional(), direct: z.boolean().optional(), post: redditPostSchema.optional() }))
   .handler(({ data, context }) => assignAccount(context.db, { ...data, actorId: context.user.id }))
 
 /** Live gigs with open slots — for "assign to opportunity" from the roster. */

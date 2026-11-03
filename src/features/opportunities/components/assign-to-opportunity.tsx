@@ -13,7 +13,7 @@ import { type AssignTarget, AssignDialog } from './assign-dialog'
 export function AssignToOpportunity({ accountId }: { accountId: string }) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState<string | null>(null)
-  const [pick, setPick] = useState<{ gigId: string; title: string; target: AssignTarget } | null>(null)
+  const [pick, setPick] = useState<{ gigId: string; title: string; community: string | null; target: AssignTarget } | null>(null)
   const { data } = useQuery({ ...openOpportunitiesQuery(), enabled: open })
   return (
     <>
@@ -37,7 +37,12 @@ export function AssignToOpportunity({ accountId }: { accountId: string }) {
                     setLoading(g.id)
                     try {
                       const p = await previewAssignment({ data: { gigId: g.id, accountId } })
-                      setPick({ gigId: g.id, title: g.title, target: { accountId, label: p.label, workerName: p.workerName, hard: p.hard, soft: p.soft } })
+                      setPick({
+                        gigId: g.id,
+                        title: g.title,
+                        community: g.community,
+                        target: { accountId, label: p.label, workerName: p.workerName, hard: p.hard, soft: p.soft },
+                      })
                       setOpen(false)
                     } finally {
                       setLoading(null)
@@ -46,18 +51,25 @@ export function AssignToOpportunity({ accountId }: { accountId: string }) {
                 >
                   <PlatformIcon platform={g.platform} />
                   <span className="min-w-0 flex-1 truncate">{g.title}</span>
-                  <span className="text-xs text-muted-foreground tabular">
-                    {g.totalSlots - g.claimedSlots} open
-                  </span>
+                  <span className="text-xs text-muted-foreground tabular">{g.totalSlots - g.claimedSlots} open</span>
                   {loading === g.id ? <Spinner /> : null}
                 </button>
               </li>
             ))}
-            {data && !data.length ? <li className="px-3 py-6 text-center text-sm text-muted-foreground">No live gigs with open slots.</li> : null}
+            {data && !data.length ? (
+              <li className="px-3 py-6 text-center text-sm text-muted-foreground">No live gigs with open slots.</li>
+            ) : null}
           </ul>
         </DialogContent>
       </Dialog>
-      <AssignDialog gigId={pick?.gigId ?? ''} gigTitle={pick?.title ?? ''} target={pick?.target ?? null} direct onOpenChange={(o) => !o && setPick(null)} />
+      <AssignDialog
+        gigId={pick?.gigId ?? ''}
+        gigTitle={pick?.title ?? ''}
+        community={pick?.community}
+        target={pick?.target ?? null}
+        direct
+        onOpenChange={(o) => !o && setPick(null)}
+      />
     </>
   )
 }

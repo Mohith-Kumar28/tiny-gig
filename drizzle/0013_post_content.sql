@@ -1,0 +1,1 @@
+ALTER TABLE `submission` ADD `post_content` text;
